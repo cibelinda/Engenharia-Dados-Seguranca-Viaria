@@ -15,6 +15,14 @@ dos anos e são republicados pela própria PRF sem aviso. Por isso o projeto é 
 etapas: aquisição reproduzível dos arquivos, perfilamento da qualidade, modelagem e carga
 no banco.
 
+**Pergunta de gestão:** quais trechos de 10 km das rodovias federais concentraram mais
+acidentes com mortos ou feridos graves entre 2017 e 2025, e esses trechos se mantêm de um ano
+para o outro?
+
+**Recorte:** sistema BAT, 2017–2025, conjuntos de ocorrência e pessoa (cerca de 630 mil
+ocorrências e 1,65 milhão de registros de pessoa). Justificativa e alternativas descartadas em
+[`docs/pergunta-e-recorte.md`](docs/pergunta-e-recorte.md).
+
 
 ## Aquisição dos dados (Etapa 1)
 
