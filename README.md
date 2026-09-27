@@ -46,12 +46,47 @@ Isso reescreve o bloco `reference` da entrada no `sources.yaml`; faça commit da
 
 Testes (sem rede): `python -m unittest discover tests`.
 
-## Banco de dados
+## Como subir o projeto
+
+Pré-requisito: Docker com Compose v2. Não é preciso ter Python nem PostgreSQL instalados.
 
 ```bash
-docker compose up -d    # PostgreSQL 18.6, ainda sem esquema nem carga
+git clone git@github.com:cibelinda/Engenharia-Dados-Seguranca-Viaria.git
+cd Engenharia-Dados-Seguranca-Viaria
+docker compose up
 ```
 
-Sem `.env`, o banco sobe com usuário, banco e senha `blackspot`, só em `127.0.0.1:5432`.
-Para trocar algum valor, copie `.env.example` para `.env` e ajuste. Se o volume já tiver
-sido criado com outra senha, recrie-o com `docker compose down -v`.
+O comando sobe quatro serviços, definidos no [`docker-compose.yml`](docker-compose.yml):
+
+| Serviço | O que faz | Espera |
+|---|---|---|
+| `db` | PostgreSQL 18.6 | — |
+| `migrate` | Aplica as migrações de [`db/migrations/`](db/migrations/) em ordem, com Flyway | `db` saudável |
+| `download` | Baixa o recorte (BAT 2017–2025, ocorrência e pessoa: 18 arquivos, ~108 MB) e confere os SHA-256 | — |
+| `load` | Carrega os arquivos no banco | `migrate` e `download` terminarem sem erro |
+
+Termina quando o log mostra `load-1 exited with code 0`. O banco continua no ar; `Ctrl+C` o
+desliga. Para rodar em segundo plano: `docker compose up -d` e `docker compose wait load`.
+
+Tempo medido em 2026-09-27: cerca de 1 min do zero (incluindo o download) e cerca de 12 s nas
+subidas seguintes, que não baixam de novo os arquivos já íntegros. O download depende da conexão.
+
+**Conferir.** Com o banco no ar:
+
+```bash
+docker compose exec db psql -U blackspot -d blackspot -c "SELECT * FROM placeholder_contagem ORDER BY arquivo;"
+```
+
+> A carga atual é **provisória**: conta os registros de cada arquivo (632.713 ocorrências e
+> 1.654.197 registros de pessoa). A carga no esquema real é a issue #4.
+
+**Configuração.** Sem `.env`, o banco sobe com usuário, banco e senha `blackspot`, só em
+`127.0.0.1:5432`. Para trocar algum valor, copie `.env.example` para `.env` e ajuste.
+
+**Problemas comuns.**
+- *Porta 5432 ocupada* (outro PostgreSQL na máquina): `POSTGRES_PORT=55432 docker compose up`,
+  ou defina `POSTGRES_PORT` no `.env`. A esteira não usa essa porta; ela só serve para
+  acessar o banco de fora do Docker.
+- *Senha recusada* depois de trocar a senha no `.env`: o volume foi criado com a anterior.
+  Recrie com `docker compose down -v`.
+- *Começar do zero*: `docker compose down -v` apaga o banco e os arquivos baixados.

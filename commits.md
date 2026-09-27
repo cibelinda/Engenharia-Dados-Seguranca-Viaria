@@ -30,3 +30,14 @@ Corrigi problemas encontrados numa revisão do projeto e criei os testes:
 
 - Coloquei a introdução do projeto no readme
 - Criei esse arquivo para termos controle dos commits no repositório.
+
+### esteira do docker compose (issue #5)
+**autor:** Ana Luiza Komatsu
+
+- O `docker compose up` agora sobe tudo sozinho: `db` (PostgreSQL), `migrate` (Flyway, aplica `db/migrations/`), `download` (baixa o recorte BAT 2017–2025, ocorrência e pessoa) e `load` (carga no banco), nessa ordem.
+- Criei o `Dockerfile` do código Python, para ninguém precisar de Python instalado, e o `.dockerignore`.
+- A migração (`V1__placeholder.sql`) e a carga (`blackspot/load.py`) são provisórias: a carga só conta os registros de cada arquivo. Elas serão trocadas pelo esquema real (#3) e pela carga real (#4).
+- Coloquei uma senha padrão de desenvolvimento no compose, para não precisar criar o `.env`.
+- Testei do zero: cerca de 1 min, 18 arquivos com SHA-256 conferido, 632.713 ocorrências e 1.654.197 registros de pessoa. Rodar de novo não duplica nada.
+- Atualizei o README com a seção "Como subir o projeto".
+- Esta issue foi feita com o uso de IA (configuração do Docker, scripts e README).

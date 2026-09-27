@@ -1,4 +1,28 @@
-# Infraestrutura mínima: só o PostgreSQL, ainda sem esquema nem carga.
+# Esteira completa do BlackSpot. Um `docker compose up` sobe o banco, cria o
+# esquema, baixa os dados da PRF e carrega no banco, nesta ordem:
+#
+#   db ──(saudável)──► migrate ──┐
+#                                 ├──(ambos terminaram)──► load
+#   download ─────────────────────┘
+#
+# `migrate` e `download` rodam em paralelo; `load` só começa quando os dois
+# terminaram sem erro. Se algum falhar, `load` não roda.
+
+# Configuração comum aos serviços que usam o código Python (Dockerfile).
+x-app: &app
+  build: .
+  image: blackspot-app:local
+  environment:
+    BLACKSPOT_RAW_DIR: data/raw
+    BLACKSPOT_DOWNLOAD_JOBS: ${BLACKSPOT_DOWNLOAD_JOBS:-4}
+    PGHOST: db
+    PGPORT: 5432
+    PGDATABASE: ${POSTGRES_DB:-blackspot}
+    PGUSER: ${POSTGRES_USER:-blackspot}
+    PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+  volumes:
+    - rawdata:/app/data/raw
+
 services:
   db:
     image: postgres:18.6
@@ -21,5 +45,45 @@ services:
       timeout: 5s
       retries: 10
 
+  # Aplica, em ordem, as migrações de db/migrations/ (V1__..., V2__...). O Flyway
+  # registra na tabela flyway_schema_history o que já rodou, então subir de novo
+  # só aplica as migrações novas.
+  migrate:
+    image: flyway/flyway:13.8.0-alpine
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-blackspot}
+      FLYWAY_USER: ${POSTGRES_USER:-blackspot}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+    volumes:
+      - ./db/migrations:/flyway/sql:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Baixa o recorte do projeto (docs/pergunta-e-recorte.md): BAT 2017–2025,
+  # ocorrência e pessoa. Arquivos já baixados e íntegros não são baixados de novo.
+  download:
+    <<: *app
+    command: >
+      python -m blackspot.download
+      --system bat --dataset ocorrencia --dataset pessoa
+      --year 2017 --year 2018 --year 2019 --year 2020 --year 2021
+      --year 2022 --year 2023 --year 2024 --year 2025
+
+  # Carga no banco. Por enquanto é a carga provisória da issue #5; a real é a #4.
+  load:
+    <<: *app
+    command: python -m blackspot.load
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      download:
+        condition: service_completed_successfully
+
 volumes:
   pgdata:
+  # Os ZIPs baixados ficam num volume do Docker, e não em ./data/raw, para não
+  # haver problema de permissão de arquivo entre o container e a máquina.
+  rawdata:
