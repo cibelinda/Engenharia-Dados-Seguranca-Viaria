@@ -1,0 +1,576 @@
+# Manifesto das fontes de dados do BlackSpot.
+#
+# Construído a partir do reconhecimento de 2026-09-27 (docs/fontes/), com os
+# IDs do Google Drive validados manualmente um a um. NÃO regenere este arquivo
+# raspando a página da PRF: ela contém links ocultos que apontam para arquivos
+# de outros anos (ver docs/fontes/README.md, seção "Mecanismo de download").
+#
+# `reference` registra o estado do arquivo na última verificação. A PRF
+# regrava arquivos no mesmo ID/nome, então divergência de sha256 é esperada
+# ao longo do tempo: o downloader avisa e só atualiza a referência quando
+# pedido explicitamente (--accept-new-hash KEY | --accept-all-new-hashes).
+
+provider:
+  name: Polícia Rodoviária Federal (PRF)
+  page: https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf
+  dictionary_page: https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dicionario-acidentes
+  update_frequency: mensal (declarada pela PRF)
+
+download:
+  # Endpoint público do Google Drive; {drive_id} é substituído por entrada.
+  url_template: https://drive.usercontent.google.com/download?id={drive_id}&export=download&confirm=t
+
+# system:  br_brasil (2007–2016) | bat (2017+)
+# dataset: ocorrencia | pessoa | pessoa_todas_causas (só BAT)
+# O ano de 2026 é parcial (01/01–31/08 na verificação de referência).
+files:
+  - key: br_brasil_2007_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2007
+    drive_id: 1EFpZF5F6cB0DOHd2Uxnj7X948WE69a8e
+    filename: datatran2007.zip
+    reference:
+      sha256: "8723ba7ad6ca9979b86b39e2488b0ccf2aee5fa63a0d1135880c2577caf950e1"
+      size_bytes: 3078464
+      drive_last_modified: "2022-11-24T15:21:12Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2007_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2007
+    drive_id: 1v2tz5wJYFlPBb-8ZIf-pchbSO-JT4YZG
+    filename: acidentes2007.zip
+    reference:
+      sha256: "7de7ad5e07fdf993b893c6b02db87dbbf4cf96da63053bd5804a56fe05f7eafb"
+      size_bytes: 9990205
+      drive_last_modified: "2022-11-24T15:23:30Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2008_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2008
+    drive_id: 1_OSeHlyKJw8cIhMS_JzSg1RlYX8k6vSG
+    filename: datatran2008.zip
+    reference:
+      sha256: "4c56a3ad8d418a2107aacd64dc10a23976f5508c2935479f1ae24a5d4097a7ae"
+      size_bytes: 3383500
+      drive_last_modified: "2022-11-24T15:21:15Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2008_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2008
+    drive_id: 1gabSVTay5faBo4r9VNksgxhKXuuxu71U
+    filename: acidentes2008.zip
+    reference:
+      sha256: "22996252ddb7699bb0a72d0e925db27d2d3dfb286fa00f479ab8b69e5500e38b"
+      size_bytes: 11052764
+      drive_last_modified: "2022-11-24T15:23:40Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2009_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2009
+    drive_id: 1qkVatg0pC_zosuBs0NCSgEXDJvBbnTYC
+    filename: datatran2009.zip
+    reference:
+      sha256: "ef5a00393572b4742928ba04e26a0177a20ae1817d7b261f3d8d4378005ac8ac"
+      size_bytes: 3795569
+      drive_last_modified: "2022-11-24T15:21:09Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2009_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2009
+    drive_id: 1gysMdwpeT3h4CUOGDkQMvFJzPp1Fn-bg
+    filename: acidentes2009.zip
+    reference:
+      sha256: "e67bb988b7a3bc00cdb9757bf312a73d226b581c7cda98678c01c8ad18999f6f"
+      size_bytes: 12296968
+      drive_last_modified: "2022-11-24T15:23:46Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2010_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2010
+    drive_id: 1_yU6FRh8M7USjiChQwyF20NtY48GTmEX
+    filename: datatran2010.zip
+    reference:
+      sha256: "8d665f411a01af2181da8f0e8300e24d810839cdd7364cc9f72fda4d14bfafa6"
+      size_bytes: 4394611
+      drive_last_modified: "2022-11-24T15:21:18Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2010_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2010
+    drive_id: 1Zg9SdeQa72Gu49ZhJosBuM7TkJcEYiaI
+    filename: acidentes2010.zip
+    reference:
+      sha256: "9228707295f511175e92e9c90f89ae536fd31d69e2edf317ff83209cacd8be15"
+      size_bytes: 14351565
+      drive_last_modified: "2022-11-24T15:23:55Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2011_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2011
+    drive_id: 1HHhgLF-kSR6Gde2qOaTXL3T5ieD33hpG
+    filename: datatran2011.zip
+    reference:
+      sha256: "e2b3dc33756cf22546b691fff435348087458e44fc67d3d2eb2730f09e5c5933"
+      size_bytes: 4600829
+      drive_last_modified: "2022-11-24T15:21:21Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2011_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2011
+    drive_id: 1XTcOujBbP_8AEYYrOfjxGxzqHcQYLNy2
+    filename: acidentes2011.zip
+    reference:
+      sha256: "44e1a065b65eb38e4b30fa36a9d3dc217fa5c544b60cdd37858c15fb881f54a9"
+      size_bytes: 14941887
+      drive_last_modified: "2022-11-24T15:24:01Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2012_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2012
+    drive_id: 18Yz2prqKSLthrMmW-73vrOiDmKTCL6xE
+    filename: datatran2012.zip
+    reference:
+      sha256: "5c1336e3fa05a5d80429ec928955f4f7a9c06f1feeceebf8997262f1863be99c"
+      size_bytes: 4641569
+      drive_last_modified: "2022-11-24T15:21:24Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2012_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2012
+    drive_id: 1FYqtz2_QMvk0eOMhs9TOQHrmF4uOvv_W
+    filename: acidentes2012.zip
+    reference:
+      sha256: "6ca4309d9af7ed4bc3fe95969ccfdddbf8ecd1086fd3c135af09e25186ced498"
+      size_bytes: 14463497
+      drive_last_modified: "2022-11-24T15:24:06Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2013_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2013
+    drive_id: 1p_7lw9RzkINfscYAZSmc-Z9Ci4ZPJyEr
+    filename: datatran2013.zip
+    reference:
+      sha256: "f79e5bc4f60e4ff923bf96ccaad80f0a6a1bae49a04ca2a26a61a5749e747175"
+      size_bytes: 4707582
+      drive_last_modified: "2022-11-24T15:21:27Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2013_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2013
+    drive_id: 1-zd3x9aTHD5cQH7SWGMDOQ-4-DuxVV1T
+    filename: acidentes2013.zip
+    reference:
+      sha256: "aef2421076f526e4dfc3e47ac84ff2e9617fdba032d7c4ac515b11f56fab1a86"
+      size_bytes: 14684692
+      drive_last_modified: "2022-11-24T15:24:16Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2014_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2014
+    drive_id: 1FpF5wTBsRDkEhLm3z2g8XDiXr9SO9Uk8
+    filename: datatran2014.zip
+    reference:
+      sha256: "b2416bd4ecb4886579615ee9ff722e23f650496ef12a46a317aac953a9466dc7"
+      size_bytes: 4304737
+      drive_last_modified: "2022-11-24T15:21:33Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2014_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2014
+    drive_id: 1qmCExfnS3nTYIZhDdJblJnn0jlTLWR3K
+    filename: acidentes2014.zip
+    reference:
+      sha256: "27ce29923a219a96cea0d1dd49c7ed0657cf941d0930780642f567065a214d7e"
+      size_bytes: 13356039
+      drive_last_modified: "2022-11-24T15:24:11Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2015_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2015
+    drive_id: 1DyqR5FFcwGsamSag-fGm13feQt0Y-3Da
+    filename: datatran2015.zip
+    reference:
+      sha256: "07ac0fdbbb149614ff1345384dab6d09b36d5b302a7dccc4a8c4bdfe8b2d9186"
+      size_bytes: 3163538
+      drive_last_modified: "2022-11-24T15:21:30Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2015_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2015
+    drive_id: 1oisqFB_DD3jAChYxBmiyQVR9WrGOwvQt
+    filename: acidentes2015.zip
+    reference:
+      sha256: "d5448e015c77d393a1217c2c6acdf01dd5451a0d57e538c027bb421ab5f797e4"
+      size_bytes: 9582780
+      drive_last_modified: "2022-11-24T15:24:20Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2016_ocorrencia
+    system: br_brasil
+    dataset: ocorrencia
+    year: 2016
+    drive_id: 16qooQl_ySoW61CrtsBbreBVNPYlEkoYm
+    filename: datatran2016.zip
+    reference:
+      sha256: "27438f9a66969b57a797eedad795c8058de3ee0a8e7e235b8c3d36228a23c7bd"
+      size_bytes: 2518479
+      drive_last_modified: "2022-11-24T15:21:36Z"
+      verified_at: "2026-09-27"
+  - key: br_brasil_2016_pessoa
+    system: br_brasil
+    dataset: pessoa
+    year: 2016
+    drive_id: 1zaBGNLk50krRVOxZmB-kfJl6zSOTdmMP
+    filename: acidentes2016_atual.zip
+    reference:
+      sha256: "4fe3c09e00476fff8ac854aa9706451b99a402e601075b872c425fdbf318a8be"
+      size_bytes: 6966648
+      drive_last_modified: "2022-11-24T15:24:24Z"
+      verified_at: "2026-09-27"
+  - key: bat_2017_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2017
+    drive_id: 1HPLWt5f_l4RIX3tKjI4tUXyZOev52W0N
+    filename: datatran2017.zip
+    reference:
+      sha256: "b5d40934c644e61fed2d70b332aca55b5f4bb293a90cf1771749cd2e2fc20fba"
+      size_bytes: 4248009
+      drive_last_modified: "2024-09-27T22:02:00Z"
+      verified_at: "2026-09-27"
+  - key: bat_2017_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2017
+    drive_id: 1mw2CerP_ZEZwREy4WYM_Kxd4rjUHQjbk
+    filename: acidentes2017.zip
+    reference:
+      sha256: "f40fcaefc489acd95c7850e85deb4a1f955d7641b2d5ad7fd3deda2c341141c7"
+      size_bytes: 9969888
+      drive_last_modified: "2024-09-27T22:02:43Z"
+      verified_at: "2026-09-27"
+  - key: bat_2017_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2017
+    drive_id: 1Kv5mNgZvxtl0xwqsmDrxcaLY2KELxR-3
+    filename: acidentes2017_todas_causas_tipos.zip
+    reference:
+      sha256: "2577824cd3f178e5c92ca48bce8b8326c23212efb675d46ef2d68b4ba6889277"
+      size_bytes: 10726416
+      drive_last_modified: "2024-09-27T22:03:38Z"
+      verified_at: "2026-09-27"
+  - key: bat_2018_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2018
+    drive_id: 1cM4IgGMIiR-u4gBIH5IEe3DcvBvUzedi
+    filename: datatran2018.zip
+    reference:
+      sha256: "a8eab316cc17c1af4d2295a5617c5cce37b57b4737a0d76ce902ed4e7c91084c"
+      size_bytes: 3294461
+      drive_last_modified: "2024-09-27T22:01:57Z"
+      verified_at: "2026-09-27"
+  - key: bat_2018_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2018
+    drive_id: 1Ja1dN8R_-Dw7sjQVo63UQHicO3jfyzIS
+    filename: acidentes2018.zip
+    reference:
+      sha256: "34ea572bd6269b63223f02f92158d7162a5bb9d7bdccb64c3990aff5135bb67e"
+      size_bytes: 7888605
+      drive_last_modified: "2024-09-27T22:02:42Z"
+      verified_at: "2026-09-27"
+  - key: bat_2018_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2018
+    drive_id: 1J-012nSnIafOASNFvIYY_vDKKpM51w5_
+    filename: acidentes2018_todas_causas_tipos.zip
+    reference:
+      sha256: "e1513598c35242b12dd7107022e93a775a841622cb6c6fc5bb26aa1828521786"
+      size_bytes: 9034086
+      drive_last_modified: "2024-09-27T22:03:40Z"
+      verified_at: "2026-09-27"
+  - key: bat_2019_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2019
+    drive_id: 1pN3fn2wY34GH6cY-gKfbxRJJBFE0lb_l
+    filename: datatran2019.zip
+    reference:
+      sha256: "3a7022edf4690334aae309cb1b01a7c98649bd9a0a05ce7d0bd3e7416183155d"
+      size_bytes: 3237669
+      drive_last_modified: "2024-09-27T22:02:00Z"
+      verified_at: "2026-09-27"
+  - key: bat_2019_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2019
+    drive_id: 14r_9zudjjndgcnjRddzD5lvn9MX5VvZZ
+    filename: acidentes2019.zip
+    reference:
+      sha256: "e37bcba111e1f76a82196ff68f20c885c0aab1f549e4312426ee71e2e52b426b"
+      size_bytes: 8029318
+      drive_last_modified: "2024-09-27T22:02:46Z"
+      verified_at: "2026-09-27"
+  - key: bat_2019_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2019
+    drive_id: 1DAJYKVfkTcPhQodSmHp9rsG1Q8XJW-m3
+    filename: acidentes2019_todas_causas_tipos.zip
+    reference:
+      sha256: "7674f7735eb2dc7c92478d87ded53a31d7cd29c85fbd1c19e9e3ce720bfa1b0d"
+      size_bytes: 9381531
+      drive_last_modified: "2024-09-27T22:03:34Z"
+      verified_at: "2026-09-27"
+  - key: bat_2020_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2020
+    drive_id: 1esu6IiH5TVTxFoedv6DBGDd01Gvi8785
+    filename: datatran2020.zip
+    reference:
+      sha256: "92cb80217a17268c4f6fb8f91f36284ce90f28aac7053f0e857fafa5e838c9d8"
+      size_bytes: 3075980
+      drive_last_modified: "2024-09-27T22:02:04Z"
+      verified_at: "2026-09-27"
+  - key: bat_2020_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2020
+    drive_id: 1iQvs2D9a2XO9vIukrjEIIhtjzkNkgD7Z
+    filename: acidentes2020.zip
+    reference:
+      sha256: "4bfd716647f877ecfea8de43db97f09cec190865054e549913a99c9b3678b9e2"
+      size_bytes: 7573342
+      drive_last_modified: "2024-09-27T22:02:40Z"
+      verified_at: "2026-09-27"
+  - key: bat_2020_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2020
+    drive_id: 1yQtVOsAlupPHQVVTmbJo0NR3XMzgHANO
+    filename: acidentes2020_todas_causas_tipos.zip
+    reference:
+      sha256: "0d9d3b82ac556523c41edae5e7a89f34a1b1ab2701b0664c93ddf02884514f0d"
+      size_bytes: 9680059
+      drive_last_modified: "2024-09-27T22:03:34Z"
+      verified_at: "2026-09-27"
+  - key: bat_2021_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2021
+    drive_id: 12xH8LX9aN2gObR766YN3cMcuycwyCJDz
+    filename: datatran2021.zip
+    reference:
+      sha256: "a246e0d1205860a475335f8996b532cbe2ca4c1c349bb5a1531bf47a779e3901"
+      size_bytes: 3217660
+      drive_last_modified: "2024-09-27T22:01:51Z"
+      verified_at: "2026-09-27"
+  - key: bat_2021_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2021
+    drive_id: 15W_l07-6taOh8Ycn8uk2Er9PnSj0vq3f
+    filename: acidentes2021.zip
+    reference:
+      sha256: "51bb5b1019cc34d52a9a6789068f11768a561505bf83c67d6f67fc76810e0972"
+      size_bytes: 8023243
+      drive_last_modified: "2024-09-27T22:02:42Z"
+      verified_at: "2026-09-27"
+  - key: bat_2021_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2021
+    drive_id: 1Gk3U6cMOZIevsDZHLi6J503xoCRS_lnI
+    filename: acidentes2021_todas_causas_tipos.zip
+    reference:
+      sha256: "3de00e4fe1f9bfc7320e5cf5a4025b9f5e40f87182f184208d0ad81b5a8de8b0"
+      size_bytes: 10693548
+      drive_last_modified: "2024-09-27T22:03:34Z"
+      verified_at: "2026-09-27"
+  - key: bat_2022_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2022
+    drive_id: 1PRQjuV5gOn_nn6UNvaJyVURDIfbSAK4-
+    filename: datatran2022.zip
+    reference:
+      sha256: "5ace05699b82c720e47e28768323630310ef7fe300db57388da246fb448c8855"
+      size_bytes: 3227721
+      drive_last_modified: "2024-08-16T02:02:00Z"
+      verified_at: "2026-09-27"
+  - key: bat_2022_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2022
+    drive_id: 1sd8YIqIHapYaxQeaa-6yeWMdVLTl6hgD
+    filename: acidentes2022.zip
+    reference:
+      sha256: "e5608f98599879920f053730e0c02d67a8b1cc73a2b5f5ec53a09e801d8e1458"
+      size_bytes: 7820012
+      drive_last_modified: "2024-08-16T02:03:34Z"
+      verified_at: "2026-09-27"
+  - key: bat_2022_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2022
+    drive_id: 1wskEgRC3ame7rncSDQ7qWhKsoKw1lohY
+    filename: acidentes2022_todas_causas_tipos.zip
+    reference:
+      sha256: "6cb8a59647c7262db183dd7555c9c6a71dd43227c296c05a2a58a2e2d1507d50"
+      size_bytes: 11108008
+      drive_last_modified: "2024-08-16T02:04:53Z"
+      verified_at: "2026-09-27"
+  - key: bat_2023_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2023
+    drive_id: 1-WO3SfNrwwZ5_l7fRTiwBKRw7mi1-HUq
+    filename: datatran2023.zip
+    reference:
+      sha256: "b233c47d16b3980a6692472f9fe1bbab57698700fbb918d22628a5c0a382d985"
+      size_bytes: 3397281
+      drive_last_modified: "2024-08-16T02:02:04Z"
+      verified_at: "2026-09-27"
+  - key: bat_2023_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2023
+    drive_id: 1-Yk6TV00CH3PixTkKmkoUJQsNiUc5xLm
+    filename: acidentes2023.zip
+    reference:
+      sha256: "f4b9cc26484ffb563737722d9f84304001182dc806378c37bdeff3d08373b8e3"
+      size_bytes: 8333423
+      drive_last_modified: "2024-08-16T02:03:35Z"
+      verified_at: "2026-09-27"
+  - key: bat_2023_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2023
+    drive_id: 1-caam_dahYOf2eorq4mez04Om6DD5d_3
+    filename: acidentes2023_todas_causas_tipos.zip
+    reference:
+      sha256: "2b449ffe964007a864444b029a7635bd2ab0db9d4bf5bf52a1109d526d33be80"
+      size_bytes: 11923174
+      drive_last_modified: "2024-08-16T02:04:59Z"
+      verified_at: "2026-09-27"
+  - key: bat_2024_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2024
+    drive_id: 14lB0vqMFkaZj8HZ44b0njYgxs9nAN8KO
+    filename: datatran2024.zip
+    reference:
+      sha256: "905dac836867297b261e4edefff6cdb470809814e7e1796b3f2f57517099d165"
+      size_bytes: 3783609
+      drive_last_modified: "2026-09-23T23:39:12Z"
+      verified_at: "2026-09-27"
+  - key: bat_2024_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2024
+    drive_id: 14lVfqdoE2gxDliaKZu7K9Mx6847maPtl
+    filename: acidentes2024.zip
+    reference:
+      sha256: "3f0d1b5e8514d62d817a349cae66c016718c4d0f9303cb8133ceb3f66585521c"
+      size_bytes: 9442308
+      drive_last_modified: "2026-09-23T23:38:34Z"
+      verified_at: "2026-09-27"
+  - key: bat_2024_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2024
+    drive_id: 14qBOhrE1gioVtuXgxkCJ9kCA8YtUGXKA
+    filename: acidentes2024_todas_causas_tipos.zip
+    reference:
+      sha256: "24ba19d3b14ed8c278a487a28776482572854b19385877136e7fc9d5bb0d5df3"
+      size_bytes: 13344080
+      drive_last_modified: "2026-09-23T23:40:09Z"
+      verified_at: "2026-09-27"
+  - key: bat_2025_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2025
+    drive_id: 1-G3MdmHBt6CprDwcW99xxC4BZ2DU5ryR
+    filename: datatran2025.zip
+    reference:
+      sha256: "52c8a631ac9d428bf845e2fa996b8c61f66b219f7014a61d292f9d95d186bb0f"
+      size_bytes: 3727148
+      drive_last_modified: "2026-03-18T20:39:59Z"
+      verified_at: "2026-09-27"
+  - key: bat_2025_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2025
+    drive_id: 1-Gp9S-ALO0D1nT8S_OKoC8xlW7BY8F82
+    filename: acidentes2025.zip
+    reference:
+      sha256: "b902e277b48afb4e83ad4a5a425fcdd81de06e5dc50d6d338dcdd6488f47cfd9"
+      size_bytes: 9349289
+      drive_last_modified: "2026-03-18T20:40:29Z"
+      verified_at: "2026-09-27"
+  - key: bat_2025_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2025
+    drive_id: 1-PJGRbfSe7PVjU37A3wTCls_NRXyVGRD
+    filename: acidentes2025_todas_causas_tipos.zip
+    reference:
+      sha256: "a69432dcab6d1e848e1fe24299d93f34dc65a98e1ec2ddd86d7f8a0945d4c5e9"
+      size_bytes: 13004584
+      drive_last_modified: "2026-03-18T20:41:40Z"
+      verified_at: "2026-09-27"
+  - key: bat_2026_ocorrencia
+    system: bat
+    dataset: ocorrencia
+    year: 2026
+    drive_id: 1A3IirNm0AzRaSosA1IS94DOVmvKsn0Ol
+    filename: datatran2026.zip
+    reference:
+      sha256: "edc00438a4a00a483115a14be886b7b3e8a975064f14375ee043d3d69c157333"
+      size_bytes: 2501149
+      drive_last_modified: "2026-09-22T22:32:11Z"
+      verified_at: "2026-09-27"
+  - key: bat_2026_pessoa
+    system: bat
+    dataset: pessoa
+    year: 2026
+    drive_id: 1B_rvx1kPHuFowP5rs84ZO-57gN8yUs85
+    filename: acidentes2026.zip
+    reference:
+      sha256: "4fc4348e75c1840da8bee2d52334b63b5e481d777d60585ba495366bcd93e815"
+      size_bytes: 6331243
+      drive_last_modified: "2026-09-22T22:32:39Z"
+      verified_at: "2026-09-27"
+  - key: bat_2026_pessoa_todas_causas
+    system: bat
+    dataset: pessoa_todas_causas
+    year: 2026
+    drive_id: 1EsGox0UnBWSaM6mrkNSUlYUOecubLCsh
+    filename: acidentes2026_todas_causas_tipos.zip
+    reference:
+      sha256: "cfafb30e590609d7394ec3ea1390aa1e9162431b80a1c7376e009274d0966a8a"
+      size_bytes: 8900179
+      drive_last_modified: "2026-09-22T22:33:21Z"
+      verified_at: "2026-09-27"

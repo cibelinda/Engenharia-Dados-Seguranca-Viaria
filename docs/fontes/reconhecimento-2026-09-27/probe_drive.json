@@ -1,0 +1,497 @@
+[
+ {
+  "year": 2026,
+  "kind": "Agrupados por ocorrência",
+  "id": "1A3IirNm0AzRaSosA1IS94DOVmvKsn0Ol",
+  "status": "HTTP/2 206",
+  "file": "datatran2026.zip",
+  "size": 2501149,
+  "lastmod": "Tue, 22 Sep 2026 22:32:11 GMT"
+ },
+ {
+  "year": 2026,
+  "kind": "Agrupados por pessoa",
+  "id": "1B_rvx1kPHuFowP5rs84ZO-57gN8yUs85",
+  "status": "HTTP/2 206",
+  "file": "acidentes2026.zip",
+  "size": 6331243,
+  "lastmod": "Tue, 22 Sep 2026 22:32:39 GMT"
+ },
+ {
+  "year": 2026,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1EsGox0UnBWSaM6mrkNSUlYUOecubLCsh",
+  "status": "HTTP/2 206",
+  "file": "acidentes2026_todas_causas_tipos.zip",
+  "size": 8900179,
+  "lastmod": "Tue, 22 Sep 2026 22:33:21 GMT"
+ },
+ {
+  "year": 2025,
+  "kind": "Agrupados por ocorrência",
+  "id": "1-G3MdmHBt6CprDwcW99xxC4BZ2DU5ryR",
+  "status": "HTTP/2 206",
+  "file": "datatran2025.zip",
+  "size": 3727148,
+  "lastmod": "Wed, 18 Mar 2026 20:39:59 GMT"
+ },
+ {
+  "year": 2025,
+  "kind": "Agrupados por pessoa",
+  "id": "1-Gp9S-ALO0D1nT8S_OKoC8xlW7BY8F82",
+  "status": "HTTP/2 206",
+  "file": "acidentes2025.zip",
+  "size": 9349289,
+  "lastmod": "Wed, 18 Mar 2026 20:40:29 GMT"
+ },
+ {
+  "year": 2025,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1-PJGRbfSe7PVjU37A3wTCls_NRXyVGRD",
+  "status": "HTTP/2 206",
+  "file": "acidentes2025_todas_causas_tipos.zip",
+  "size": 13004584,
+  "lastmod": "Wed, 18 Mar 2026 20:41:40 GMT"
+ },
+ {
+  "year": 2024,
+  "kind": "Agrupados por ocorrência",
+  "id": "14lB0vqMFkaZj8HZ44b0njYgxs9nAN8KO",
+  "status": "HTTP/2 206",
+  "file": "datatran2024.zip",
+  "size": 3783609,
+  "lastmod": "Wed, 23 Sep 2026 23:39:12 GMT"
+ },
+ {
+  "year": 2024,
+  "kind": "Agrupados por pessoa",
+  "id": "14lVfqdoE2gxDliaKZu7K9Mx6847maPtl",
+  "status": "HTTP/2 206",
+  "file": "acidentes2024.zip",
+  "size": 9442308,
+  "lastmod": "Wed, 23 Sep 2026 23:38:34 GMT"
+ },
+ {
+  "year": 2024,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "14qBOhrE1gioVtuXgxkCJ9kCA8YtUGXKA",
+  "status": "HTTP/2 206",
+  "file": "acidentes2024_todas_causas_tipos.zip",
+  "size": 13344080,
+  "lastmod": "Wed, 23 Sep 2026 23:40:09 GMT"
+ },
+ {
+  "year": 2023,
+  "kind": "Agrupados por ocorrência",
+  "id": "1-WO3SfNrwwZ5_l7fRTiwBKRw7mi1-HUq",
+  "status": "HTTP/2 206",
+  "file": "datatran2023.zip",
+  "size": 3397281,
+  "lastmod": "Fri, 16 Aug 2024 02:02:04 GMT"
+ },
+ {
+  "year": 2023,
+  "kind": "Agrupados por pessoa",
+  "id": "1-Yk6TV00CH3PixTkKmkoUJQsNiUc5xLm",
+  "status": "HTTP/2 206",
+  "file": "acidentes2023.zip",
+  "size": 8333423,
+  "lastmod": "Fri, 16 Aug 2024 02:03:35 GMT"
+ },
+ {
+  "year": 2023,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1-caam_dahYOf2eorq4mez04Om6DD5d_3",
+  "status": "HTTP/2 206",
+  "file": "acidentes2023_todas_causas_tipos.zip",
+  "size": 11923174,
+  "lastmod": "Fri, 16 Aug 2024 02:04:59 GMT"
+ },
+ {
+  "year": 2022,
+  "kind": "Agrupados por ocorrência",
+  "id": "1PRQjuV5gOn_nn6UNvaJyVURDIfbSAK4-",
+  "status": "HTTP/2 206",
+  "file": "datatran2022.zip",
+  "size": 3227721,
+  "lastmod": "Fri, 16 Aug 2024 02:02:00 GMT"
+ },
+ {
+  "year": 2022,
+  "kind": "Agrupados por pessoa",
+  "id": "1sd8YIqIHapYaxQeaa-6yeWMdVLTl6hgD",
+  "status": "HTTP/2 206",
+  "file": "acidentes2022.zip",
+  "size": 7820012,
+  "lastmod": "Fri, 16 Aug 2024 02:03:34 GMT"
+ },
+ {
+  "year": 2022,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1wskEgRC3ame7rncSDQ7qWhKsoKw1lohY",
+  "status": "HTTP/2 206",
+  "file": "acidentes2022_todas_causas_tipos.zip",
+  "size": 11108008,
+  "lastmod": "Fri, 16 Aug 2024 02:04:53 GMT"
+ },
+ {
+  "year": 2021,
+  "kind": "Agrupados por ocorrência",
+  "id": "12xH8LX9aN2gObR766YN3cMcuycwyCJDz",
+  "status": "HTTP/2 206",
+  "file": "datatran2021.zip",
+  "size": 3217660,
+  "lastmod": "Fri, 27 Sep 2024 22:01:51 GMT"
+ },
+ {
+  "year": 2021,
+  "kind": "Agrupados por pessoa",
+  "id": "15W_l07-6taOh8Ycn8uk2Er9PnSj0vq3f",
+  "status": "HTTP/2 206",
+  "file": "acidentes2021.zip",
+  "size": 8023243,
+  "lastmod": "Fri, 27 Sep 2024 22:02:42 GMT"
+ },
+ {
+  "year": 2021,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1Gk3U6cMOZIevsDZHLi6J503xoCRS_lnI",
+  "status": "HTTP/2 206",
+  "file": "acidentes2021_todas_causas_tipos.zip",
+  "size": 10693548,
+  "lastmod": "Fri, 27 Sep 2024 22:03:34 GMT"
+ },
+ {
+  "year": 2020,
+  "kind": "Agrupados por ocorrência",
+  "id": "1esu6IiH5TVTxFoedv6DBGDd01Gvi8785",
+  "status": "HTTP/2 206",
+  "file": "datatran2020.zip",
+  "size": 3075980,
+  "lastmod": "Fri, 27 Sep 2024 22:02:04 GMT"
+ },
+ {
+  "year": 2020,
+  "kind": "Agrupados por pessoa",
+  "id": "1iQvs2D9a2XO9vIukrjEIIhtjzkNkgD7Z",
+  "status": "HTTP/2 206",
+  "file": "acidentes2020.zip",
+  "size": 7573342,
+  "lastmod": "Fri, 27 Sep 2024 22:02:40 GMT"
+ },
+ {
+  "year": 2020,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1yQtVOsAlupPHQVVTmbJo0NR3XMzgHANO",
+  "status": "HTTP/2 206",
+  "file": "acidentes2020_todas_causas_tipos.zip",
+  "size": 9680059,
+  "lastmod": "Fri, 27 Sep 2024 22:03:34 GMT"
+ },
+ {
+  "year": 2019,
+  "kind": "Agrupados por ocorrência",
+  "id": "1pN3fn2wY34GH6cY-gKfbxRJJBFE0lb_l",
+  "status": "HTTP/2 206",
+  "file": "datatran2019.zip",
+  "size": 3237669,
+  "lastmod": "Fri, 27 Sep 2024 22:02:00 GMT"
+ },
+ {
+  "year": 2019,
+  "kind": "Agrupados por pessoa",
+  "id": "14r_9zudjjndgcnjRddzD5lvn9MX5VvZZ",
+  "status": "HTTP/2 206",
+  "file": "acidentes2019.zip",
+  "size": 8029318,
+  "lastmod": "Fri, 27 Sep 2024 22:02:46 GMT"
+ },
+ {
+  "year": 2019,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1DAJYKVfkTcPhQodSmHp9rsG1Q8XJW-m3",
+  "status": "HTTP/2 206",
+  "file": "acidentes2019_todas_causas_tipos.zip",
+  "size": 9381531,
+  "lastmod": "Fri, 27 Sep 2024 22:03:34 GMT"
+ },
+ {
+  "year": 2018,
+  "kind": "Agrupados por ocorrência",
+  "id": "1cM4IgGMIiR-u4gBIH5IEe3DcvBvUzedi",
+  "status": "HTTP/2 206",
+  "file": "datatran2018.zip",
+  "size": 3294461,
+  "lastmod": "Fri, 27 Sep 2024 22:01:57 GMT"
+ },
+ {
+  "year": 2018,
+  "kind": "Agrupados por pessoa",
+  "id": "1Ja1dN8R_-Dw7sjQVo63UQHicO3jfyzIS",
+  "status": "HTTP/2 206",
+  "file": "acidentes2018.zip",
+  "size": 7888605,
+  "lastmod": "Fri, 27 Sep 2024 22:02:42 GMT"
+ },
+ {
+  "year": 2018,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1J-012nSnIafOASNFvIYY_vDKKpM51w5_",
+  "status": "HTTP/2 206",
+  "file": "acidentes2018_todas_causas_tipos.zip",
+  "size": 9034086,
+  "lastmod": "Fri, 27 Sep 2024 22:03:40 GMT"
+ },
+ {
+  "year": 2017,
+  "kind": "Agrupados por ocorrência",
+  "id": "1HPLWt5f_l4RIX3tKjI4tUXyZOev52W0N",
+  "status": "HTTP/2 206",
+  "file": "datatran2017.zip",
+  "size": 4248009,
+  "lastmod": "Fri, 27 Sep 2024 22:02:00 GMT"
+ },
+ {
+  "year": 2017,
+  "kind": "Agrupados por pessoa",
+  "id": "1mw2CerP_ZEZwREy4WYM_Kxd4rjUHQjbk",
+  "status": "HTTP/2 206",
+  "file": "acidentes2017.zip",
+  "size": 9969888,
+  "lastmod": "Fri, 27 Sep 2024 22:02:43 GMT"
+ },
+ {
+  "year": 2017,
+  "kind": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "id": "1Kv5mNgZvxtl0xwqsmDrxcaLY2KELxR-3",
+  "status": "HTTP/2 206",
+  "file": "acidentes2017_todas_causas_tipos.zip",
+  "size": 10726416,
+  "lastmod": "Fri, 27 Sep 2024 22:03:38 GMT"
+ },
+ {
+  "year": 2016,
+  "kind": "Agrupados por ocorrência",
+  "id": "16qooQl_ySoW61CrtsBbreBVNPYlEkoYm",
+  "status": "HTTP/2 206",
+  "file": "datatran2016.zip",
+  "size": 2518479,
+  "lastmod": "Thu, 24 Nov 2022 15:21:36 GMT"
+ },
+ {
+  "year": 2016,
+  "kind": "Agrupados por pessoa",
+  "id": "1zaBGNLk50krRVOxZmB-kfJl6zSOTdmMP",
+  "status": "HTTP/2 206",
+  "file": "acidentes2016_atual.zip",
+  "size": 6966648,
+  "lastmod": "Thu, 24 Nov 2022 15:24:24 GMT"
+ },
+ {
+  "year": 2015,
+  "kind": "Agrupados por ocorrência",
+  "id": "1DyqR5FFcwGsamSag-fGm13feQt0Y-3Da",
+  "status": "HTTP/2 206",
+  "file": "datatran2015.zip",
+  "size": 3163538,
+  "lastmod": "Thu, 24 Nov 2022 15:21:30 GMT"
+ },
+ {
+  "year": 2015,
+  "kind": "Agrupados por pessoa",
+  "id": "1oisqFB_DD3jAChYxBmiyQVR9WrGOwvQt",
+  "status": "HTTP/2 206",
+  "file": "acidentes2015.zip",
+  "size": 9582780,
+  "lastmod": "Thu, 24 Nov 2022 15:24:20 GMT"
+ },
+ {
+  "year": 2014,
+  "kind": "Agrupados por ocorrência",
+  "id": "1FpF5wTBsRDkEhLm3z2g8XDiXr9SO9Uk8",
+  "status": "HTTP/2 206",
+  "file": "datatran2014.zip",
+  "size": 4304737,
+  "lastmod": "Thu, 24 Nov 2022 15:21:33 GMT"
+ },
+ {
+  "year": 2014,
+  "kind": "Agrupados por pessoa",
+  "id": "1qmCExfnS3nTYIZhDdJblJnn0jlTLWR3K",
+  "status": "HTTP/2 206",
+  "file": "acidentes2014.zip",
+  "size": 13356039,
+  "lastmod": "Thu, 24 Nov 2022 15:24:11 GMT"
+ },
+ {
+  "year": 2013,
+  "kind": "Agrupados por ocorrência",
+  "id": "1p_7lw9RzkINfscYAZSmc-Z9Ci4ZPJyEr",
+  "status": "HTTP/2 206",
+  "file": "datatran2013.zip",
+  "size": 4707582,
+  "lastmod": "Thu, 24 Nov 2022 15:21:27 GMT"
+ },
+ {
+  "year": 2013,
+  "kind": "Agrupados por pessoa",
+  "id": "1-zd3x9aTHD5cQH7SWGMDOQ-4-DuxVV1T",
+  "status": "HTTP/2 206",
+  "file": "acidentes2013.zip",
+  "size": 14684692,
+  "lastmod": "Thu, 24 Nov 2022 15:24:16 GMT"
+ },
+ {
+  "year": 2012,
+  "kind": "Agrupados por ocorrência",
+  "id": "18Yz2prqKSLthrMmW-73vrOiDmKTCL6xE",
+  "status": "HTTP/2 206",
+  "file": "datatran2012.zip",
+  "size": 4641569,
+  "lastmod": "Thu, 24 Nov 2022 15:21:24 GMT"
+ },
+ {
+  "year": 2012,
+  "kind": "Agrupados por pessoa",
+  "id": "1FYqtz2_QMvk0eOMhs9TOQHrmF4uOvv_W",
+  "status": "HTTP/2 206",
+  "file": "acidentes2012.zip",
+  "size": 14463497,
+  "lastmod": "Thu, 24 Nov 2022 15:24:06 GMT"
+ },
+ {
+  "year": 2011,
+  "kind": "Agrupados por ocorrência",
+  "id": "1HHhgLF-kSR6Gde2qOaTXL3T5ieD33hpG",
+  "status": "HTTP/2 206",
+  "file": "datatran2011.zip",
+  "size": 4600829,
+  "lastmod": "Thu, 24 Nov 2022 15:21:21 GMT"
+ },
+ {
+  "year": 2011,
+  "kind": "Agrupados por pessoa",
+  "id": "1XTcOujBbP_8AEYYrOfjxGxzqHcQYLNy2",
+  "status": "HTTP/2 206",
+  "file": "acidentes2011.zip",
+  "size": 14941887,
+  "lastmod": "Thu, 24 Nov 2022 15:24:01 GMT"
+ },
+ {
+  "year": 2010,
+  "kind": "Agrupados por ocorrência",
+  "id": "1_yU6FRh8M7USjiChQwyF20NtY48GTmEX",
+  "status": "HTTP/2 206",
+  "file": "datatran2010.zip",
+  "size": 4394611,
+  "lastmod": "Thu, 24 Nov 2022 15:21:18 GMT"
+ },
+ {
+  "year": 2010,
+  "kind": "Agrupados por pessoa",
+  "id": "1Zg9SdeQa72Gu49ZhJosBuM7TkJcEYiaI",
+  "status": "HTTP/2 206",
+  "file": "acidentes2010.zip",
+  "size": 14351565,
+  "lastmod": "Thu, 24 Nov 2022 15:23:55 GMT"
+ },
+ {
+  "year": 2009,
+  "kind": "Agrupados por ocorrência",
+  "id": "1qkVatg0pC_zosuBs0NCSgEXDJvBbnTYC",
+  "status": "HTTP/2 206",
+  "file": "datatran2009.zip",
+  "size": 3795569,
+  "lastmod": "Thu, 24 Nov 2022 15:21:09 GMT"
+ },
+ {
+  "year": 2009,
+  "kind": "Agrupados por pessoa",
+  "id": "1gysMdwpeT3h4CUOGDkQMvFJzPp1Fn-bg",
+  "status": "HTTP/2 206",
+  "file": "acidentes2009.zip",
+  "size": 12296968,
+  "lastmod": "Thu, 24 Nov 2022 15:23:46 GMT"
+ },
+ {
+  "year": 2008,
+  "kind": "Agrupados por ocorrência",
+  "id": "1_OSeHlyKJw8cIhMS_JzSg1RlYX8k6vSG",
+  "status": "HTTP/2 206",
+  "file": "datatran2008.zip",
+  "size": 3383500,
+  "lastmod": "Thu, 24 Nov 2022 15:21:15 GMT"
+ },
+ {
+  "year": 2008,
+  "kind": "Agrupados por pessoa",
+  "id": "1gabSVTay5faBo4r9VNksgxhKXuuxu71U",
+  "status": "HTTP/2 206",
+  "file": "acidentes2008.zip",
+  "size": 11052764,
+  "lastmod": "Thu, 24 Nov 2022 15:23:40 GMT"
+ },
+ {
+  "year": 2007,
+  "kind": "Agrupados por ocorrência",
+  "id": "1EFpZF5F6cB0DOHd2Uxnj7X948WE69a8e",
+  "status": "HTTP/2 206",
+  "file": "datatran2007.zip",
+  "size": 3078464,
+  "lastmod": "Thu, 24 Nov 2022 15:21:12 GMT"
+ },
+ {
+  "year": 2007,
+  "kind": "Agrupados por pessoa",
+  "id": "1v2tz5wJYFlPBb-8ZIf-pchbSO-JT4YZG",
+  "status": "HTTP/2 206",
+  "file": "acidentes2007.zip",
+  "size": 9990205,
+  "lastmod": "Thu, 24 Nov 2022 15:23:30 GMT"
+ },
+ {
+  "year": "dic",
+  "kind": "ocorrencia ate 2016",
+  "id": "11zOQvccvoVSImByIp5-E0PxJ2larrEXy",
+  "status": "HTTP/2 206",
+  "file": "Dicionário de Variáveis_ocorrencia_br_brasil.pdf",
+  "size": 240157,
+  "lastmod": "Tue, 14 Nov 2023 22:37:11 GMT"
+ },
+ {
+  "year": "dic",
+  "kind": "pessoa ate 2016",
+  "id": "1239K60cfl2eWDCEm9RZWyHuPVXc4z7dG",
+  "status": "HTTP/2 206",
+  "file": "Dicionário de Variáveis_pessoa_br_brasil.pdf",
+  "size": 245578,
+  "lastmod": "Tue, 14 Nov 2023 22:38:40 GMT"
+ },
+ {
+  "year": "dic",
+  "kind": "pessoa 2017+",
+  "id": "11qwcs8wLghYymG8owRb2FwS2Hi_SjZMf",
+  "status": "HTTP/2 206",
+  "file": "Dicionário de Variáveis_pessoa_2017.pdf",
+  "size": 224725,
+  "lastmod": "Tue, 14 Nov 2023 22:33:01 GMT"
+ },
+ {
+  "year": "dic",
+  "kind": "pessoa todas causas 2017+",
+  "id": "11xcaEgl1hpyfl2hnlFaa0MsxERd6uaKF",
+  "status": "HTTP/2 206",
+  "file": "Dicionário de Variáveis_pessoa_2017_todas_causas_tipos.pdf",
+  "size": 225162,
+  "lastmod": "Tue, 14 Nov 2023 22:36:39 GMT"
+ },
+ {
+  "year": "dic",
+  "kind": "ocorrencia 2017+",
+  "id": "11pXLw_0D0hHVS8fiC8cv2dPX39vpuOH1",
+  "status": "HTTP/2 206",
+  "file": "Dicionário de Variáveis_ocorrencia_2017.pdf",
+  "size": 220990,
+  "lastmod": "Tue, 14 Nov 2023 22:23:15 GMT"
+ }
+]

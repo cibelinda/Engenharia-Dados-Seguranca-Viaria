@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- BlackSpot ---
+# Dados brutos baixados da PRF: reproduzíveis via `python -m blackspot.download`.
+data/raw/*
+!data/raw/.gitkeep

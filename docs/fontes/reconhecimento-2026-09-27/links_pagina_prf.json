@@ -1,0 +1,332 @@
+[
+ {
+  "year": 2026,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1A3IirNm0AzRaSosA1IS94DOVmvKsn0Ol",
+  "drive_ids_ocultos": [
+   "1-G3MdmHBt6CprDwcW99xxC4BZ2DU5ryR"
+  ]
+ },
+ {
+  "year": 2026,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1B_rvx1kPHuFowP5rs84ZO-57gN8yUs85",
+  "drive_ids_ocultos": [
+   "1-G3MdmHBt6CprDwcW99xxC4BZ2DU5ryR"
+  ]
+ },
+ {
+  "year": 2026,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1EsGox0UnBWSaM6mrkNSUlYUOecubLCsh",
+  "drive_ids_ocultos": [
+   "1-G3MdmHBt6CprDwcW99xxC4BZ2DU5ryR"
+  ]
+ },
+ {
+  "year": 2025,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1-G3MdmHBt6CprDwcW99xxC4BZ2DU5ryR",
+  "drive_ids_ocultos": [
+   "14lB0vqMFkaZj8HZ44b0njYgxs9nAN8KO"
+  ]
+ },
+ {
+  "year": 2025,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1-Gp9S-ALO0D1nT8S_OKoC8xlW7BY8F82",
+  "drive_ids_ocultos": [
+   "14lB0vqMFkaZj8HZ44b0njYgxs9nAN8KO"
+  ]
+ },
+ {
+  "year": 2025,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1-PJGRbfSe7PVjU37A3wTCls_NRXyVGRD",
+  "drive_ids_ocultos": [
+   "14lB0vqMFkaZj8HZ44b0njYgxs9nAN8KO"
+  ]
+ },
+ {
+  "year": 2024,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "14lB0vqMFkaZj8HZ44b0njYgxs9nAN8KO",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2024,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "14lVfqdoE2gxDliaKZu7K9Mx6847maPtl",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2024,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "14qBOhrE1gioVtuXgxkCJ9kCA8YtUGXKA",
+  "drive_ids_ocultos": [
+   "1-WO3SfNrwwZ5_l7fRTiwBKRw7mi1-HUq"
+  ]
+ },
+ {
+  "year": 2023,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1-WO3SfNrwwZ5_l7fRTiwBKRw7mi1-HUq",
+  "drive_ids_ocultos": [
+   "1-WO3SfNrwwZ5_l7fRTiwBKRw7mi1-HUq"
+  ]
+ },
+ {
+  "year": 2023,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1-Yk6TV00CH3PixTkKmkoUJQsNiUc5xLm",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2023,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1-caam_dahYOf2eorq4mez04Om6DD5d_3",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2022,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1PRQjuV5gOn_nn6UNvaJyVURDIfbSAK4-",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2022,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1sd8YIqIHapYaxQeaa-6yeWMdVLTl6hgD",
+  "drive_ids_ocultos": [
+   "1PRQjuV5gOn_nn6UNvaJyVURDIfbSAK4-"
+  ]
+ },
+ {
+  "year": 2022,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1wskEgRC3ame7rncSDQ7qWhKsoKw1lohY",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2021,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "12xH8LX9aN2gObR766YN3cMcuycwyCJDz",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2021,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "15W_l07-6taOh8Ycn8uk2Er9PnSj0vq3f",
+  "drive_ids_ocultos": [
+   "1-WO3SfNrwwZ5_l7fRTiwBKRw7mi1-HUq"
+  ]
+ },
+ {
+  "year": 2021,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1Gk3U6cMOZIevsDZHLi6J503xoCRS_lnI",
+  "drive_ids_ocultos": [
+   "1-WO3SfNrwwZ5_l7fRTiwBKRw7mi1-HUq"
+  ]
+ },
+ {
+  "year": 2020,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1esu6IiH5TVTxFoedv6DBGDd01Gvi8785",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2020,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1iQvs2D9a2XO9vIukrjEIIhtjzkNkgD7Z",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2020,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1yQtVOsAlupPHQVVTmbJo0NR3XMzgHANO",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2019,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1pN3fn2wY34GH6cY-gKfbxRJJBFE0lb_l",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2019,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "14r_9zudjjndgcnjRddzD5lvn9MX5VvZZ",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2019,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1DAJYKVfkTcPhQodSmHp9rsG1Q8XJW-m3",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2018,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1cM4IgGMIiR-u4gBIH5IEe3DcvBvUzedi",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2018,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1Ja1dN8R_-Dw7sjQVo63UQHicO3jfyzIS",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2018,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1J-012nSnIafOASNFvIYY_vDKKpM51w5_",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2017,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1HPLWt5f_l4RIX3tKjI4tUXyZOev52W0N",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2017,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1mw2CerP_ZEZwREy4WYM_Kxd4rjUHQjbk",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2017,
+  "dataset_label": "Agrupados por pessoa - Todas as causas e tipos de acidentes",
+  "drive_id_visivel": "1Kv5mNgZvxtl0xwqsmDrxcaLY2KELxR-3",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2016,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "16qooQl_ySoW61CrtsBbreBVNPYlEkoYm",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2016,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1zaBGNLk50krRVOxZmB-kfJl6zSOTdmMP",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2015,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1DyqR5FFcwGsamSag-fGm13feQt0Y-3Da",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2015,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1oisqFB_DD3jAChYxBmiyQVR9WrGOwvQt",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2014,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1FpF5wTBsRDkEhLm3z2g8XDiXr9SO9Uk8",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2014,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1qmCExfnS3nTYIZhDdJblJnn0jlTLWR3K",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2013,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1p_7lw9RzkINfscYAZSmc-Z9Ci4ZPJyEr",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2013,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1-zd3x9aTHD5cQH7SWGMDOQ-4-DuxVV1T",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2012,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "18Yz2prqKSLthrMmW-73vrOiDmKTCL6xE",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2012,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1FYqtz2_QMvk0eOMhs9TOQHrmF4uOvv_W",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2011,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1HHhgLF-kSR6Gde2qOaTXL3T5ieD33hpG",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2011,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1XTcOujBbP_8AEYYrOfjxGxzqHcQYLNy2",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2010,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1_yU6FRh8M7USjiChQwyF20NtY48GTmEX",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2010,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1Zg9SdeQa72Gu49ZhJosBuM7TkJcEYiaI",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2009,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1qkVatg0pC_zosuBs0NCSgEXDJvBbnTYC",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2009,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1gysMdwpeT3h4CUOGDkQMvFJzPp1Fn-bg",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2008,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1_OSeHlyKJw8cIhMS_JzSg1RlYX8k6vSG",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2008,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1gabSVTay5faBo4r9VNksgxhKXuuxu71U",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2007,
+  "dataset_label": "Agrupados por ocorrência",
+  "drive_id_visivel": "1EFpZF5F6cB0DOHd2Uxnj7X948WE69a8e",
+  "drive_ids_ocultos": []
+ },
+ {
+  "year": 2007,
+  "dataset_label": "Agrupados por pessoa",
+  "drive_id_visivel": "1v2tz5wJYFlPBb-8ZIf-pchbSO-JT4YZG",
+  "drive_ids_ocultos": [
+   "10nxiQR5tZcNp3Pg7f69ysv0dc87UGDHc",
+   "/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-infracoes",
+   "https://api.whatsapp.com/send?text=https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf",
+   "https://twitter.com/share?url=https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf",
+   "http://www.facebook.com/sharer.php?u=https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf",
+   "https://linkedin.com/shareArticle/?url=https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf",
+   "https://www.gov.br/acessoainformacao"
+  ]
+ }
+]
