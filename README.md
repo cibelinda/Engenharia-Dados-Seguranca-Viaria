@@ -49,6 +49,9 @@ Testes (sem rede): `python -m unittest discover tests`.
 ## Banco de dados
 
 ```bash
-cp .env.example .env    # ajuste POSTGRES_PASSWORD
 docker compose up -d    # PostgreSQL 18.6, ainda sem esquema nem carga
 ```
+
+Sem `.env`, o banco sobe com usuário, banco e senha `blackspot`, só em `127.0.0.1:5432`.
+Para trocar algum valor, copie `.env.example` para `.env` e ajuste. Se o volume já tiver
+sido criado com outra senha, recrie-o com `docker compose down -v`.

@@ -6,7 +6,9 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-blackspot}
       POSTGRES_USER: ${POSTGRES_USER:-blackspot}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      # Senha padrão só para desenvolvimento local (a porta escuta apenas em 127.0.0.1).
+      # Para trocar, defina POSTGRES_PASSWORD no .env.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-blackspot}
     ports:
       # Só localhost: sem isso a porta fica exposta em todas as interfaces da máquina.
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
