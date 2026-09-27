@@ -29,6 +29,8 @@ python -m blackspot.download --accept-all-new-hashes             # todas as dive
 Isso reescreve o bloco `reference` da entrada no `sources.yaml`; faça commit da mudança.
 `--strict` faz divergências saírem com código 2 (para CI).
 
+Testes (sem rede): `python -m unittest discover tests`.
+
 ## Banco de dados
 
 ```bash

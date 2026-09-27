@@ -8,7 +8,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-blackspot}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Só localhost: sem isso a porta fica exposta em todas as interfaces da máquina.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       # A partir do PostgreSQL 18 a imagem oficial usa /var/lib/postgresql como volume.
       - pgdata:/var/lib/postgresql

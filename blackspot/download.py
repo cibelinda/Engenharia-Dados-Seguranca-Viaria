@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import http.client
 import json
 import os
 import re
@@ -125,7 +126,9 @@ def fetch(url: str, dest: Path) -> str | None:
             if last_modified:
                 return parsedate_to_datetime(last_modified).strftime("%Y-%m-%dT%H:%M:%SZ")
             return None
-        except (urllib.error.URLError, TimeoutError, ConnectionError, RuntimeError) as e:
+        # OSError cobre URLError, TimeoutError, ConnectionError e erros de disco;
+        # HTTPException cobre IncompleteRead (conexão cortada no meio do corpo).
+        except (OSError, http.client.HTTPException, RuntimeError) as e:
             last_err = e
             tmp.unlink(missing_ok=True)
             if isinstance(e, RuntimeError) or attempt == RETRIES:
@@ -196,10 +199,11 @@ def update_reference(text: str, r: Result, today: str) -> str:
     subs = {
         "sha256": f'"{r.observed_sha256}"',
         "size_bytes": r.size_bytes,
+        # Arquivo vindo do cache não traz Last-Modified; manter o valor antigo
+        # atribuiria a data da versão anterior ao novo sha256.
+        "drive_last_modified": f'"{r.drive_last_modified}"' if r.drive_last_modified else "null",
         "verified_at": f'"{today}"',
     }
-    if r.drive_last_modified:
-        subs["drive_last_modified"] = f'"{r.drive_last_modified}"'
     for field, value in subs.items():
         block, n = re.subn(rf"^(      {field}: ).*$", rf"\g<1>{value}", block, count=1, flags=re.M)
         if n != 1:
@@ -210,7 +214,8 @@ def update_reference(text: str, r: Result, today: str) -> str:
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    p.add_argument("--dest", type=Path, default=Path(os.environ.get("BLACKSPOT_RAW_DIR", DEFAULT_DEST)))
+    # Caminho relativo em BLACKSPOT_RAW_DIR é relativo à raiz do repositório, não ao cwd.
+    p.add_argument("--dest", type=Path, default=REPO_ROOT / os.environ.get("BLACKSPOT_RAW_DIR", DEFAULT_DEST))
     p.add_argument("--key", action="append", help="baixa só esta entrada (repetível)")
     p.add_argument("--system", action="append", choices=["br_brasil", "bat"])
     p.add_argument("--dataset", action="append", choices=["ocorrencia", "pessoa", "pessoa_todas_causas"])
