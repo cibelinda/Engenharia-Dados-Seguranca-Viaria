@@ -30,3 +30,10 @@ Corrigi problemas encontrados numa revisão do projeto e criei os testes:
 
 - Coloquei a introdução do projeto no readme
 - Criei esse arquivo para termos controle dos commits no repositório.
+
+### pergunta de gestão e recorte dos dados
+**autor:** Ana Luiza Komatsu
+
+- Defini a pergunta de gestão (issue #1) e o recorte dos dados (issue #2) em `docs/pergunta-e-recorte.md`, com as justificativas e as alternativas descartadas, e coloquei um resumo no README.
+- O recorte (BAT 2017–2025, conjuntos de ocorrência e pessoa) foi escolhido com o uso de IA, a partir dos números do reconhecimento em `docs/fontes/`.
+- Atribuí as issues da E1 entre mim e a Cibelly; as da Maria ficam para quando ela aceitar o convite do repositório.
