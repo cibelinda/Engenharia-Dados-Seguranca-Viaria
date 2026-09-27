@@ -84,9 +84,6 @@ docker compose exec db psql -U blackspot -d blackspot -c "SELECT * FROM placehol
 `127.0.0.1:5432`. Para trocar algum valor, copie `.env.example` para `.env` e ajuste.
 
 **Problemas comuns.**
-- *Porta 5432 ocupada* (outro PostgreSQL na máquina): `POSTGRES_PORT=55432 docker compose up`,
-  ou defina `POSTGRES_PORT` no `.env`. A esteira não usa essa porta; ela só serve para
-  acessar o banco de fora do Docker.
 - *Senha recusada* depois de trocar a senha no `.env`: o volume foi criado com a anterior.
   Recrie com `docker compose down -v`.
 - *Começar do zero*: `docker compose down -v` apaga o banco e os arquivos baixados.
