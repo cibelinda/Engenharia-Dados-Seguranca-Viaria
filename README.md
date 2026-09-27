@@ -1,6 +1,21 @@
 # Engenharia-Dados-Seguranca-Viaria
 Engenharia de Dados aplicada à Segurança Viária — BD2 / FCTE-UnB
 
+## Sobre o projeto
+
+O **BlackSpot** constrói um pipeline de dados sobre os acidentes registrados pela Polícia
+Rodoviária Federal (PRF) nas rodovias federais brasileiras, de 2007 até hoje. O nome vem de
+*black spot* ("ponto negro"), termo de segurança viária para os trechos de via onde os
+acidentes se concentram. O objetivo é organizar esses dados num banco PostgreSQL para que
+esses trechos possam ser identificados e analisados.
+
+Os dados abertos da PRF não chegam prontos para análise. Eles vêm de dois sistemas de
+registro diferentes (BR-Brasil até 2016 e BAT a partir de 2017), mudam de formato ao longo
+dos anos e são republicados pela própria PRF sem aviso. Por isso o projeto é dividido em
+etapas: aquisição reproduzível dos arquivos, perfilamento da qualidade, modelagem e carga
+no banco.
+
+
 ## Aquisição dos dados (Etapa 1)
 
 Fonte: dados abertos de acidentes da PRF, 2007–2026, 50 arquivos. Os achados do
