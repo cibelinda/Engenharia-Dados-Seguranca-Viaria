@@ -12,6 +12,9 @@
 x-app: &app
   build: .
   image: blackspot-app:local
+  # Reconstrói a imagem a cada `up` (usa cache, leva segundos), para nunca rodar
+  # uma versão antiga do código depois de um `git pull`.
+  pull_policy: build
   environment:
     BLACKSPOT_RAW_DIR: data/raw
     BLACKSPOT_DOWNLOAD_JOBS: ${BLACKSPOT_DOWNLOAD_JOBS:-4}
