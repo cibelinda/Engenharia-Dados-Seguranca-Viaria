@@ -151,3 +151,15 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
   documentos em `docs/`; os revisores e as datas deste arquivo foram tirados dos PRs no
   GitHub.
 - **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #20); este PR: [a completar]
+
+### 2026-09-28 — Testes de volume, distribuição, dado faltante e reprocessamento (#8, PR #21)
+
+- **Ferramenta:** [a completar — Maria Clara]
+- **Onde:** `tests/test_volume.py`, `tests/test_distribuicao.py`, `tests/test_dado_faltante.py`,
+  `tests/test_reprocessamento.py`, `tests/banco.py`, serviço `tests` no compose e README
+- **O que foi pedido:** os testes sobre o banco carregado, os limiares medidos na carga e o README.
+- **O que foi aproveitado:** [a completar — Maria Clara]
+- **Como foi verificado:** os testes falham quando o banco é alterado (contagem de lidas de
+  2020, `regional = 'NA'`, idade 0) e passam de novo depois de desfeito. Na revisão, os 80
+  testes passaram num clone limpo, duas vezes seguidas, sem deixar nada gravado no banco.
+- **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #21)

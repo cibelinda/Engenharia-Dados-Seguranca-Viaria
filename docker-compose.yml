@@ -99,6 +99,8 @@ services:
       - rawdata:/app/data/raw
       - ./tests:/app/tests:ro
       - ./db/migrations:/app/db/migrations:ro
+      # Valores esperados dos testes de volume (bench/perfil_recorte.py).
+      - ./bench/resultados:/app/bench/resultados:ro
     # Espera a carga: os testes rodam sobre o banco já carregado.
     depends_on:
       load:
