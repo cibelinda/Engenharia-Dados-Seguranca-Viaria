@@ -39,24 +39,32 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 
 ### 2026-09-27 — Recorte dos dados (#2, PR #10)
 
-- **Ferramenta:** [a completar — Ana Luiza Komatsu]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** `docs/pergunta-e-recorte.md`
 - **O que foi pedido:** a escolha do recorte a partir dos números do reconhecimento em
   `docs/fontes/`.
-- **O que foi aproveitado:** o recorte BAT 2017–2025, conjuntos `ocorrencia` e `pessoa`.
-  [a completar — Ana Luiza Komatsu]
-- **Como foi verificado:** na revisão do PR #10, a soma das ocorrências por ano foi
-  conferida (632.713). [a completar — Ana Luiza Komatsu]
+- **O que foi aproveitado:** o recorte BAT 2017–2025, conjuntos `ocorrencia` e `pessoa`, e o
+  texto das justificativas e das alternativas descartadas em `docs/pergunta-e-recorte.md`.
+- **Como foi verificado:** as contagens foram somadas arquivo a arquivo a partir do
+  `csv_cabecalhos.json` do reconhecimento (632.713 ocorrências e 1.654.197 registros de
+  pessoa), e as colunas que a pergunta usa (`br`, `km`, `uf`, `data_inversa`, `mortos`,
+  `feridos_graves`) foram conferidas nos cabeçalhos. Na revisão do PR #10, a soma das
+  ocorrências por ano foi conferida (632.713).
 - **Quem revisou:** Maria Clara (PR #10)
 
 ### 2026-09-27 — Esteira do Docker Compose (#5, PR #11)
 
-- **Ferramenta:** [a completar — Ana Luiza Komatsu]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** `docker-compose.yml`, `Dockerfile`, scripts e README
 - **O que foi pedido:** a configuração do Docker, os scripts e o README, incluindo os
   ajustes pedidos na revisão do PR.
-- **O que foi aproveitado:** [a completar — Ana Luiza Komatsu]
-- **Como foi verificado:** [a completar — Ana Luiza Komatsu]
+- **O que foi aproveitado:** `Dockerfile`, `.dockerignore`, `docker-compose.yml`, a migração e
+  a carga provisórias e a seção "Como subir o projeto" do README.
+- **Como foi verificado:** subida do zero num clone novo do GitHub, sem `.env`: os 18 arquivos
+  baixados com o SHA-256 igual à referência e as contagens iguais às do reconhecimento. Uma
+  segunda subida não baixou nem duplicou nada. Os 5 testes do downloader continuaram
+  passando. Os ajustes da revisão (`pull_policy`, hash como aviso, tempos) foram testados de
+  novo.
 - **Quem revisou:** Maria Clara e Cibelly (PR #11)
 
 ### 2026-09-27 — Esquema físico (#3, PRs #13 e #16)
@@ -73,13 +81,16 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 
 ### 2026-09-28 — Revisão do PR #13 (esquema físico)
 
-- **Ferramenta:** [a completar — Ana Luiza Komatsu]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** revisão do PR #13
-- **O que foi pedido:** o teste das migrações num banco vazio, um script que conferiu as
-  restrições do esquema contra os 18 arquivos do recorte e o texto da revisão.
-- **O que foi aproveitado:** [a completar — Ana Luiza Komatsu]
-- **Como foi verificado:** [a completar — Ana Luiza Komatsu]
-- **Quem revisou:** [a completar]
+- **O que foi pedido:** a revisão do PR #13.
+- **O que foi aproveitado:** a revisão inteira: a análise do esquema, os problemas apontados
+  e a decisão de pedir ajustes (*Request changes*).
+- **Como foi verificado:** as 8 migrações foram aplicadas num banco vazio. A coordenada
+  inválida foi testada direto no Postgres (recusada pelo `CHECK` e por estouro de `numeric`).
+  O impacto foi contado nos arquivos: 33 ocorrências de 2017, 8 delas graves, e 68 linhas
+  de pessoa.
+- **Quem revisou:** não se aplica (é uma revisão)
 
 ### 2026-09-28 — Caracterização da carga e ADR 0001 (#6, PR #12)
 
@@ -105,23 +116,28 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 
 ### 2026-09-28 — Revisões dos PRs #12 e #17
 
-- **Ferramenta:** [a completar — Ana Luiza Komatsu]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** revisões dos PRs #12 e #17
-- **O que foi pedido:** a execução dos testes num banco limpo e a conferência dos pontos
-  pendentes.
-- **O que foi aproveitado:** [a completar — Ana Luiza Komatsu]
-- **Como foi verificado:** [a completar — Ana Luiza Komatsu]
-- **Quem revisou:** [a completar]
+- **O que foi pedido:** a revisão dos PRs #12 e #17.
+- **O que foi aproveitado:** as revisões inteiras: a análise dos PRs, os pontos levantados e
+  as decisões (*Approve* no #17, *Request changes* no #12).
+- **Como foi verificado:** os 46 testes do #17 rodados num banco limpo, e os pontos
+  pendentes do #12 conferidos nos arquivos da branch.
+- **Quem revisou:** não se aplica (são revisões)
 
 ### 2026-09-28 — Carga real (#4, PR #18)
 
-- **Ferramenta:** [a completar — Ana Luiza Komatsu]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** `blackspot/load.py`, regras de conversão e README
 - **O que foi pedido:** o código da carga, as regras de conversão e o README.
-- **O que foi aproveitado:** [a completar — Ana Luiza Komatsu]
-- **Como foi verificado:** [a completar — Ana Luiza Komatsu]
-- **Quem revisou:** [a completar — o PR #18 não tem revisão registrada no GitHub; o merge
-  foi feito por Maria Clara]
+- **O que foi aproveitado:** `blackspot/load.py` e a tabela de conversões do README. As
+  regras de idade (0, negativa ou acima de 110 viram `NULL`) e de ano de fabricação (0 vira
+  `NULL`) vieram da sugestão e foram aceitas.
+- **Como foi verificado:** carga do zero conferida contra o perfil dos arquivos: 632.708
+  ocorrências (632.713 menos 5 rejeitadas), 1.509.549 pessoas, 29 linhas rejeitadas com
+  motivo e 33 coordenadas anuladas em 2017. A segunda carga não gravou nada. Os 46 testes, e
+  depois os 80, passaram no banco carregado, e o teste final foi feito num clone limpo.
+- **Quem revisou:** sem revisão formal no PR #18; o merge foi feito por Maria Clara
 
 ### 2026-09-28 — Evidência de revisão dos arquivos da PRF (#7, PR #19)
 
@@ -165,6 +181,18 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
   2020, `regional = 'NA'`, idade 0) e passam de novo depois de desfeito. Na revisão, os 80
   testes passaram num clone limpo, duas vezes seguidas, sem deixar nada gravado no banco.
 - **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #21)
+
+### 2026-09-28 — Revisões dos PRs #19, #20 e #21
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** revisões dos PRs #19, #20 e #21
+- **O que foi pedido:** a revisão dos PRs #19 (evidência da #7), #20 (diário de bordo) e #21
+  (testes de volume e distribuição).
+- **O que foi aproveitado:** as revisões inteiras e as decisões de aprovar os três.
+- **Como foi verificado:** no #19, os 9 hashes da linha de base conferidos com o arquivo do
+  reconhecimento; no #20, os números do diário conferidos com os documentos; no #21, os 80
+  testes rodados num clone limpo, duas vezes seguidas, sem deixar nada gravado no banco.
+- **Quem revisou:** não se aplica (são revisões)
 
 ### 2026-09-28 — Campos de Cibelly e nome da Squad neste arquivo (#9)
 
