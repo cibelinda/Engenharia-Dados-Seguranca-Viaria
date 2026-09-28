@@ -264,14 +264,21 @@ de 2026-09-27, copiados para
 fora de `data/raw/`. Os hashes detectam se um arquivo mudou, mas não o que mudou. Os ZIPs
 dessa data não foram copiados porque não havia cópia local no momento do registro.
 
-**Comparação direta: pendente.** Data prevista: **2026-10-27**, depois da próxima
-atualização mensal da PRF (a última gravação de 2026 foi em 22/09/2026, e a atualização é
-mensal; a data deixa folga para ela sair). Passos:
+**Comparação direta: pendente.** Data prevista: **26/10/2026**, depois da próxima
+atualização mensal da PRF (a última, de 2026, foi em 22/09/2026).
 
-1. `python -m blackspot.download --force --year 2024 --year 2025 --year 2026 --dest <pasta-nova>`;
-2. comparar com a linha de base por chave (`id` em `ocorrencia`; `(id, pesid, id_veiculo)` em
+O conteúdo da linha de base está no banco: os lotes vigentes de 2024 e 2025, carregados em
+2026-09-28, têm em `lote_arquivo.sha256` os mesmos hashes da linha de base. A comparação por
+chave é feita entre lotes, e por isso o volume do banco não pode ser apagado até lá
+(`docker compose down -v`). 2026 está fora do recorte e só é comparado por hash. Passos:
+
+1. `python -m blackspot.download --force --year 2024 --year 2025 --year 2026 --dest <pasta-nova>`
+   e comparar os SHA-256 com a linha de base: um hash diferente é um arquivo republicado;
+2. se 2024 ou 2025 mudou, rodar a carga no mesmo banco: ela cria um lote novo para o ano e
+   mantém o anterior;
+3. comparar os dois lotes do ano por chave (`id` em `ocorrencia`; `(id, pesid, id_veiculo)` em
    `pessoa`): linhas inseridas, removidas e alteradas, e quais colunas mudaram;
-3. resumir o resultado aqui e revisar o [ADR 0001](adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md)
+4. resumir o resultado aqui e revisar o [ADR 0001](adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md)
    se necessário.
 
 O resultado é insumo da E2 (captura de mudanças).
