@@ -238,4 +238,39 @@ ano é um lote. Uma republicação da PRF gera um lote novo, e o anterior não �
 Nos dois casos, as versões anteriores a 2026-09-27 (linha de base dos SHA-256 do
 reconhecimento) já não existem na origem e estão perdidas para qualquer modelo.
 
-Evidência: **[#7]**, com a comparação da versão de 2024 com a linha de base.
+### Evidência de revisão da origem (#7)
+
+**Evidência indireta** (reconhecimento de 2026-09-27, [`docs/fontes/`](fontes/README.md)):
+
+- **Nenhum dos 50 arquivos tem coluna de atualização ou de versão**
+  ([`csv_cabecalhos.json`](fontes/reconhecimento-2026-09-27/csv_cabecalhos.json)). As únicas
+  colunas de tempo são `data_inversa` e `horario`, que marcam o evento. O arquivo traz só o
+  estado atual.
+- **A PRF regrava os arquivos no mesmo ID e com o mesmo nome** (`Last-Modified` do Drive,
+  registrado no [`sources.yaml`](../sources.yaml)):
+
+  | Ano | Última gravação | Situação |
+  |---|---|---|
+  | 2024 | 23/09/2026 | ano fechado, regravado |
+  | 2025 | 18/03/2026 | ano fechado, regravado |
+  | 2026 | 22/09/2026 | ano parcial, regravado mensalmente |
+
+Isso mostra que a origem sobrescreve. Mas não mostra o que muda numa regravação, nem quanto:
+a data de gravação pode mudar mesmo que o conteúdo seja igual.
+
+**Linha de base guardada:** os SHA-256 de 2024, 2025 e 2026 (os 9 arquivos dos três conjuntos),
+de 2026-09-27, copiados para
+[`fontes/linha-de-base-2026-09-27/`](fontes/linha-de-base-2026-09-27/sha256_2026-09-27_2024-2026.txt),
+fora de `data/raw/`. Os hashes detectam se um arquivo mudou, mas não o que mudou. Os ZIPs
+dessa data não foram copiados porque não havia cópia local no momento do registro.
+
+**Comparação direta: pendente.** Data prevista: **[DATA A DEFINIR]**, depois da próxima
+atualização mensal da PRF. Passos:
+
+1. `python -m blackspot.download --force --year 2024 --year 2025 --year 2026 --dest <pasta-nova>`;
+2. comparar com a linha de base por chave (`id` em `ocorrencia`; `(id, pesid, id_veiculo)` em
+   `pessoa`): linhas inseridas, removidas e alteradas, e quais colunas mudaram;
+3. resumir o resultado aqui e revisar o [ADR 0001](adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md)
+   se necessário.
+
+O resultado é insumo da E2 (captura de mudanças).
