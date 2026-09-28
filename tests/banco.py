@@ -15,9 +15,11 @@ nada gravado.
 
 from __future__ import annotations
 
+import json
 import os
 import unittest
 import uuid
+from pathlib import Path
 
 try:
     import psycopg
@@ -25,6 +27,13 @@ except ImportError:  # Python local sem as dependências do projeto
     psycopg = None
 
 EXIGIR_BANCO = os.environ.get("BLACKSPOT_EXIGIR_BANCO") == "1"
+
+ANOS = range(2017, 2026)  # recorte do projeto (docs/pergunta-e-recorte.md)
+
+# Números medidos direto nos ZIPs por bench/perfil_recorte.py. Servem de valor esperado
+# para a carga, mas só para os anos cujo arquivo carregado é o mesmo que foi perfilado
+# (mesmo SHA-256): se a PRF republicar um ano, os números dele mudam de propósito.
+PERFIL = Path(__file__).resolve().parent.parent / "bench" / "resultados" / "perfil_recorte.json"
 
 # Ano usado nas linhas de exemplo. Os lotes criados pelos testes são sempre os
 # mais novos do ano (id_lote é IDENTITY), então viram a versão vigente dele.
@@ -131,3 +140,41 @@ class TesteComBanco(unittest.TestCase):
 
     def assertInsertFalha(self, erro, tabela: str, linha: dict):
         self.assertFalha(erro, *self._insert(tabela, linha))
+
+
+class TesteComCarga(TesteComBanco):
+    """Testes que leem o banco já carregado (issue #4). Não gravam nada.
+
+    Sem nenhum lote concluído, os testes são pulados, ou falham com
+    BLACKSPOT_EXIGIR_BANCO=1, porque no compose o serviço `tests` roda depois do `load`.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        anos = {r[0] for r in cls.conn.execute("SELECT ano FROM lote_vigente").fetchall()}
+        cls.conn.rollback()
+        if set(ANOS) - anos:
+            faltam = sorted(set(ANOS) - anos)
+            if EXIGIR_BANCO:
+                raise AssertionError(f"anos sem lote concluído: {faltam}; a carga rodou?")
+            cls.conn.close()
+            raise unittest.SkipTest(f"banco sem carga para {faltam}; rode `docker compose up` antes")
+
+    @classmethod
+    def perfil(cls) -> dict:
+        if not PERFIL.exists():
+            raise unittest.SkipTest(f"{PERFIL.name} não encontrado")
+        return json.loads(PERFIL.read_text(encoding="utf-8"))
+
+    def anos_iguais_ao_perfil(self) -> list[int]:
+        """Anos cujos dois arquivos vigentes têm o mesmo SHA-256 dos arquivos perfilados."""
+        sha = self.perfil()["arquivos_sha256"]
+        carregado = self.todos(
+            """SELECT l.ano, a.arquivo, a.sha256 FROM lote_vigente l
+               JOIN lote_arquivo a USING (id_lote)""")
+        diferentes = {ano for ano, arquivo, h in carregado if sha.get(arquivo) != h}
+        anos = [a for a in ANOS if a not in diferentes]
+        if not anos:
+            self.skipTest("nenhum ano carregado é igual ao perfilado (a PRF republicou tudo?)")
+        return anos

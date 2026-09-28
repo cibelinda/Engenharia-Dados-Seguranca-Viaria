@@ -143,13 +143,23 @@ dentro do container a alteração se perde junto com ele.
 docker compose run --rm tests
 ```
 
-Sobe o banco, as migrações e a carga, se ainda não estiverem no ar, e roda todos os testes de
-[`tests/`](tests/): os do downloader e os de dados (issue #8). Hoje os testes de dados cobrem
-o esquema, com tabelas, PKs, FKs e o carimbo de tempo declarado em cada tabela. Cobrem também
-as restrições, com um teste por regra, conferindo que o dado inválido é recusado, e as views
-`*_vigente`: uma republicação cria um lote novo sem apagar o anterior. Cada teste desfaz o que
-gravou, então pode rodar no banco já carregado. Os testes de volume e distribuição entram com a
-carga real (#4).
+Sobe o banco, as migrações e a carga, se ainda não estiverem no ar, e roda os 80 testes de
+[`tests/`](tests/) (~20 s): os do downloader e os de dados (issue #8).
+
+| Arquivo | O que confere |
+|---|---|
+| [`test_esquema.py`](tests/test_esquema.py) | Migrações aplicadas; tabelas, PKs, FKs e carimbo de tempo no `COMMENT`; cada restrição recusa o dado inválido |
+| [`test_versao_vigente.py`](tests/test_versao_vigente.py) | As views `*_vigente` mostram só o lote vigente; lotes em carga ou que falharam não entram |
+| [`test_volume.py`](tests/test_volume.py) | Todo ano tem lote e linhas; em cada arquivo, lidas = carregadas + rejeitadas; as lidas batem com a contagem independente de [`bench/perfil_recorte.py`](bench/perfil_recorte.py); só há os motivos de rejeição conhecidos |
+| [`test_distribuicao.py`](tests/test_distribuicao.py) | Variação anual e meses sem dado; nulos abaixo do limiar; coordenadas dentro do Brasil; mortos batem com os óbitos de pessoa; `br = 0` continua no banco |
+| [`test_dado_faltante.py`](tests/test_dado_faltante.py) | O que a carga faz com cada valor vazio ou inválido (tabela no próprio arquivo), nas funções da carga e no banco |
+| [`test_reprocessamento.py`](tests/test_reprocessamento.py) | A segunda carga não grava nada; um arquivo com SHA-256 novo cria um lote novo e preserva o antigo |
+
+Os testes não deixam nada gravado: os de esquema e o de republicação rodam numa transação
+desfeita no fim, e os outros só leem. Os limiares de distribuição vêm do que foi medido na
+carga e estão explicados no próprio teste. Os valores esperados de volume só são cobrados nos
+anos cujo arquivo carregado tem o mesmo SHA-256 do perfilado: se a PRF republicar um ano, os
+números dele mudam de propósito.
 
 **Configuração.** Sem `.env`, o banco sobe com usuário, banco e senha `blackspot`, só em
 `127.0.0.1:5432`. Para trocar algum valor, copie `.env.example` para `.env` e ajuste.
