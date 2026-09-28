@@ -264,8 +264,9 @@ de 2026-09-27, copiados para
 fora de `data/raw/`. Os hashes detectam se um arquivo mudou, mas não o que mudou. Os ZIPs
 dessa data não foram copiados porque não havia cópia local no momento do registro.
 
-**Comparação direta: pendente.** Data prevista: **[DATA A DEFINIR]**, depois da próxima
-atualização mensal da PRF. Passos:
+**Comparação direta: pendente.** Data prevista: **2026-10-27**, depois da próxima
+atualização mensal da PRF (a última gravação de 2026 foi em 22/09/2026, e a atualização é
+mensal; a data deixa folga para ela sair). Passos:
 
 1. `python -m blackspot.download --force --year 2024 --year 2025 --year 2026 --dest <pasta-nova>`;
 2. comparar com a linha de base por chave (`id` em `ocorrencia`; `(id, pesid, id_veiculo)` em

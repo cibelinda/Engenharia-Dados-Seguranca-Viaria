@@ -137,8 +137,8 @@ revisão da origem".
   PRF regrava os arquivos no mesmo ID e com o mesmo nome: 2024 em 23/09/2026 (ano fechado),
   2025 em 18/03/2026 e 2026 mensalmente. A origem sobrescreve, e isso sustenta a escolha de
   insert-only.
-- **Comparação direta: pendente.** Data prevista: **[DATA A DEFINIR]**, depois da próxima
-  atualização mensal da PRF. Nela, 2024, 2025 e 2026 serão baixados de novo e comparados, por
+- **Comparação direta: pendente.** Data prevista: **2026-10-27**, depois da próxima
+  atualização mensal da PRF (a de 2026 foi em 22/09/2026). Nela, 2024, 2025 e 2026 serão baixados de novo e comparados, por
   chave, com a linha de base de 2026-09-27
   ([`docs/fontes/linha-de-base-2026-09-27/`](../fontes/linha-de-base-2026-09-27/sha256_2026-09-27_2024-2026.txt)).
   O resultado alimenta o terceiro gatilho de revisão abaixo e a E2.

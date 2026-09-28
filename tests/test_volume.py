@@ -88,7 +88,8 @@ class TestVolume(TesteComCarga):
                JOIN lote_vigente l USING (id_lote) WHERE l.ano = ANY(%s) GROUP BY r.motivo""", (anos,))
         for motivo, _ in motivos:
             with self.subTest(motivo=motivo):
-                self.assertRegex(motivo, r"^id não inteiro: '\de\+\d+'$|^pesid = 0 e id_veiculo = 0")
+                self.assertRegex(
+                    motivo, r"^(id não inteiro: '\de\+\d+'|pesid = 0 e id_veiculo = 0: nem pessoa nem veículo)$")
         if list(anos) == list(ANOS):
             esperado = (perfil["ocorrencia"]["ids_nao_numericos"]
                         + perfil["pessoa"]["registros_com_id_nao_numerico"] + 1)

@@ -27,11 +27,22 @@ except ImportError:  # Python local sem psycopg/PyYAML
 # Ano usado na simulação de republicação: o menor do recorte, para o teste ser rápido.
 ANO_REPUBLICADO = 2020
 
+# Todas as tabelas em que a carga grava, incluindo os catálogos de causa e tipo, que
+# recebem descrições novas conforme a carga as encontra.
 CONTAGENS = """
     SELECT (SELECT count(*) FROM lote_carga), (SELECT count(*) FROM lote_arquivo),
+           (SELECT count(*) FROM causa_acidente), (SELECT count(*) FROM tipo_acidente),
            (SELECT count(*) FROM ocorrencia), (SELECT count(*) FROM veiculo),
            (SELECT count(*) FROM pessoa), (SELECT count(*) FROM linha_rejeitada)
 """
+
+# Chave de ordenação de cada tabela de dado dentro de um lote, para a impressão digital.
+ORDEM = {
+    "ocorrencia": "id",
+    "veiculo": "id, id_veiculo",
+    "pessoa": "pesid",
+    "linha_rejeitada": "dataset, numero_linha",
+}
 
 
 @unittest.skipIf(load is None, "blackspot.load indisponível")
@@ -71,25 +82,42 @@ class TestReprocessamento(TesteComCarga):
                 for d, a in self.arquivos[ano].items()}
         antigo = self.um("SELECT id_lote FROM lote_vigente WHERE ano = %s", (ano,))
         self.assertFalse(load.ja_carregado(self.conn, ano, arqs))
+        antes = {tabela: self.impressao(tabela, antigo) for tabela in ORDEM}
 
         with self.conn.transaction():  # savepoint; o tearDown desfaz tudo
             load.carregar_ano(self.conn, ano, arqs)
 
         novo = self.um("SELECT id_lote FROM lote_vigente WHERE ano = %s", (ano,))
         self.assertGreater(novo, antigo)
-        for tabela in ("ocorrencia", "veiculo", "pessoa", "linha_rejeitada"):
+        for tabela in ORDEM:
             with self.subTest(tabela=tabela):
-                n_antigo = self.um(f"SELECT count(*) FROM {tabela} WHERE id_lote = %s", (antigo,))
-                n_novo = self.um(f"SELECT count(*) FROM {tabela} WHERE id_lote = %s", (novo,))
-                self.assertEqual(n_novo, n_antigo)  # mesmo conteúdo, nova versão
+                # O lote antigo ficou intacto: nenhuma linha alterada, apagada ou trocada.
+                self.assertEqual(self.impressao(tabela, antigo), antes[tabela])
+                # O lote novo tem o mesmo conteúdo (os arquivos são os mesmos), noutra versão.
+                self.assertEqual(self.impressao(tabela, novo), antes[tabela])
                 if tabela != "linha_rejeitada":
-                    self.assertGreater(n_antigo, 0)
+                    self.assertGreater(self.um(f"SELECT count(*) FROM {tabela} WHERE id_lote = %s",
+                                               (antigo,)), 0)
         # A view mostra só a versão nova; as tabelas guardam as duas.
         self.assertEqual(
             self.todos("SELECT DISTINCT id_lote FROM ocorrencia_vigente WHERE ano = %s", (ano,)), [(novo,)])
         self.assertEqual(
             self.um("SELECT count(DISTINCT id_lote) FROM ocorrencia WHERE ano = %s AND id_lote IN (%s, %s)",
                     (ano, antigo, novo)), 2)
+
+
+    def impressao(self, tabela: str, id_lote: int) -> str:
+        """MD5 de todas as linhas do lote, em ordem de chave, sem as colunas que identificam
+        a versão (id_lote) ou são geradas pelo banco (id_rejeicao)."""
+        colunas = [r[0] for r in self.todos(
+            """SELECT column_name FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = %s
+                 AND column_name NOT IN ('id_lote', 'id_rejeicao')
+               ORDER BY ordinal_position""", (tabela,))]
+        linha = "ROW(" + ", ".join(colunas) + ")::text"
+        return self.um(
+            f"SELECT md5(coalesce(string_agg({linha}, E'\\n' ORDER BY {ORDEM[tabela]}), '')) "
+            f"FROM {tabela} WHERE id_lote = %s", (id_lote,))
 
 
 if __name__ == "__main__":
