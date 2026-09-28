@@ -46,6 +46,9 @@ Decisões das issues #1 e #2. Os números vêm do reconhecimento de 2026-09-27
   recalibrado na E3 com o dado carregado.
 - **A definição operacional de "grave"** (`mortos > 0 ou feridos_graves > 0`, ou
   `classificacao_acidente`) depende do perfilamento: pergunta aberta 5 do reconhecimento.
+- **O critério de persistência**: o que conta como um trecho que "se mantém" entre os mais
+  graves. Pode ser estar entre os N piores de cada ano, acima de um percentil, ou aparecer em
+  um número mínimo dos 9 anos do recorte. A escolha é da Squad e fica para a E3.
 
 ## Recorte dos dados
 
@@ -91,7 +94,7 @@ confirma-se na carga.
 |---|---|
 | 2007–2026 completo (BR-Brasil + BAT) | Formatos diferentes, IDs que colidem, sem coordenadas antes de 2017. A queda de volume entre 2014 (169.201 ocorrências) e 2017 (89.567) ainda não tem explicação verificada, e comparar trechos através dessa quebra misturaria critério de registro com mudança real. A comparabilidade dos domínios de causa e tipo entre os sistemas também está em aberto (pergunta 6). |
 | BAT 2017–2026 (incluindo 2026) | 2026 é parcial (até 31/08 no reconhecimento) e é regravado todo mês. Comparar um ano incompleto com anos fechados distorce a persistência dos trechos. 2026 fica como candidato a fonte de mudanças na E2. |
-| Só o DF | Cerca de 1.000 ocorrências por ano (1.066 em 2016, 1.011 em 2025): pouco volume para a E3. Além disso, `uf` ≠ `regional` (a circunscrição da PRF-DF fica em grande parte em GO). |
+| Só o DF | Cerca de 1.000 ocorrências por ano (1.011 em 2025): pouco volume para a E3. Além disso, `uf` ≠ `regional` (a circunscrição da PRF-DF fica em grande parte em GO). |
 | Só os últimos anos (ex.: 2024–2025) | Poucos anos para medir se um trecho se mantém entre os mais graves. |
 
 ### Gatilho de revisão
