@@ -54,9 +54,61 @@ Isso reescreve o bloco `reference` da entrada no `sources.yaml`; faça commit da
 
 Testes (sem rede): `python -m unittest discover tests`.
 
-## Banco de dados
+## Como subir o projeto
+
+Pré-requisito: Docker com Compose v2. Não é preciso ter Python nem PostgreSQL instalados.
 
 ```bash
-cp .env.example .env    # ajuste POSTGRES_PASSWORD
-docker compose up -d    # PostgreSQL 18.6, ainda sem esquema nem carga
+git clone git@github.com:cibelinda/Engenharia-Dados-Seguranca-Viaria.git
+cd Engenharia-Dados-Seguranca-Viaria
+docker compose up --build
 ```
+
+O `--build` reconstrói a imagem do código Python antes de subir, para nunca rodar uma versão
+antiga do download ou da carga. O `docker-compose.yml` também força essa reconstrução
+(`pull_policy: build`), então um `docker compose up` sem a flag tem o mesmo efeito.
+
+O comando sobe quatro serviços, definidos no [`docker-compose.yml`](docker-compose.yml):
+
+| Serviço | O que faz | Espera |
+|---|---|---|
+| `db` | PostgreSQL 18.6 | — |
+| `migrate` | Aplica as migrações de [`db/migrations/`](db/migrations/) em ordem, com Flyway | `db` saudável |
+| `download` | Baixa o recorte (BAT 2017–2025, ocorrência e pessoa: 18 arquivos, ~108 MB) e compara os SHA-256 com o `sources.yaml` (divergência é aviso, ver abaixo) | — |
+| `load` | Carrega os arquivos no banco | `migrate` e `download` terminarem sem erro |
+
+Termina quando o log mostra `load-1 exited with code 0`. O banco continua no ar; `Ctrl+C` o
+desliga. Para rodar em segundo plano: `docker compose up --build -d` e `docker compose wait load`.
+
+Tempos medidos em 2026-09-27 (o download depende da conexão):
+
+| Situação | Tempo |
+|---|---|
+| Primeira vez na máquina, baixando as imagens do Docker (PostgreSQL, Flyway, Python) e os dados | ~1 min |
+| Clone novo, com as imagens do Docker já baixadas, baixando os dados | ~26 s |
+| Subidas seguintes (não baixa de novo os arquivos já íntegros) | ~12 s |
+
+**Conferir.** Com o banco no ar:
+
+```bash
+docker compose exec db psql -U blackspot -d blackspot -c "SELECT * FROM placeholder_contagem ORDER BY arquivo;"
+```
+
+> A carga atual é **provisória**: conta os registros de cada arquivo (632.713 ocorrências e
+> 1.654.197 registros de pessoa). A carga no esquema real é a issue #4.
+
+**Arquivo republicado pela PRF.** A PRF regrava arquivos no mesmo ID e com o mesmo nome. Se o
+SHA-256 baixado não bater com o `sources.yaml`, o `download` **só avisa** (no log e em
+`_download_report.json`) e a esteira segue, carregando a versão nova. É proposital: uma
+republicação da PRF não pode impedir o projeto de subir, e a carga registra o SHA-256 de cada
+arquivo carregado. Para adotar a versão nova como referência, rode `--accept-new-hash` **fora
+do container**, com Python local (seção "Aquisição dos dados"), e faça commit do `sources.yaml`:
+dentro do container a alteração se perde junto com ele.
+
+**Configuração.** Sem `.env`, o banco sobe com usuário, banco e senha `blackspot`, só em
+`127.0.0.1:5432`. Para trocar algum valor, copie `.env.example` para `.env` e ajuste.
+
+**Problemas comuns.**
+- *Senha recusada* depois de trocar a senha no `.env`: o volume foi criado com a anterior.
+  Recrie com `docker compose down -v`.
+- *Começar do zero*: `docker compose down -v` apaga o banco e os arquivos baixados.

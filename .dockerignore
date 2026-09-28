@@ -1,0 +1,10 @@
+# O que NÃO entra na imagem. Os dados brutos e o histórico do git deixariam a
+# construção lenta e a imagem pesada, e o .env não deve ir para dentro dela.
+.git/
+.venv/
+data/
+docs/
+tests/
+db/
+.env
+**/__pycache__/
