@@ -31,6 +31,13 @@ Corrigi problemas encontrados numa revisão do projeto e criei os testes:
 - Coloquei a introdução do projeto no readme
 - Criei esse arquivo para termos controle dos commits no repositório.
 
+### pergunta de gestão e recorte dos dados
+**autor:** Ana Luiza Komatsu
+
+- Defini a pergunta de gestão (issue #1) e o recorte dos dados (issue #2) em `docs/pergunta-e-recorte.md`, com as justificativas e as alternativas descartadas, e coloquei um resumo no README.
+- O recorte (BAT 2017–2025, conjuntos de ocorrência e pessoa) foi escolhido com o uso de IA, a partir dos números do reconhecimento em `docs/fontes/`.
+- Atribuí as issues da E1 entre mim e a Cibelly; as da Maria ficam para quando ela aceitar o convite do repositório.
+
 ### esteira do docker compose (issue #5)
 **autor:** Ana Luiza Komatsu
 
@@ -38,6 +45,6 @@ Corrigi problemas encontrados numa revisão do projeto e criei os testes:
 - Criei o `Dockerfile` do código Python, para ninguém precisar de Python instalado, e o `.dockerignore`.
 - A migração (`V1__placeholder.sql`) e a carga (`blackspot/load.py`) são provisórias: a carga só conta os registros de cada arquivo. Elas serão trocadas pelo esquema real (#3) e pela carga real (#4).
 - Coloquei uma senha padrão de desenvolvimento no compose, para não precisar criar o `.env`.
-- Testei do zero: cerca de 1 min, 18 arquivos com SHA-256 conferido, 632.713 ocorrências e 1.654.197 registros de pessoa. Rodar de novo não duplica nada.
+- Testei do zero: cerca de 1 min na primeira vez (baixando as imagens do Docker), cerca de 26 s num clone novo com as imagens já baixadas e cerca de 12 s nas subidas seguintes. 18 arquivos com SHA-256 conferido, 632.713 ocorrências e 1.654.197 registros de pessoa. Rodar de novo não duplica nada.
 - Atualizei o README com a seção "Como subir o projeto".
 - Esta issue foi feita com o uso de IA (configuração do Docker, scripts e README).
