@@ -44,14 +44,30 @@ Decisões das issues #1 e #2. Os números vêm do reconhecimento de 2026-09-27
 - **Ocorrências com `br = 0`** (1.407 no recorte, rodovia não identificada) ficam no banco,
   mas saem do ranking de trechos: sem a BR, não dá para montar o trecho. As consultas usam
   `WHERE br <> 0`.
+- **Acidente grave é o que tem `mortos > 0` ou `feridos_graves > 0`**, e não o que vem em
+  `classificacao_acidente` (pergunta aberta 5 do reconhecimento). No banco carregado
+  (`ocorrencia_vigente`, 2017–2025), a classificação é derivada das próprias contagens:
+
+  | `classificacao_acidente` | Ocorrências | Com morto | Sem morto, com ferido grave | Só ferido leve | Sem ferido |
+  |---|---|---|---|---|---|
+  | Com Vítimas Fatais | 43.437 | 43.437 | 0 | 0 | 0 |
+  | Com Vítimas Feridas | 462.962 | 0 | 125.394 | 337.568 | 0 |
+  | Sem Vítimas | 126.299 | 0 | 0 | 0 | 126.299 |
+  | `NULL` (`NA` na fonte) | 10 | 1 | 3 | 3 | 3 |
+
+  "Com Vítimas Fatais" equivale a `mortos > 0`, mas "Com Vítimas Feridas" mistura ferido grave
+  e ferido leve: 73% dessas ocorrências só têm feridos leves. Usar a classificação contaria
+  80% das ocorrências como graves; as contagens dão 168.835 (26,7%), exatamente o "morto ou
+  ferido grave" da pergunta. As contagens também classificam as 10 ocorrências sem
+  classificação, 4 delas graves. `mortos` e `feridos_graves` batem 100% com a soma dos
+  registros de pessoa ([`modelagem-origem.md`](modelagem-origem.md)), e a migração `V0007`
+  já tem o índice parcial com esse filtro.
 
 ### O que ainda precisa ser definido
 
 - **O tamanho do trecho (10 km) é um parâmetro, não um dado.** Trechos curtos demais deixam
   poucos acidentes por trecho e ano; longos demais diluem o ponto negro. O valor pode ser
   recalibrado na E3 com o dado carregado.
-- **A definição operacional de "grave"** (`mortos > 0 ou feridos_graves > 0`, ou
-  `classificacao_acidente`) depende do perfilamento: pergunta aberta 5 do reconhecimento.
 - **O critério de persistência**: o que conta como um trecho que "se mantém" entre os mais
   graves. Pode ser estar entre os N piores de cada ano, acima de um percentil, ou aparecer em
   um número mínimo dos 9 anos do recorte. A escolha é da Squad e fica para a E3.
