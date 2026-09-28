@@ -91,11 +91,22 @@ Tempos medidos em 2026-09-27 (o download depende da conexão):
 **Conferir.** Com o banco no ar:
 
 ```bash
-docker compose exec db psql -U blackspot -d blackspot -c "SELECT * FROM placeholder_contagem ORDER BY arquivo;"
+docker compose exec db psql -U blackspot -d blackspot -c '\dt' -c '\dv'
+docker compose exec db psql -U blackspot -d blackspot -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
 ```
 
-> A carga atual é **provisória**: conta os registros de cada arquivo (632.713 ocorrências e
-> 1.654.197 registros de pessoa). A carga no esquema real é a issue #4.
+> O esquema (issue #3) já é o real: ocorrência, veículo, pessoa, domínios de causa e tipo,
+> controle de lotes e linhas rejeitadas. O raciocínio e a evidência da modelagem, incluindo a
+> decisão de guardar histórico (insert-only versionado por lote), estão em
+> [`docs/modelagem-origem.md`](docs/modelagem-origem.md).
+> A carga ainda é **provisória**: confere o esquema e conta os registros de cada arquivo
+> (632.713 ocorrências e 1.654.197 registros de pessoa), sem gravar. A carga real é a issue #4.
+
+**Migrações.** Ficam em [`db/migrations/`](db/migrations/), no padrão do Flyway
+(`V0001__nome.sql`, `V0002__...`), uma por conceito, e rodam em ordem num banco vazio. Uma
+migração já aplicada não deve ser editada, porque o Flyway guarda o checksum de cada uma:
+para mudar o esquema, crie a próxima. Durante o desenvolvimento, `docker compose down -v`
+recria o banco do zero.
 
 **Arquivo republicado pela PRF.** A PRF regrava arquivos no mesmo ID e com o mesmo nome. Se o
 SHA-256 baixado não bater com o `sources.yaml`, o `download` **só avisa** (no log e em
