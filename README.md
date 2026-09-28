@@ -80,27 +80,47 @@ O comando sobe quatro serviços, definidos no [`docker-compose.yml`](docker-comp
 Termina quando o log mostra `load-1 exited with code 0`. O banco continua no ar; `Ctrl+C` o
 desliga. Para rodar em segundo plano: `docker compose up --build -d` e `docker compose wait load`.
 
-Tempos medidos em 2026-09-27 (o download depende da conexão):
+Tempos medidos em 2026-09-28, com as imagens do Docker já baixadas (o download depende da
+conexão):
 
-| Situação | Tempo |
+| Etapa | Tempo |
 |---|---|
-| Primeira vez na máquina, baixando as imagens do Docker (PostgreSQL, Flyway, Python) e os dados | ~1 min |
-| Clone novo, com as imagens do Docker já baixadas, baixando os dados | ~26 s |
-| Subidas seguintes (não baixa de novo os arquivos já íntegros) | ~12 s |
+| Download dos 18 arquivos | ~40 s |
+| Carga dos 9 anos | ~80 s |
+| Subida do zero (`docker compose down -v` e `up`) | ~2 min |
+| Subidas seguintes (nada é baixado nem carregado de novo) | poucos segundos |
 
 **Conferir.** Com o banco no ar:
 
 ```bash
-docker compose exec db psql -U blackspot -d blackspot -c '\dt' -c '\dv'
-docker compose exec db psql -U blackspot -d blackspot -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
+docker compose exec db psql -U blackspot -d blackspot -c "
+  SELECT l.ano, a.dataset, a.linhas_lidas, a.linhas_rejeitadas
+  FROM lote_vigente l JOIN lote_arquivo a USING (id_lote) ORDER BY 1, 2;"
 ```
 
-> O esquema (issue #3) já é o real: ocorrência, veículo, pessoa, domínios de causa e tipo,
-> controle de lotes e linhas rejeitadas. O raciocínio e a evidência da modelagem, incluindo a
-> decisão de guardar histórico (insert-only versionado por lote), estão em
-> [`docs/modelagem-origem.md`](docs/modelagem-origem.md).
-> A carga ainda é **provisória**: confere o esquema e conta os registros de cada arquivo
-> (632.713 ocorrências e 1.654.197 registros de pessoa), sem gravar. A carga real é a issue #4.
+O esquema (issue #3) e o raciocínio da modelagem, incluindo a decisão de guardar histórico
+(insert-only versionado por lote), estão em [`docs/modelagem-origem.md`](docs/modelagem-origem.md).
+
+**Carga** ([`blackspot/load.py`](blackspot/load.py), issue #4). Carrega um ano por vez; cada ano
+vira um lote com os seus dois arquivos (ocorrência e pessoa). Um ano só é carregado de novo quando
+o SHA-256 de algum arquivo dele muda (republicação pela PRF), então rodar de novo não duplica nada.
+Se um ano falha, nada dele fica gravado e a tentativa fica registrada como `falhou`.
+
+Registros que não cabem no esquema vão para `linha_rejeitada`, com o motivo, e em cada arquivo
+lidas = carregadas + rejeitadas. Conversões feitas na carga:
+
+| Na fonte | No banco |
+|---|---|
+| `km`, `latitude`, `longitude` com vírgula decimal | número |
+| Latitude ou longitude fora do limite válido (33 ocorrências de 2017) | as duas `NULL`; a ocorrência entra |
+| `idade` 0, negativa ou acima de 110 | `NULL` (desconhecida) |
+| `ano_fabricacao_veiculo` 0 | `NULL` (desconhecido) |
+| `tipo_acidente` vazio; `classificacao_acidente`, `regional`, `delegacia`, `uop` = `NA`/`N/A` | `NULL` |
+| `uso_solo` Sim/Não | booleano `uso_solo_urbano` |
+| `tracado_via` com `;` | lista |
+| `pesid = 0` | só veículo, sem pessoa |
+| `id_veiculo = 0` | pessoa sem veículo (pedestre, testemunha, cavaleiro) |
+| ID em notação científica, `pesid = 0` e `id_veiculo = 0` juntos, pessoa sem ocorrência | `linha_rejeitada` |
 
 **Migrações.** Ficam em [`db/migrations/`](db/migrations/), no padrão do Flyway
 (`V0001__nome.sql`, `V0002__...`), uma por conceito, e rodam em ordem num banco vazio. Uma

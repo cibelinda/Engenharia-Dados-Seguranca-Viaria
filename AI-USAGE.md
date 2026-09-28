@@ -12,6 +12,8 @@
 | Cibelly | Issue #3 (PR #13): esquema físico | Feita com o uso de IA: perfilamento, SQL e ADR. |
 | Maria Clara | Issue #6 (PR #12): caracterização da carga e rascunho do ADR 0001 | Feita com o uso de IA: script de perfil e rascunho dos textos. |
 | Ana Luiza Komatsu | Revisão do PR #13 | Feita com o uso de IA: teste das migrações num banco vazio, script que conferiu as restrições do esquema contra os 18 arquivos do recorte e texto da revisão. |
+| Ana Luiza Komatsu | Revisões dos PRs #12 e #17 | Feitas com o uso de IA: execução dos testes num banco limpo e conferência dos pontos pendentes. |
+| Ana Luiza Komatsu | Issue #4: carga real | Feita com o uso de IA: código da carga (`blackspot/load.py`), regras de conversão e README. |
 
 O texto original das declarações continua no histórico do git (`git show 58468f7:commits.md`
 e nas branches dos PRs #12 e #13).
