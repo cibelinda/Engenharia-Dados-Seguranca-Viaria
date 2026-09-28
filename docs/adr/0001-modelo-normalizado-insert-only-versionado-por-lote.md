@@ -128,6 +128,21 @@ vigente de cada ano e busca só as linhas dele pela PK `(id_lote, id)` (Bitmap I
 `ocorrencia_pkey`). A diferença de tempo depois da republicação está dentro da variação entre
 execuções de A (572–803 ms).
 
+## Evidência de revisão da origem (#7)
+
+Detalhes em [`caracterizacao-da-carga.md`](../caracterizacao-da-carga.md), "Evidência de
+revisão da origem".
+
+- **Evidência indireta:** nenhum dos 50 arquivos tem coluna de atualização ou de versão, e a
+  PRF regrava os arquivos no mesmo ID e com o mesmo nome: 2024 em 23/09/2026 (ano fechado),
+  2025 em 18/03/2026 e 2026 mensalmente. A origem sobrescreve, e isso sustenta a escolha de
+  insert-only.
+- **Comparação direta: pendente.** Data prevista: **[DATA A DEFINIR]**, depois da próxima
+  atualização mensal da PRF. Nela, 2024, 2025 e 2026 serão baixados de novo e comparados, por
+  chave, com a linha de base de 2026-09-27
+  ([`docs/fontes/linha-de-base-2026-09-27/`](../fontes/linha-de-base-2026-09-27/sha256_2026-09-27_2024-2026.txt)).
+  O resultado alimenta o terceiro gatilho de revisão abaixo e a E2.
+
 ## Consequências
 
 **O que ganhamos**
