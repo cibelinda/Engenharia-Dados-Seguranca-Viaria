@@ -85,6 +85,25 @@ services:
       download:
         condition: service_completed_successfully
 
+  # Testes (issue #8): `docker compose run --rm tests`. Fica num perfil próprio
+  # para não rodar no `docker compose up`. BLACKSPOT_EXIGIR_BANCO=1 faz a falta
+  # de banco virar erro, e não teste pulado. Cada teste de dados desfaz o que
+  # gravou, então pode rodar no banco já carregado.
+  tests:
+    <<: *app
+    profiles: [tests]
+    command: >
+      env BLACKSPOT_EXIGIR_BANCO=1 PYTHONDONTWRITEBYTECODE=1
+      python -m unittest discover -s tests -v
+    volumes:
+      - rawdata:/app/data/raw
+      - ./tests:/app/tests:ro
+      - ./db/migrations:/app/db/migrations:ro
+    # Espera a carga: os testes rodam sobre o banco já carregado.
+    depends_on:
+      load:
+        condition: service_completed_successfully
+
 volumes:
   pgdata:
   # Os ZIPs baixados ficam num volume do Docker, e não em ./data/raw, para não

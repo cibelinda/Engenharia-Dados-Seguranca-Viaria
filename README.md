@@ -52,7 +52,8 @@ python -m blackspot.download --accept-all-new-hashes             # todas as dive
 Isso reescreve o bloco `reference` da entrada no `sources.yaml`; faça commit da mudança.
 `--strict` faz divergências saírem com código 2 (para CI).
 
-Testes (sem rede): `python -m unittest discover tests`.
+Testes do downloader (sem rede): `python -m unittest discover tests`. Sem banco acessível, os
+testes de dados são pulados; para rodá-los, veja "Testes de dados" abaixo.
 
 ## Como subir o projeto
 
@@ -135,6 +136,20 @@ republicação da PRF não pode impedir o projeto de subir, e a carga registra o
 arquivo carregado. Para adotar a versão nova como referência, rode `--accept-new-hash` **fora
 do container**, com Python local (seção "Aquisição dos dados"), e faça commit do `sources.yaml`:
 dentro do container a alteração se perde junto com ele.
+
+**Testes de dados.** Com o Docker, sem precisar de Python local:
+
+```bash
+docker compose run --rm tests
+```
+
+Sobe o banco, as migrações e a carga, se ainda não estiverem no ar, e roda todos os testes de
+[`tests/`](tests/): os do downloader e os de dados (issue #8). Hoje os testes de dados cobrem
+o esquema, com tabelas, PKs, FKs e o carimbo de tempo declarado em cada tabela. Cobrem também
+as restrições, com um teste por regra, conferindo que o dado inválido é recusado, e as views
+`*_vigente`: uma republicação cria um lote novo sem apagar o anterior. Cada teste desfaz o que
+gravou, então pode rodar no banco já carregado. Os testes de volume e distribuição entram com a
+carga real (#4).
 
 **Configuração.** Sem `.env`, o banco sobe com usuário, banco e senha `blackspot`, só em
 `127.0.0.1:5432`. Para trocar algum valor, copie `.env.example` para `.env` e ajuste.
