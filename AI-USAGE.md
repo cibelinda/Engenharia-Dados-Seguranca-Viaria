@@ -18,8 +18,9 @@ tradução. Registre o que produziu artefato ou mudou uma decisão.
 no mesmo PR.
 
 As entradas de 2026-09-27 e 2026-09-28 anteriores à #7 vêm do `AI-USAGE.md` provisório
-(PR #15), que reunia as declarações do `commits.md`. Os campos que só quem fez sabe
-responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos PRs no GitHub.
+(PR #15), que reunia as declarações do `commits.md`. Os campos que só quem fez sabia
+responder foram completados por cada pessoa (PRs #23, #24 e #25). Revisores e datas vêm dos
+PRs no GitHub.
 
 ---
 
@@ -189,6 +190,27 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
   commit.
 - **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #19)
 
+### 2026-09-28 — Ajustes finais da E1: testes, data da #7 e este arquivo
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `tests/test_reprocessamento.py`, `tests/test_volume.py`,
+  `docs/caracterizacao-da-carga.md`, ADR 0001 e o cabeçalho deste arquivo
+- **O que foi pedido:** corrigir os três pontos da revisão automática do Copilot no PR #21,
+  trocar o `[DATA A DEFINIR]` da comparação direta (#7) por uma data e atualizar o aviso
+  sobre os campos a completar.
+- **O que foi aproveitado:** as correções inteiras. O teste de reexecução passou a contar
+  também `causa_acidente` e `tipo_acidente`; o de republicação compara uma impressão digital
+  (MD5 das linhas, em ordem de chave) do lote antigo antes e depois, e do lote novo; a regex
+  dos motivos de rejeição ficou ancorada no fim. A data 2026-10-27 foi sugerida pela IA (a
+  última gravação de 2026 foi em 22/09/2026, e a atualização é mensal), mas no merge ficou a
+  data que o PR #26 já tinha posto na `main`, 26/10/2026.
+- **Como foi verificado:** os 80 testes passaram no banco carregado. Com um motivo de
+  rejeição inventado (`pesid = 0 e id_veiculo = 0: motivo inesperado`), a regex nova apontou
+  o motivo, e a antiga não. Com uma carga alterada para mudar uma linha do lote antigo sem
+  mudar a contagem, o teste de republicação falhou pela impressão digital. Nada ficou
+  gravado no banco.
+- **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #27)
+
 ### 2026-09-28 — Diário de bordo e AI-USAGE.md (#9, PR #20 e este PR)
 
 - **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
@@ -242,4 +264,4 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
   da Squad foram respondidos por Cibelly; o revisor do PR #22 e a origem do `sources.yaml`
   (commit `3dcbde3`) foram tirados do GitHub e do histórico do git.
 - **Como foi verificado:** o diff foi lido antes do commit.
-- **Quem revisou:** [a completar]
+- **Quem revisou:** o PR #24 não tem revisão registrada no GitHub; o merge foi feito por Cibelly.
