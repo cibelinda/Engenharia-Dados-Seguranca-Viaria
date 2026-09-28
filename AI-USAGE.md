@@ -1,4 +1,4 @@
-# AI-USAGE.md — Squad [nome]
+# AI-USAGE.md — Squad BlackSpot
 
 Registro de uso de assistentes e agentes de IA no Projeto Integrado.
 
@@ -27,15 +27,15 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 
 ### 2026-09-27 — Manifesto das fontes da PRF (aquisição dos dados)
 
-- **Ferramenta:** [a completar — Cibelly]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** `sources.yaml`
 - **O que foi pedido:** o manifesto com os 50 arquivos da PRF, os IDs do Google Drive e o
   SHA-256 de referência de cada arquivo.
-- **O que foi aproveitado:** [a completar — Cibelly]
+- **O que foi aproveitado:** o manifesto inteiro, depois de lido e conferido.
 - **Como foi verificado:** os IDs do Google Drive foram conferidos um a um, à mão, porque a
   página da PRF tem links ocultos que apontam para arquivos de outros anos
-  (`docs/fontes/README.md`). [a completar — Cibelly]
-- **Quem revisou:** [a completar — entrou direto na `main`, antes do fluxo por PR]
+  (`docs/fontes/README.md`).
+- **Quem revisou:** ninguém; entrou direto na `main` (commit `3dcbde3`), antes do fluxo por PR.
 
 ### 2026-09-27 — Recorte dos dados (#2, PR #10)
 
@@ -61,13 +61,14 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 
 ### 2026-09-27 — Esquema físico (#3, PRs #13 e #16)
 
-- **Ferramenta:** [a completar — Cibelly]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** `db/migrations/` e `docs/modelagem-origem.md`
 - **O que foi pedido:** perfilamento, SQL das migrações e documento de modelagem, incluindo
   os ajustes pedidos na revisão do PR #13 (feitos em 2026-09-28).
-- **O que foi aproveitado:** [a completar — Cibelly]
+- **O que foi aproveitado:** as migrações e o documento de modelagem inteiros, depois de
+  lidos e conferidos.
 - **Como foi verificado:** na revisão, as 8 migrações foram aplicadas num banco vazio e as
-  restrições foram conferidas contra os 18 arquivos do recorte. [a completar — Cibelly]
+  restrições foram conferidas contra os 18 arquivos do recorte.
 - **Quem revisou:** Ana Luiza Komatsu (PR #13)
 
 ### 2026-09-28 — Revisão do PR #13 (esquema físico)
@@ -150,7 +151,8 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 - **Como foi verificado:** os números e as datas do diário foram conferidos contra os
   documentos em `docs/`; os revisores e as datas deste arquivo foram tirados dos PRs no
   GitHub.
-- **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #20); este PR: [a completar]
+- **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #20); o PR #22 não tem revisão registrada
+  no GitHub, e o merge foi feito por Cibelly.
 
 ### 2026-09-28 — Testes de volume, distribuição, dado faltante e reprocessamento (#8, PR #21)
 
@@ -163,3 +165,15 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
   2020, `regional = 'NA'`, idade 0) e passam de novo depois de desfeito. Na revisão, os 80
   testes passaram num clone limpo, duas vezes seguidas, sem deixar nada gravado no banco.
 - **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #21)
+
+### 2026-09-28 — Campos de Cibelly e nome da Squad neste arquivo (#9)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `AI-USAGE.md`
+- **O que foi pedido:** preencher os campos marcados para Cibelly, o nome da Squad e o revisor
+  do PR #22, sem mexer nos campos das outras pessoas.
+- **O que foi aproveitado:** o preenchimento inteiro. Ferramenta, o que foi aproveitado e o nome
+  da Squad foram respondidos por Cibelly; o revisor do PR #22 e a origem do `sources.yaml`
+  (commit `3dcbde3`) foram tirados do GitHub e do histórico do git.
+- **Como foi verificado:** o diff foi lido antes do commit.
+- **Quem revisou:** [a completar]
