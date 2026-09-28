@@ -94,24 +94,58 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 
 ### 2026-09-28 — Caracterização da carga e ADR 0001 (#6, PR #12)
 
-- **Ferramenta:** [a completar — Maria Clara]
-- **Onde:** `bench/perfil_recorte.py`, `docs/caracterizacao-da-carga.md` e
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `bench/perfil_recorte.py`, `bench/medicao_adr.py`, `bench/resultados/`,
+  `docs/caracterizacao-da-carga.md` e
   `docs/adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md`
-- **O que foi pedido:** o script de perfil e o rascunho dos textos.
-- **O que foi aproveitado:** [a completar — Maria Clara]
+- **O que foi pedido:** o script de perfil, a caracterização da carga, o esqueleto do ADR 0001
+  e, depois da carga (#4), a medição A × C (`bench/medicao_adr.py`) e a versão final do ADR
+  (decisão, perdas, irreversibilidade e gatilho de revisão). Também os ajustes pedidos nas
+  revisões do PR #12.
+- **O que foi aproveitado:** os dois scripts e os textos, inteiros. As métricas da medição
+  (tempo da Q1 e da Q2, disco, custo de uma republicação) e os limiares do gatilho de revisão
+  (2 GB, 2 s, 1% de linhas alteradas) foram sugeridos pela IA e aceitos. Mudou por pedido da
+  Squad: a declaração de histórico passou de proposta a decisão tomada, e as consultas do
+  ranking ganharam `WHERE br <> 0`.
 - **Como foi verificado:** os 18 SHA-256 lidos pelo perfil são iguais aos do `sources.yaml`
-  de 2026-09-27; o custo do modelo foi medido com `bench/medicao_adr.py`.
-  [a completar — Maria Clara]
+  de 2026-09-27. Os números do perfil foram comparados com a carga da #4: 632.708 ocorrências
+  (632.713 menos 5 rejeitadas) e 1.509.549 pessoas; os 9 veículos a menos aparecem só em
+  linhas rejeitadas. As consultas Q1–Q3 rodaram no esquema da #3 e no banco carregado, e o
+  plano (`EXPLAIN`) foi conferido para explicar por que a versão antiga quase não custa
+  leitura. A conferência pegou dois erros do texto gerado, corrigidos antes do merge: "br
+  válida em 100%" (há 1.407 com `br = 0`) e 1.191.471 veículos distintos (o número contava o
+  `id_veiculo = 0`; o certo é 1.191.470).
 - **Quem revisou:** Ana Luiza Komatsu (pediu ajustes) e Cibelly (PR #12)
+
+### 2026-09-27 e 2026-09-28 — Revisões dos PRs #10, #11 e #18
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** revisões dos PRs #10 (pergunta e recorte), #11 (esteira do Docker Compose) e
+  #18 (carga real)
+- **O que foi pedido:** a revisão dos três PRs e o texto dos comentários.
+- **O que foi aproveitado:** os comentários de revisão do #10 e do #11, publicados como
+  estão. No #11, os pontos levantados foram a imagem desatualizada no `docker compose up`, o
+  download aceitando hash divergente e os tempos inconsistentes. No #18, a conferência foi
+  feita antes do merge, mas a revisão não foi registrada no GitHub.
+- **Como foi verificado:** no #10, a soma das ocorrências por ano (632.713). No #11, as
+  opções do downloader lidas no código. No #18, a esteira rodou do zero num projeto separado
+  do Compose: contagens iguais ao perfil dos arquivos, 2.286.910 linhas lidas (o total dos
+  18 arquivos), a segunda carga sem gravar nada e os 46 testes passando no banco carregado.
+- **Quem revisou:** não se aplica (são revisões)
 
 ### 2026-09-28 — Testes de esquema, restrições e versão vigente (#8, PR #17)
 
-- **Ferramenta:** [a completar — Maria Clara]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** `tests/`, serviço `tests` no compose e README
 - **O que foi pedido:** os testes, o serviço `tests` no compose e o README.
-- **O que foi aproveitado:** [a completar — Maria Clara]
-- **Como foi verificado:** os testes falham quando uma restrição é removida do banco. Na
-  revisão, os 46 testes passaram.
+- **O que foi aproveitado:** os testes (`tests/banco.py`, `test_esquema.py`,
+  `test_versao_vigente.py`), o serviço `tests` e o texto do README, inteiros. A mensagem de
+  commit e a descrição do PR foram lidas e aprovadas antes do commit.
+- **Como foi verificado:** os testes rodaram num banco temporário com as 8 migrações. Com
+  duas restrições removidas do banco (`ocorrencia_feridos_soma` e
+  `lote_carga_um_em_carga_por_ano`), os dois testes correspondentes falharam. Sem banco,
+  `python -m unittest discover tests` continua rodando e pula os testes de dados. Na revisão,
+  os 46 testes passaram.
 - **Quem revisou:** Ana Luiza Komatsu (aprovou o PR #17)
 
 ### 2026-09-28 — Revisões dos PRs #12 e #17
@@ -172,11 +206,15 @@ responder estão marcados **[a completar — nome]**. Revisores e datas vêm dos
 
 ### 2026-09-28 — Testes de volume, distribuição, dado faltante e reprocessamento (#8, PR #21)
 
-- **Ferramenta:** [a completar — Maria Clara]
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** `tests/test_volume.py`, `tests/test_distribuicao.py`, `tests/test_dado_faltante.py`,
   `tests/test_reprocessamento.py`, `tests/banco.py`, serviço `tests` no compose e README
 - **O que foi pedido:** os testes sobre o banco carregado, os limiares medidos na carga e o README.
-- **O que foi aproveitado:** [a completar — Maria Clara]
+- **O que foi aproveitado:** os quatro arquivos de teste, a extensão do `tests/banco.py` e o
+  texto do README, inteiros. Os limiares de distribuição (variação anual de 30%, graves 15%,
+  nulos por campo) foram medidos no banco carregado e propostos pela IA; foram aceitos como
+  estão, com a justificativa escrita em cada teste. A mensagem de commit e a descrição do PR
+  foram lidas e aprovadas antes do commit.
 - **Como foi verificado:** os testes falham quando o banco é alterado (contagem de lidas de
   2020, `regional = 'NA'`, idade 0) e passam de novo depois de desfeito. Na revisão, os 80
   testes passaram num clone limpo, duas vezes seguidas, sem deixar nada gravado no banco.
