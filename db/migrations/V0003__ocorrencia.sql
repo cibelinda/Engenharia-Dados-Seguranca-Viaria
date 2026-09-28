@@ -2,7 +2,12 @@
 --
 -- Nulabilidade conferida nos 632.713 registros do recorte (BAT 2017–2025):
 -- só tipo_acidente (41 vazios), classificacao_acidente (10 'NA') e
--- regional/delegacia/uop ('NA' ou 'N/A') têm ausência. O resto é NOT NULL.
+-- regional/delegacia/uop ('NA' ou 'N/A') têm ausência. O resto é NOT NULL, exceto
+-- latitude/longitude: 33 ocorrências de 2017 têm coordenada fora de qualquer limite
+-- válido (ex.: longitude -405,96; latitude -23324903). Com NOT NULL, a ocorrência
+-- inteira seria rejeitada, e com ela as pessoas pela FK; 8 dessas 33 são graves e
+-- têm BR e km válidos, então contam para a pergunta de gestão, que não usa
+-- coordenada. A carga (issue #4) grava NULL nesses casos.
 --
 -- Fora do esquema por serem deriváveis: dia_semana (de ocorrido_em) e ano (coluna
 -- gerada). As contagens (mortos, feridos_graves...) ficam, apesar de mortos e
@@ -24,8 +29,8 @@ CREATE TABLE ocorrencia (
     br                     smallint      NOT NULL CHECK (br BETWEEN 0 AND 999),
     km                     numeric(6,1)  NOT NULL CHECK (km >= 0),
     municipio              text          NOT NULL CHECK (municipio <> ''),
-    latitude               numeric(12,10) NOT NULL CHECK (latitude  BETWEEN -90  AND 90),
-    longitude              numeric(13,10) NOT NULL CHECK (longitude BETWEEN -180 AND 180),
+    latitude               numeric(12,10) CHECK (latitude  BETWEEN -90  AND 90),
+    longitude              numeric(13,10) CHECK (longitude BETWEEN -180 AND 180),
 
     id_causa               smallint      NOT NULL REFERENCES causa_acidente (id_causa),
     id_tipo                smallint               REFERENCES tipo_acidente (id_tipo),
@@ -57,6 +62,8 @@ CREATE TABLE ocorrencia (
     CONSTRAINT ocorrencia_lote_ano_fk FOREIGN KEY (id_lote, ano)
         REFERENCES lote_carga (id_lote, ano),
     CONSTRAINT ocorrencia_ano_do_recorte CHECK (ano BETWEEN 2017 AND 2025),
+    -- A coordenada é um par: ou as duas existem, ou nenhuma.
+    CONSTRAINT ocorrencia_coordenada_completa CHECK ((latitude IS NULL) = (longitude IS NULL)),
     -- Vale em 100% do recorte.
     CONSTRAINT ocorrencia_feridos_soma CHECK (feridos = feridos_leves + feridos_graves)
 );
@@ -77,7 +84,11 @@ COMMENT ON COLUMN ocorrencia.ano IS 'Ano do evento, derivado de ocorrido_em.';
 COMMENT ON COLUMN ocorrencia.br IS
     'Número da BR. 0 em 1.407 ocorrências do recorte (rodovia não identificada); mantido como vem da PRF.';
 COMMENT ON COLUMN ocorrencia.km IS 'Quilômetro da BR, uma casa decimal. Com br e uf, define o trecho da pergunta de gestão.';
-COMMENT ON COLUMN ocorrencia.latitude IS 'Coordenada informada pela PRF. 53 pontos fora do Brasil e 14 zerados no recorte; sem correção na origem.';
+COMMENT ON COLUMN ocorrencia.latitude IS
+    'Coordenada informada pela PRF. NULL quando o par está fora do limite válido (33 ocorrências '
+    'de 2017). Dentro do limite, sem correção na origem: 20 pontos fora do Brasil, 7 em (0, 0) e 7 '
+    'com só um dos valores zerado.';
+COMMENT ON COLUMN ocorrencia.longitude IS 'Ver latitude. NULL quando fora do limite válido.';
 COMMENT ON COLUMN ocorrencia.id_tipo IS 'Tipo de acidente de ordem 1. NULL quando a PRF não informa (41 ocorrências).';
 COMMENT ON COLUMN ocorrencia.classificacao_acidente IS 'NULL quando a PRF informa NA (10 ocorrências).';
 COMMENT ON COLUMN ocorrencia.condicao_meteorologica IS 'Campo condicao_metereologica da PRF (grafia corrigida no nome da coluna).';

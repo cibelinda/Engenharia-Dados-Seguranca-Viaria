@@ -1,18 +1,20 @@
-# ADR 0001 — Modelagem do sistema de origem
+# Modelagem do sistema de origem
 
-**Status:** provisório (E1). Será formalizado no ADR completo da issue #6, depois da
-comparação direta entre versões de arquivos (fase 2 da issue #7).
+Documento de modelagem da issue #3: o raciocínio e a evidência por trás do esquema em
+[`db/migrations/`](../db/migrations/). **Não é um ADR.** A decisão formal (histórico,
+normalização e carimbos de tempo) é o ADR 0001, da issue #6, que pode citar ou incorporar
+este texto.
+
 **Data:** 2026-09-27
-**Implementação:** [`db/migrations/`](../../db/migrations/) (issue #3)
 
 ## Contexto
 
 A origem do BlackSpot guarda os acidentes da PRF do recorte BAT 2017–2025
-([`pergunta-e-recorte.md`](../pergunta-e-recorte.md)): 632.713 ocorrências e 1.654.197
+([`pergunta-e-recorte.md`](pergunta-e-recorte.md)): 632.713 ocorrências e 1.654.197
 linhas do arquivo de pessoa. A pergunta de gestão pede os trechos de 10 km com mais
 acidentes com morto ou ferido grave e se eles persistem de um ano para o outro.
 
-Três fatos da fonte pesam na modelagem ([`docs/fontes/`](../fontes/README.md)):
+Três fatos da fonte pesam na modelagem ([`docs/fontes/`](fontes/README.md)):
 
 1. **Nenhum dos 50 arquivos tem coluna de versão**, e a PRF regrava arquivos no mesmo ID e
    com o mesmo nome, inclusive anos fechados (2024 foi regravado em 23/09/2026). A única
@@ -21,7 +23,7 @@ Três fatos da fonte pesam na modelagem ([`docs/fontes/`](../fontes/README.md)):
    ausência do outro.
 3. **O arquivo de pessoa repete os dados do acidente e do veículo** em cada linha.
 
-## Decisão 1 — Histórico: insert-only versionado por lote de carga
+## 1. Histórico: insert-only versionado por lote de carga
 
 A origem **não sobrescreve**. Cada carga de um ano cria um lote (`lote_carga`), e todas as
 linhas daquele ano entram de novo, marcadas com o `id_lote`. A versão vigente de cada ano
@@ -59,7 +61,7 @@ FK `(id_lote, ano)` de ocorrência) e deve ser verificada pela carga.
 `em_carga` → `concluido` | `falhou`). Um índice parcial impede duas cargas do mesmo ano ao
 mesmo tempo.
 
-## Decisão 2 — Entidades: ocorrência, veículo e pessoa separados
+## 2. Entidades: ocorrência, veículo e pessoa separados
 
 Verificado nos dados do recorte (BAT 2017–2025):
 
@@ -91,7 +93,7 @@ ocorrência B. A unicidade global observada fica registrada num `UNIQUE (id_lote
 se a PRF quebrar essa propriedade, a carga rejeita a linha em vez de aceitar um veículo
 ambíguo. O custo é um índice a mais em cerca de 1,1 milhão de linhas por lote completo.
 
-## Decisão 3 — Normalizar até onde
+## 3. Normalizar até onde
 
 | Dado da fonte | Decisão | Evidência |
 |---|---|---|
@@ -106,7 +108,7 @@ ambíguo. O custo é um índice a mais em cerca de 1,1 milhão de linhas por lot
 Os demais campos categóricos da ocorrência (fase do dia, condição meteorológica, tipo de
 pista…) ficam como texto: têm de 2 a 10 valores e nenhuma consulta da pergunta depende deles.
 
-## Decisão 4 — Carimbos de tempo
+## 4. Carimbos de tempo
 
 | Carimbo | Onde | Tipo | Observação |
 |---|---|---|---|
@@ -151,21 +153,29 @@ Não resolvidos no esquema. O esquema só define o que é válido:
   e 23 linhas de pessoa → `linha_rejeitada` (o valor original não é recuperável).
 - **`ano_fabricacao_veiculo = 0`** em 147.201 linhas: o esquema exige NULL para desconhecido
   (CHECK `>= 1900`). 1.900 aparece 167 vezes e pode ser outro sentinela.
-- **`idade = 0`** em 147.311 pessoas e acima de 110 em 2.449 (ex.: 906, 2016): o esquema
-  aceita qualquer idade `>= 0` e deixa a decisão para a carga.
+- **`idade = 0`** em 147.311 pessoas, acima de 110 em 2.449 (ex.: 906, 2016) e **negativa
+  em 1** (`-1`, que o `CHECK (idade >= 0)` recusa): o esquema aceita qualquer idade `>= 0` e
+  deixa a decisão para a carga.
+- **Coordenada fora do limite válido** em 33 ocorrências de 2017 (ex.: longitude `-405,96`,
+  latitude `-23324903`, que nem cabe em `numeric(12,10)`): a carga grava latitude e longitude
+  NULL, e não rejeita a ocorrência. 8 delas são graves, com BR e km válidos, e contam para a
+  pergunta de gestão.
 - **Ausências que viram NULL:** `tipo_acidente` vazio (41), `classificacao_acidente = NA`
   (10), `regional`/`delegacia`/`uop` = `NA` ou `N/A`.
-- **`br = 0`** em 1.407 ocorrências e coordenadas fora do Brasil (53) ou zeradas (14): aceitas
+- **`br = 0`** em 1.407 ocorrências e, dentro do limite válido, coordenadas fora do Brasil (20),
+  em (0, 0) (7) ou com só um valor zerado (7): aceitas
   como vêm; relevantes para a E3.
 - Conversões: `km`, `latitude` e `longitude` com vírgula decimal; `uso_solo` Sim/Não →
   booleano; `tracado_via` separado por `;`.
 
-## Gatilhos de revisão (para a issue #6)
+## Gatilhos de revisão
 
 - A comparação direta entre versões (issue #7, fase 2) mostrar que as regravações só
   acrescentam linhas, sem alterar as existentes: aí um insert-only por diferença pode
   substituir a recarga do ano inteiro.
 - As regravações ficarem frequentes a ponto de o volume duplicado pesar.
 - A PRF quebrar a unicidade global de `pesid` ou `id_veiculo`.
+- A E2 usar 2026 (parcial e regravado todo mês): `lote_carga.ano` e o `CHECK` de ano de
+  `ocorrencia` estão fixos em 2017–2025 e precisam de uma migração nova.
 - O recorte passar a incluir o BR-Brasil: a chave de ocorrência precisa incluir o sistema
   de origem (490.283 IDs colidem).

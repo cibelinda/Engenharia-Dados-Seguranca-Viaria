@@ -96,8 +96,9 @@ docker compose exec db psql -U blackspot -d blackspot -c 'SELECT version, descri
 ```
 
 > O esquema (issue #3) já é o real: ocorrência, veículo, pessoa, domínios de causa e tipo,
-> controle de lotes e linhas rejeitadas. A modelagem e a decisão de guardar histórico
-> (insert-only versionado por lote) estão no [ADR 0001](docs/adr/0001-modelagem-origem.md).
+> controle de lotes e linhas rejeitadas. O raciocínio e a evidência da modelagem, incluindo a
+> decisão de guardar histórico (insert-only versionado por lote), estão em
+> [`docs/modelagem-origem.md`](docs/modelagem-origem.md).
 > A carga ainda é **provisória**: confere o esquema e conta os registros de cada arquivo
 > (632.713 ocorrências e 1.654.197 registros de pessoa), sem gravar. A carga real é a issue #4.
 

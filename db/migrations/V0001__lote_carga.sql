@@ -1,6 +1,6 @@
 -- Controle de ingestão. Toda linha de dado carregada pertence a um lote.
 --
--- Decisão provisória (docs/adr/0001-modelagem-origem.md): a origem é insert-only
+-- Decisão (docs/modelagem-origem.md; ADR 0001 da issue #6): a origem é insert-only
 -- versionada por lote. O lote é o ANO, e não o arquivo, porque veiculo e pessoa
 -- (acidentesAAAA.zip) referenciam ocorrencia (datatranAAAA.zip): se cada arquivo
 -- fosse um lote, a FK veiculo -> ocorrencia cruzaria versões diferentes do mesmo
