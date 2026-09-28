@@ -10,6 +10,7 @@
 | Ana Luiza Komatsu | Issue #2 (PR #10): recorte dos dados | O recorte (BAT 2017–2025, conjuntos de ocorrência e pessoa) foi escolhido com o uso de IA, a partir dos números do reconhecimento em `docs/fontes/`. |
 | Ana Luiza Komatsu | Issue #5 (PR #11): esteira do Docker Compose | Feita com o uso de IA: configuração do Docker, scripts e README, incluindo os ajustes pedidos na revisão do PR. |
 | Cibelly | Issue #3 (PR #13): esquema físico | Feita com o uso de IA: perfilamento, SQL e ADR. |
+| Cibelly | Issue #3 (PR #13): esquema físico | Feita com o uso de IA: perfilamento, SQL e documento de modelagem, incluindo os ajustes pedidos na revisão do PR. |
 | Maria Clara | Issue #6 (PR #12): caracterização da carga e rascunho do ADR 0001 | Feita com o uso de IA: script de perfil e rascunho dos textos. |
 | Ana Luiza Komatsu | Revisão do PR #13 | Feita com o uso de IA: teste das migrações num banco vazio, script que conferiu as restrições do esquema contra os 18 arquivos do recorte e texto da revisão. |
 
