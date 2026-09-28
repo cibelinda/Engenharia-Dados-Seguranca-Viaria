@@ -82,11 +82,21 @@ subidas seguintes, que não baixam de novo os arquivos já íntegros. O download
 **Conferir.** Com o banco no ar:
 
 ```bash
-docker compose exec db psql -U blackspot -d blackspot -c "SELECT * FROM placeholder_contagem ORDER BY arquivo;"
+docker compose exec db psql -U blackspot -d blackspot -c '\dt' -c '\dv'
+docker compose exec db psql -U blackspot -d blackspot -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
 ```
 
-> A carga atual é **provisória**: conta os registros de cada arquivo (632.713 ocorrências e
-> 1.654.197 registros de pessoa). A carga no esquema real é a issue #4.
+> O esquema (issue #3) já é o real: ocorrência, veículo, pessoa, domínios de causa e tipo,
+> controle de lotes e linhas rejeitadas. A modelagem e a decisão de guardar histórico
+> (insert-only versionado por lote) estão no [ADR 0001](docs/adr/0001-modelagem-origem.md).
+> A carga ainda é **provisória**: confere o esquema e conta os registros de cada arquivo
+> (632.713 ocorrências e 1.654.197 registros de pessoa), sem gravar. A carga real é a issue #4.
+
+**Migrações.** Ficam em [`db/migrations/`](db/migrations/), no padrão do Flyway
+(`V0001__nome.sql`, `V0002__...`), uma por conceito, e rodam em ordem num banco vazio. Uma
+migração já aplicada não deve ser editada, porque o Flyway guarda o checksum de cada uma:
+para mudar o esquema, crie a próxima. Durante o desenvolvimento, `docker compose down -v`
+recria o banco do zero.
 
 **Configuração.** Sem `.env`, o banco sobe com usuário, banco e senha `blackspot`, só em
 `127.0.0.1:5432`. Para trocar algum valor, copie `.env.example` para `.env` e ajuste.

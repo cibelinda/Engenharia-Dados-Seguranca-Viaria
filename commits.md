@@ -48,3 +48,14 @@ Corrigi problemas encontrados numa revisão do projeto e criei os testes:
 - Testei do zero: cerca de 1 min, 18 arquivos com SHA-256 conferido, 632.713 ocorrências e 1.654.197 registros de pessoa. Rodar de novo não duplica nada.
 - Atualizei o README com a seção "Como subir o projeto".
 - Esta issue foi feita com o uso de IA (configuração do Docker, scripts e README).
+
+### esquema físico da origem (issue #3)
+**autor:** (preencher)
+
+- Criei o esquema real em `db/migrations/`, oito migrações do Flyway (`V0001`–`V0008`), uma por conceito: controle de lotes, domínios de causa e tipo, ocorrência, veículo, pessoa, linhas rejeitadas, índices da pergunta de gestão e views da versão vigente. Apaguei o `V1__placeholder.sql`.
+- Decisão provisória de histórico: insert-only versionado por lote, com o ano como unidade do lote. Registrada no `docs/adr/0001-modelagem-origem.md`, a ser formalizada na #6.
+- Separei o arquivo de pessoa em `veiculo` e `pessoa`. Antes, verifiquei nos dados que `id_veiculo` é global como o `pesid` e que `id_veiculo = 0` é pessoa sem veículo (pedestre, testemunha, cavaleiro). Os números estão no ADR.
+- Os achados para a carga (IDs em notação científica, sentinelas 0 em idade e ano de fabricação, a linha sem pessoa e sem veículo) ficaram no ADR, na seção da #4.
+- A carga provisória (`blackspot/load.py`) deixou de gravar no banco, porque a tabela `placeholder_contagem` não existe mais. Agora ela confere que o esquema existe e só conta os registros.
+- Testei do zero: `docker compose down -v && docker compose up` aplica as 8 migrações e termina com `load` em código 0. Testei também as restrições, com inserções válidas e inválidas numa transação desfeita no fim.
+- Esta issue foi feita com o uso de IA (perfilamento, SQL, ADR).

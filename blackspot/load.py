@@ -1,7 +1,8 @@
-"""Carga PROVISÓRIA: conta os registros de cada CSV baixado e grava no banco.
+"""Carga PROVISÓRIA: confere o esquema e conta os registros de cada CSV baixado.
 
 Existe só para provar que a esteira do docker-compose funciona de ponta a ponta
-(issue #5). A carga real, no esquema da issue #3, é a issue #4.
+(issue #5). Não grava nada: o esquema real (issue #3, db/migrations/) só aceita
+linhas vinculadas a um lote de carga, e a carga real é a issue #4.
 
 Uso:
     python -m blackspot.load
@@ -51,22 +52,15 @@ def main() -> int:
         return 1
 
     with psycopg.connect() as conn:
-        for path in zips:
-            member, n = count_records(path)
-            # Rodar de novo atualiza a contagem em vez de duplicar a linha.
-            conn.execute(
-                """
-                INSERT INTO placeholder_contagem (arquivo, membro_csv, registros)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (arquivo) DO UPDATE
-                   SET membro_csv = EXCLUDED.membro_csv,
-                       registros  = EXCLUDED.registros,
-                       contado_em = now()
-                """,
-                (path.name, member, n),
-            )
-            log(f"  {path.name:<24} {n:>9} registros")
-    log(f"\n{len(zips)} arquivo(s) contados em placeholder_contagem")
+        # Confere que as migrações rodaram antes de dizer que a esteira está ok.
+        if conn.execute("SELECT to_regclass('ocorrencia')").fetchone()[0] is None:
+            log("tabela ocorrencia não existe; as migrações (serviço migrate) rodaram?")
+            return 1
+
+    for path in zips:
+        _, n = count_records(path)
+        log(f"  {path.name:<24} {n:>9} registros")
+    log(f"\n{len(zips)} arquivo(s) contados; nada gravado (carga real: issue #4)")
     return 0
 
 
