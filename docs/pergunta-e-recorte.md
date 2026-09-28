@@ -39,6 +39,12 @@ Decisões das issues #1 e #2. Os números vêm do reconhecimento de 2026-09-27
 | "Quais trechos têm mais acidentes?" (sem gravidade) | Trata igual uma colisão sem vítima e um acidente fatal. |
 | Agrupar por coordenada (latitude/longitude) | A qualidade das coordenadas ainda não foi medida, e elas não existem antes de 2017. |
 
+### Decidido depois
+
+- **Ocorrências com `br = 0`** (1.407 no recorte, rodovia não identificada) ficam no banco,
+  mas saem do ranking de trechos: sem a BR, não dá para montar o trecho. As consultas usam
+  `WHERE br <> 0`.
+
 ### O que ainda precisa ser definido
 
 - **O tamanho do trecho (10 km) é um parâmetro, não um dado.** Trechos curtos demais deixam

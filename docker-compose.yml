@@ -99,8 +99,9 @@ services:
       - rawdata:/app/data/raw
       - ./tests:/app/tests:ro
       - ./db/migrations:/app/db/migrations:ro
+    # Espera a carga: os testes rodam sobre o banco já carregado.
     depends_on:
-      migrate:
+      load:
         condition: service_completed_successfully
 
 volumes:
