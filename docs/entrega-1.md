@@ -35,6 +35,9 @@ e a **persistência** entre os anos separa um ponto negro de um acidente isolado
 | **Testes** | 80 testes: esquema, volume, distribuição, dado faltante e reprocessamento | #8 |
 | **Evidência** | A PRF regrava arquivos, até de anos fechados; comparação direta em 26/10/2026 | #7 |
 
+Os diagramas da arquitetura e dos modelos conceitual, lógico e físico estão em
+[Arquitetura e modelos](arquitetura-e-modelos.md).
+
 ## A decisão central: guardar o histórico
 
 A PRF **regrava** os arquivos no mesmo endereço, sem versão, inclusive de anos já fechados
