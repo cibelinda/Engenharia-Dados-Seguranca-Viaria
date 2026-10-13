@@ -1,6 +1,7 @@
 ---
 title: Arquitetura e modelos
-nav_order: 4
+parent: Dados e modelagem
+nav_order: 5
 nav_exclude: false
 ---
 
