@@ -317,4 +317,35 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### ADR 0004, medição e diário — Maria Clara
 
-[a preencher no PR do ADR 0004]
+#### 2026-10-13 — Revisão dos PRs #34 e #35
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** comentários nos PRs #34 e #35
+- **O que foi pedido:** a revisão dos dois PRs da E2.
+- **O que foi aproveitado:** os dois comentários, publicados como estão: no #34, o conflito no
+  `_config.yml`, o número do ADR (0002 → 0004) e a contagem de testes; no #35, a quebra na coluna
+  `geom`, o teste de duplicata pela chave errada, os números do recorte antigo e a referência ao
+  ADR que ainda não existia, além de três pontos que não bloqueavam o merge.
+- **Como foi verificado:** o #35 foi mesclado com a `main` numa worktree separada, e a esteira
+  rodou do zero com os 20 anos: a ingestão parou com `RuntimeError` no tipo `USER-DEFINED`. Com
+  uma correção provisória, só local, a ingestão gravou 60 partições, e os testes rodaram (105
+  passaram; o de duplicata falhou nas três tabelas). As duplicatas foram contadas de novo pela
+  chave primária, no banco e no Delta: zero.
+- **Quem revisou:** não se aplica (é uma revisão)
+
+#### 2026-10-13 — ADR 0004, medição e diário (#33)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `docs/adr/0004-ingestao-por-lote-incremental-em-delta.md`, `docs/adr/index.md`,
+  `bench/medicao_e2.py`, `bench/resultados/medicao_e2.json` e `diario-de-bordo.md`
+- **O que foi pedido:** o ADR 0004 sobre o mecanismo de ingestão, com a opção nula; a medição
+  reproduzível (recarga completa, compressão, Delta × Iceberg); e o diário das Semanas 7 a 10.
+- **O que foi aproveitado:** [A COMPLETAR por Maria Clara]
+- **Como foi verificado:** a medição rodou no banco carregado do zero a partir da `main`, com os
+  20 anos. A primeira versão do script tinha dois erros, corrigidos antes de usar os números: o
+  alargamento de tipo no Delta aparecia como bem-sucedido porque o script não conferia o tipo
+  depois da escrita, e a coluna nova no Iceberg falhava por um tipo do Arrow passado no lugar do
+  tipo do pyiceberg. Os números do ADR foram conferidos um a um contra o `medicao_e2.json`, o
+  que pegou mínimos e máximos copiados de uma rodada anterior. O diário segue o cronograma da
+  disciplina (Semana 7 = 22/09).
+- **Quem revisou:** [revisor do PR da #33]
