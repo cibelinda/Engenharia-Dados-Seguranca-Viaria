@@ -1,6 +1,8 @@
 # ADR 0001: Modelar a origem normalizada e insert-only, versionada por lote de carga
 
-- **Status:** aceito
+- **Status:** aceito. Continua valendo depois das correções da E1, com o banco espacial do
+  [ADR 0002](0002-banco-espacial-postgis.md) e o dataset completo do
+  [ADR 0003](0003-dataset-completo-br-brasil-e-bat.md); os números abaixo são do recorte da E1.
 - **Data:** 2026-09-28 (rascunho em 2026-09-27)
 - **Issue:** #6 (esquema da #3, carga da #4, evidência da #7)
 
