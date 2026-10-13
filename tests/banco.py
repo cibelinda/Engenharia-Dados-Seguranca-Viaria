@@ -28,12 +28,17 @@ except ImportError:  # Python local sem as dependências do projeto
 
 EXIGIR_BANCO = os.environ.get("BLACKSPOT_EXIGIR_BANCO") == "1"
 
-ANOS = range(2017, 2026)  # recorte do projeto (docs/pergunta-e-recorte.md)
+# Dataset completo da PRF (docs/pergunta-e-recorte.md, ADR 0003). 2026 é parcial: os
+# testes que comparam anos ou meses usam só os anos completos.
+ANOS = range(2007, 2027)
+ANOS_COMPLETOS = range(2007, 2026)
+ANOS_BR_BRASIL = range(2007, 2017)
+ANOS_BAT = range(2017, 2027)
 
 # Números medidos direto nos ZIPs por bench/perfil_recorte.py. Servem de valor esperado
 # para a carga, mas só para os anos cujo arquivo carregado é o mesmo que foi perfilado
 # (mesmo SHA-256): se a PRF republicar um ano, os números dele mudam de propósito.
-PERFIL = Path(__file__).resolve().parent.parent / "bench" / "resultados" / "perfil_recorte.json"
+PERFIL = Path(__file__).resolve().parent.parent / "bench" / "resultados" / "perfil_dataset_completo.json"
 
 # Ano usado nas linhas de exemplo. Os lotes criados pelos testes são sempre os
 # mais novos do ano (id_lote é IDENTITY), então viram a versão vigente dele.
@@ -168,11 +173,11 @@ class TesteComCarga(TesteComBanco):
         return json.loads(PERFIL.read_text(encoding="utf-8"))
 
     def anos_iguais_ao_perfil(self) -> list[int]:
-        """Anos cujos dois arquivos vigentes têm o mesmo SHA-256 dos arquivos perfilados."""
+        """Anos cujos arquivos de ocorrência e pessoa vigentes têm o mesmo SHA-256 dos perfilados."""
         sha = self.perfil()["arquivos_sha256"]
         carregado = self.todos(
             """SELECT l.ano, a.arquivo, a.sha256 FROM lote_vigente l
-               JOIN lote_arquivo a USING (id_lote)""")
+               JOIN lote_arquivo a USING (id_lote) WHERE a.dataset IN ('ocorrencia', 'pessoa')""")
         diferentes = {ano for ano, arquivo, h in carregado if sha.get(arquivo) != h}
         anos = [a for a in ANOS if a not in diferentes]
         if not anos:
