@@ -73,3 +73,10 @@ defaults:
     values: { title: "Diário de bordo", parent: "Processo", nav_order: 1, nav_exclude: false }
   - scope: { path: "AI-USAGE.md" }
     values: { title: "Uso de IA", parent: "Processo", nav_order: 2, nav_exclude: false }
+  # Entrega 2 (dentro de "Entregas")
+  - scope: { path: "docs/e2/README.md" }
+    values: { title: "Entrega 2", parent: "Entregas", nav_order: 3, nav_exclude: false, has_children: true }
+  - scope: { path: "docs/e2/lote.md" }
+    values: { title: "Ingestão em lote", parent: "Entrega 2", grand_parent: "Entregas", nav_order: 1, nav_exclude: false }
+  - scope: { path: "docs/e2/cdc.md" }
+    values: { title: "Captura de mudanças", parent: "Entrega 2", grand_parent: "Entregas", nav_order: 2, nav_exclude: false }

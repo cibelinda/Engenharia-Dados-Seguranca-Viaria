@@ -265,3 +265,56 @@ PRs no GitHub.
   (commit `3dcbde3`) foram tirados do GitHub e do histórico do git.
 - **Como foi verificado:** o diff foi lido antes do commit.
 - **Quem revisou:** o PR #24 não tem revisão registrada no GitHub; o merge foi feito por Cibelly.
+
+---
+
+## E2
+
+Cada pessoa preenche só a própria entrada abaixo, no PR da sua parte, no mesmo formato das
+entradas acima. Se a parte não usou IA, escreva isso no lugar.
+
+### Ingestão em lote — Ana Luiza Komatsu
+
+#### 2026-10-12 — Base compartilhada da E2 (PR #34)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `docker-compose.yml`, `compose/`, `Dockerfile`, `requirements.txt`, `docs/e2/README.md`
+- **O que foi pedido:** deixar pronto o que as três partes da E2 usariam em comum, para cada
+  uma trabalhar sem depender do PR das outras.
+- **O que foi aproveitado:** a base inteira: `wal_level=logical`, volume `lakehouse`, arquivos
+  `compose/lote.yml` e `compose/cdc.yml` incluídos, bibliotecas e o contrato entre as partes. A
+  troca do MinIO por um volume veio da conferência: as imagens do MinIO não puderam ser baixadas.
+- **Como foi verificado:** a E1 subiu do zero com a base e os testes da época (80) passaram; a
+  inclusão dos arquivos de `compose/` e o volume compartilhado foram testados antes. Depois do
+  #36, a base foi atualizada com a `main` e revisada pela Maria Clara, que conferiu a esteira
+  subindo.
+- **Quem revisou:** Maria Clara (PR #34)
+
+#### 2026-10-12 — Ingestão em lote (#31)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `blackspot/ingestao_lote.py`, `compose/lote.yml`, `tests/test_ingestao_lote.py`,
+  `docs/e2/lote.md`
+- **O que foi pedido:** a ingestão em lote do PostgreSQL para tabelas Delta, idempotente, com
+  tratamento de dado atrasado, os testes e a documentação.
+- **O que foi aproveitado:** o código, o serviço, os testes e o texto, inteiros, incluindo os
+  ajustes pedidos na revisão (geometria em WKB, chave dos testes igual à do banco, causas e
+  tipos, mudança de esquema e leitura em `REPEATABLE READ`).
+- **Como foi verificado:** subida do zero com os 20 anos: 80 partições gravadas em 94 s, com as
+  mesmas contagens das views vigentes; segunda execução sem gravar nada; um arquivo Parquet por
+  partição, em zstd; republicação de 2024 simulada num banco de teste reescreveu só as 5
+  partições de 2024, sem duplicar, com a versão anterior acessível no histórico; 107 testes
+  passando (99 da `main` e 8 novos).
+- **Quem revisou:** Maria Clara (PR #35)
+
+&nbsp;
+
+### Captura de mudanças (CDC) — Cibelly
+
+[a preencher no PR do CDC]
+
+&nbsp;
+
+### ADR 0004, medição e diário — Maria Clara
+
+[a preencher no PR do ADR 0004]
