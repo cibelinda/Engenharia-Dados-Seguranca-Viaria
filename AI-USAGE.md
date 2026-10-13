@@ -311,6 +311,6 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 &nbsp;
 
-### ADR 0002, medição e diário — Maria Clara
+### ADR 0004, medição e diário — Maria Clara
 
-[a preencher no PR do ADR 0002]
+[a preencher no PR do ADR 0004]

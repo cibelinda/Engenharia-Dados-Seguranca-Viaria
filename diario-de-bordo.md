@@ -58,3 +58,44 @@ Reconhecimento da fonte, pergunta e recorte, esquema, carga e ADR 0001.
   - toda mudança entra por PR, com uma branch por issue e `Closes #N` na descrição;
   - cada PR é revisado por outra pessoa da Squad antes do merge;
   - quem usar IA num PR atualiza o `AI-USAGE.md` no mesmo PR.
+
+## Correções da E1 (12/10/2026)
+
+Duas correções da professora na avaliação da E1: o banco não era apropriado para dados com
+latitude e longitude, e o BR-Brasil não podia ser descartado só por estar em outro formato.
+
+### O que foi medido
+
+- **Coordenadas** ([ADR 0002](docs/adr/0002-banco-espacial-postgis.md)): 100% das 681.425
+  ocorrências do BAT (2017–2026) têm latitude e longitude; nenhum arquivo do BR-Brasil
+  (2007–2016) tem as colunas.
+- **Dataset completo** ([ADR 0003](docs/adr/0003-dataset-completo-br-brasil-e-bat.md)): os 50
+  arquivos, 2.243.625 ocorrências e 5.156.169 registros de pessoa lidos; 2.243.584 ocorrências,
+  4.008.904 veículos, 4.998.779 pessoas, 934.079 causas e 1.051.668 tipos carregados; 1.275 linhas
+  rejeitadas, todas com motivo conhecido. Carga do zero em 467 s; banco com 2,7 GB.
+- **PostGIS:** acidentes graves num raio de 2 km em 46 ms, contra 608 ms com haversine sem
+  índice, com a mesma resposta. A coluna `geom` e os dois índices GiST ocupam ~102 MB.
+- **Coordenada × BR + km:** em 87% dos trechos de 10 km do BAT, a distância mediana dos
+  acidentes ao centro do trecho fica até 5 km.
+
+### O que surpreendeu
+
+- **Metade das coordenadas de 2019 a 2024 não é o local do acidente.** São pontos padrão
+  repetidos: um ponto em São José/SC reúne 438 acidentes do km 205 ao 210,7. Em 2017, 2018 e
+  2025 a fração cai para 6–16%, e em 2026 para 0,1%. Só apareceu com o agrupamento espacial.
+- No BR-Brasil, `mortos` e `feridos_graves` batem com as pessoas quase sempre (só 8 e 19
+  ocorrências não batem, por pessoas rejeitadas). O perfil inicial indicava 4% de divergência,
+  mas era um erro dele: não tirava os espaços de `'Morto       '`.
+- O BR-Brasil marca ausência com o texto `(null)`, tem `km` negativo (19), ano de fabricação
+  9999 e IDs de ocorrência repetidos no mesmo arquivo (35).
+- O `km` de 2016 já usa vírgula decimal, e não ponto, como dizia o reconhecimento.
+
+### O que foi decidido
+
+- **Banco espacial:** PostgreSQL 18.6 com PostGIS 3.6. `ocorrencia.geom` é uma coluna gerada
+  das coordenadas (SIRGAS 2000), com índices GiST. O modelo da E1 continua o mesmo.
+- **Dataset completo:** BR-Brasil e BAT no mesmo esquema, com o formato tratado na carga e o
+  vocabulário de cada sistema guardado como veio. A pergunta de gestão passa a cobrir 2007–2025.
+- **Migrações novas** (`V0009`–`V0012`), sem editar as da E1: um banco da E1 sobe para o esquema
+  novo só aplicando as quatro.
+- **Coordenadas repetidas** ficam como a PRF publicou; marcar e tratar é trabalho da E3.
