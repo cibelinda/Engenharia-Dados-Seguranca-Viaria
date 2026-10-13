@@ -24,7 +24,8 @@ arquivo.
 ## O que já está pronto na `main`
 
 - **PostgreSQL com `wal_level=logical`**, que o Debezium precisa para ler o WAL.
-- **Volume `lakehouse`**, a camada analítica. Nos containers, ele fica em `/app/lake`.
+- **Volume `lakehouse`**, a camada analítica. Nos containers, ele fica em `/app/lake`; a
+  pasta já existe na imagem com o dono certo, e o serviço `tests` a monta só para leitura.
 - **`compose/lote.yml` e `compose/cdc.yml`**, incluídos no `docker-compose.yml`. Começam
   vazios; cada parte coloca ali os seus serviços. Um `docker compose up` sobe tudo junto.
 - **Bibliotecas** no `requirements.txt`: `deltalake` (tabelas Delta em Python, sem Spark),

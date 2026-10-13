@@ -14,6 +14,6 @@ COPY blackspot/ blackspot/
 
 # Não rodar como root dentro do container.
 RUN useradd --create-home --uid 1000 blackspot \
-    && mkdir -p data/raw \
+    && mkdir -p data/raw lake \
     && chown -R blackspot:blackspot /app
 USER blackspot

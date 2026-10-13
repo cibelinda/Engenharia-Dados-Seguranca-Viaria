@@ -110,6 +110,8 @@ services:
       - ./db/migrations:/app/db/migrations:ro
       # Valores esperados dos testes de volume (bench/perfil_recorte.py).
       - ./bench/resultados:/app/bench/resultados:ro
+      # Camada analítica da E2, para os testes do lote e do CDC lerem as tabelas Delta.
+      - lakehouse:/app/lake:ro
     # Espera a carga: os testes rodam sobre o banco já carregado.
     depends_on:
       load:
