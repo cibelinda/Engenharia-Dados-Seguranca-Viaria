@@ -28,14 +28,23 @@ except ImportError:  # Python local sem as dependências do projeto
     ingestao_lote = None
 
 LAKE = Path(os.environ.get("BLACKSPOT_LAKE_TESTE", "/app/lake/lote"))
-TABELAS = {"ocorrencia": "id", "veiculo": "id_veiculo", "pessoa": "pesid"}
-SQL_VIGENTE = {
-    "ocorrencia": "SELECT ano, count(*) FROM ocorrencia_vigente GROUP BY ano",
-    "veiculo": """SELECT o.ano, count(*) FROM veiculo_vigente v
-                  JOIN ocorrencia_vigente o USING (id_lote, id) GROUP BY o.ano""",
-    "pessoa": """SELECT o.ano, count(*) FROM pessoa_vigente p
-                 JOIN ocorrencia_vigente o USING (id_lote, id) GROUP BY o.ano""",
+
+# Tabela Delta -> (view de origem, chave primária no banco). A PRF reusa IDs entre o
+# BR-Brasil e o BAT, então a unicidade é pela mesma chave do banco, que começa por id_lote.
+TABELAS = {
+    "ocorrencia": ("ocorrencia_vigente", ["id_lote", "id"]),
+    "veiculo": ("veiculo_vigente", ["id_lote", "id", "id_veiculo"]),
+    "pessoa": ("pessoa_vigente", ["id_lote", "pesid"]),
+    "ocorrencia_causa": ("ocorrencia_causa_vigente", ["id_lote", "id", "id_causa"]),
+    "ocorrencia_tipo": ("ocorrencia_tipo_vigente", ["id_lote", "id", "ordem"]),
 }
+
+
+def sql_contagem(view: str) -> str:
+    if view == "ocorrencia_vigente":
+        return "SELECT ano, count(*) FROM ocorrencia_vigente GROUP BY ano"
+    return (f"SELECT o.ano, count(*) FROM {view} t "
+            f"JOIN ocorrencia_vigente o USING (id_lote, id) GROUP BY o.ano")
 
 
 @unittest.skipIf(ingestao_lote is None, "deltalake/pyarrow indisponíveis")
@@ -69,6 +78,19 @@ class TestRegraDeEscrita(unittest.TestCase):
             antiga = DeltaTable(str(caminho), version=dt.version() - 1)
             self.assertEqual(antiga.to_pyarrow_table(filters=[("ano", "=", 2020)]).num_rows, 2)
 
+    def test_coluna_nova_na_origem_entra_na_tabela(self):
+        # Mudança de esquema: a origem ganha uma coluna depois que a tabela já existe.
+        with tempfile.TemporaryDirectory() as d:
+            caminho = Path(d) / "pessoa"
+            ingestao_lote.gravar_particao(caminho, self._tabela(2019, 3, [1, 2]), 2019)
+            nova = self._tabela(2020, 4, [3]).append_column("nacionalidade", pa.array(["Brasileira"]))
+            ingestao_lote.gravar_particao(caminho, nova, 2020)
+            t = DeltaTable(str(caminho)).to_pyarrow_table()
+            self.assertIn("nacionalidade", t.schema.names)
+            por_ano = {r["ano"]: r["nacionalidade"] for r in t.to_pylist()}
+            self.assertIsNone(por_ano[2019])
+            self.assertEqual(por_ano[2020], "Brasileira")
+
     def test_escrita_usa_zstd_e_um_arquivo_por_particao(self):
         with tempfile.TemporaryDirectory() as d:
             caminho = Path(d) / "ocorrencia"
@@ -86,14 +108,19 @@ class TestTabelasDoLake(TesteComBanco):
 
     @classmethod
     def setUpClass(cls):
-        if not all((LAKE / t / "_delta_log").exists() for t in TABELAS):
+        if not all((LAKE / t / "_delta_log").exists() for t in ("ocorrencia", "veiculo", "pessoa")):
             raise unittest.SkipTest(
                 f"tabelas do lote não encontradas em {LAKE}; rode `docker compose up` antes")
         super().setUpClass()
 
+    def contagens_na_origem(self, view: str) -> dict:
+        return dict(self.todos(sql_contagem(view)))
+
     def test_contagens_por_ano_iguais_as_views_vigentes(self):
-        for tabela, sql in SQL_VIGENTE.items():
-            esperado = dict(self.todos(sql))
+        for tabela, (view, _) in TABELAS.items():
+            esperado = self.contagens_na_origem(view)
+            if not esperado:
+                continue
             t = DeltaTable(str(LAKE / tabela)).to_pyarrow_table(columns=["ano"])
             r = t.group_by("ano").aggregate([("ano", "count")])
             obtido = dict(zip(r["ano"].to_pylist(), r["ano_count"].to_pylist()))
@@ -102,19 +129,25 @@ class TestTabelasDoLake(TesteComBanco):
 
     def test_cada_particao_tem_so_o_lote_vigente(self):
         vigentes = dict(self.todos("SELECT ano, id_lote FROM lote_vigente"))
-        for tabela in TABELAS:
-            for ano, id_lote in vigentes.items():
+        for tabela, (view, _) in TABELAS.items():
+            for ano in self.contagens_na_origem(view):  # só os anos com linhas na origem
+                id_lote = vigentes[ano]
                 with self.subTest(tabela=tabela, ano=ano):
                     self.assertEqual(ingestao_lote.lotes_na_particao(LAKE / tabela, ano), {id_lote})
 
     def test_sem_linha_duplicada(self):
-        for tabela, chave in TABELAS.items():
-            t = DeltaTable(str(LAKE / tabela)).to_pyarrow_table(columns=[chave])
+        for tabela, (view, chave) in TABELAS.items():
+            if not (LAKE / tabela / "_delta_log").exists():
+                continue
+            t = DeltaTable(str(LAKE / tabela)).to_pyarrow_table(columns=chave)
+            distintas = t.group_by(chave).aggregate([]).num_rows
             with self.subTest(tabela=tabela):
-                self.assertEqual(len(t.column(chave).unique()), t.num_rows)
+                self.assertEqual(distintas, t.num_rows)
 
     def test_um_arquivo_por_particao_em_zstd(self):
         for tabela in TABELAS:
+            if not (LAKE / tabela / "_delta_log").exists():
+                continue
             arquivos = [f.replace("file://", "") for f in DeltaTable(str(LAKE / tabela)).file_uris()]
             particoes = [f.split("ano=")[1].split("/")[0] for f in arquivos]
             with self.subTest(tabela=tabela):

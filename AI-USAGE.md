@@ -284,9 +284,11 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 - **O que foi aproveitado:** a base inteira: `wal_level=logical`, volume `lakehouse`, arquivos
   `compose/lote.yml` e `compose/cdc.yml` incluídos, bibliotecas e o contrato entre as partes. A
   troca do MinIO por um volume veio da conferência: as imagens do MinIO não puderam ser baixadas.
-- **Como foi verificado:** a E1 subiu do zero com a base e os 80 testes passaram; a inclusão
-  dos arquivos de `compose/` e o volume compartilhado foram testados antes.
-- **Quem revisou:** [revisor do PR #34]
+- **Como foi verificado:** a E1 subiu do zero com a base e os testes da época (80) passaram; a
+  inclusão dos arquivos de `compose/` e o volume compartilhado foram testados antes. Depois do
+  #36, a base foi atualizada com a `main` e revisada pela Maria Clara, que conferiu a esteira
+  subindo.
+- **Quem revisou:** Maria Clara (PR #34)
 
 #### 2026-10-12 — Ingestão em lote (#31)
 
@@ -295,13 +297,15 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
   `docs/e2/lote.md`
 - **O que foi pedido:** a ingestão em lote do PostgreSQL para tabelas Delta, idempotente, com
   tratamento de dado atrasado, os testes e a documentação.
-- **O que foi aproveitado:** o código, o serviço, os testes e o texto, inteiros.
-- **Como foi verificado:** subida do zero: 27 partições gravadas em 46 s, com as mesmas
-  contagens da carga da E1; segunda execução sem gravar nada; um arquivo Parquet por partição,
-  em zstd; republicação de 2020 simulada num banco de teste reescreveu só as 3 partições de 2020,
-  sem duplicar, com a versão anterior acessível no histórico; 87 testes passando (80 da E1 e 7
-  novos).
-- **Quem revisou:** [revisor do PR da #31]
+- **O que foi aproveitado:** o código, o serviço, os testes e o texto, inteiros, incluindo os
+  ajustes pedidos na revisão (geometria em WKB, chave dos testes igual à do banco, causas e
+  tipos, mudança de esquema e leitura em `REPEATABLE READ`).
+- **Como foi verificado:** subida do zero com os 20 anos: 80 partições gravadas em 94 s, com as
+  mesmas contagens das views vigentes; segunda execução sem gravar nada; um arquivo Parquet por
+  partição, em zstd; republicação de 2024 simulada num banco de teste reescreveu só as 5
+  partições de 2024, sem duplicar, com a versão anterior acessível no histórico; 107 testes
+  passando (99 da `main` e 8 novos).
+- **Quem revisou:** Maria Clara (PR #35)
 
 &nbsp;
 

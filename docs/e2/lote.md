@@ -7,19 +7,32 @@ Issue #31. Código em [`blackspot/ingestao_lote.py`](../../blackspot/ingestao_lo
 
 ## O que faz
 
-Lê a **versão vigente** do banco (views `ocorrencia_vigente`, `veiculo_vigente` e
-`pessoa_vigente`) e grava três **tabelas Delta** em `/app/lake/lote/`, no volume `lakehouse`:
+Lê a **versão vigente** do banco (as views `*_vigente`) e grava uma **tabela Delta** para cada
+uma em `/app/lake/lote/`, no volume `lakehouse`, particionada pelo **ano do acidente**. Números
+medidos com os 20 anos (BR-Brasil e BAT, 2007–2026):
 
-| Tabela | Partição | Linhas | Tamanho em Parquet (zstd) |
+| Tabela | Linhas | Partições | Tamanho em Parquet (zstd) |
 |---|---|---|---|
-| `ocorrencia` | `ano` | 632.708 | 19,8 MB |
-| `veiculo` | `ano` (da ocorrência) | 1.191.461 | 10,7 MB |
-| `pessoa` | `ano` (da ocorrência) | 1.509.549 | 14,6 MB |
+| `ocorrencia` | 2.243.584 | 20 | 52,9 MB |
+| `veiculo` | 4.008.904 | 20 | 31,8 MB |
+| `pessoa` | 4.998.779 | 20 | 47,1 MB |
+| `ocorrencia_causa` | 934.079 | 10 (só BAT) | 3,2 MB |
+| `ocorrencia_tipo` | 1.051.668 | 10 (só BAT) | 3,3 MB |
+| **Total** | | | **138 MB** |
 
-As três somam **45 MB**, contra 731 MB das mesmas tabelas no PostgreSQL (com índices).
+As mesmas cinco tabelas ocupam **2,7 GB** no PostgreSQL (com índices). As linhas batem com as
+views vigentes, ano a ano (teste `test_contagens_por_ano_iguais_as_views_vigentes`).
 
-Cada linha leva o `id_lote` de onde veio e uma coluna nova, **`processado_em`**: a **hora de
-processamento**, que não existia na E1 (lá só havia hora do evento e hora da ingestão).
+Detalhes:
+
+- **Ano:** só a ocorrência tem data; veículo, pessoa, causas e tipos recebem o ano da ocorrência.
+- **Geometria:** a coluna `geom` (PostGIS) é gravada em **WKB** (`ST_AsBinary`), o formato de
+  geometria do GeoParquet. Qualquer leitor recria o ponto, e `latitude` e `longitude` também
+  estão na tabela.
+- **Hora de processamento:** cada linha leva `processado_em`, a hora em que esta ingestão a
+  gravou. Na E1 só havia hora do evento e hora da ingestão no banco.
+- **Causas e tipos do BR-Brasil:** o BR-Brasil não tem esses arquivos, então essas duas tabelas
+  só têm os anos do BAT. A ingestão não grava partição vazia.
 
 ## Como rodar
 
@@ -52,11 +65,15 @@ Para cada tabela e cada ano, a ingestão compara o `id_lote` gravado na partiç�
 
 | Execução | Partições gravadas | Tempo |
 |---|---|---|
-| Primeira (banco recém-carregado) | 27 (3 tabelas × 9 anos) | 46 s |
-| Segunda, sem mudança na origem | 0 (27 sem mudança) | 2 s |
+| Primeira (banco recém-carregado, 20 anos) | 80 | 94 s |
+| Segunda, sem mudança na origem | 0 (80 sem mudança) | 10 s |
 
 Se a ingestão cair no meio, a próxima execução pula as partições que já estão com o lote
 vigente e refaz só as que faltaram.
+
+A leitura inteira acontece numa única transação `REPEATABLE READ`: todas as tabelas e todos os
+anos saem do **mesmo retrato** do banco, mesmo que uma carga termine no meio da ingestão. Sem
+isso, a ocorrência e a pessoa de um ano poderiam sair de lotes diferentes.
 
 **Semântica de entrega do lote:** cada versão (lote) de um ano chega à camada analítica
 **exatamente uma vez**. A reexecução é segura porque a escrita é por substituição da partição,
@@ -69,32 +86,40 @@ Esse é o nosso **dado atrasado**: um evento de 2024 que chega em 2026.
 
 - A partição é pelo **ano do evento** (`ocorrido_em`), e não pelo dia da ingestão. O dado
   atrasado cai na janela certa: a republicação de 2024 vai para a partição `ano=2024`.
-- A carga da E1 cria um **lote novo** para o ano, que vira o vigente. A ingestão vê o lote
-  diferente e **reescreve só aquela partição**: é o reprocessamento da janela.
+- A carga cria um **lote novo** para o ano, que vira o vigente. A ingestão vê o lote diferente
+  e **reescreve só aquela partição**: é o reprocessamento da janela.
 - A versão anterior **não se perde**: fica no histórico da tabela Delta e pode ser lida com
   `DeltaTable(caminho, version=N)` (viagem no tempo).
 
-**Demonstração** (republicação de 2020 simulada num banco de teste, com o município de uma
-ocorrência alterado):
+**Demonstração** (republicação de 2024 simulada num banco de teste com os 20 anos, com o
+município de uma ocorrência alterado):
 
 | | Resultado |
 |---|---|
-| Partições reescritas | 3 (as de 2020, uma por tabela) em 7 s |
-| Partições intocadas | 24 |
-| Total de linhas | 632.708 antes e depois: sem duplicar |
-| Arquivos na partição de 2020 | 1 |
+| Partições reescritas | 5 (as de 2024, uma por tabela) em 50 s |
+| Partições intocadas | 75 |
+| Total de ocorrências | 2.243.584 antes e depois: sem duplicar |
+| Arquivos na partição de 2024 | 1 |
 | Versão atual da tabela | município revisado, `id_lote` novo |
-| Versão anterior (viagem no tempo) | município original, `id_lote` antigo |
+| Versão anterior (viagem no tempo) | município original (`TANGUA`), `id_lote` antigo |
 
 O teste `test_republicacao_reescreve_so_a_particao_do_ano` repete isso com uma tabela pequena.
 
+## Mudança de esquema na origem
+
+Se uma view ganhar uma coluna (como aconteceu com `nacionalidade` na migração `V0010`), uma
+tabela Delta já existente recusaria a escrita com esquema diferente (`SchemaMismatchError`). A
+ingestão grava com `schema_mode="merge"`: a coluna nova entra na tabela, e as partições antigas
+ficam com ela vazia até serem reescritas. O teste `test_coluna_nova_na_origem_entra_na_tabela`
+cobre isso. A escolha entre Delta e Iceberg, e o que cada um garante na evolução de esquema,
+fica no ADR 0004.
+
 ## Arquivos e compressão
 
-- **Um arquivo Parquet por partição** em cada execução: são 9 arquivos por tabela, e não um por
-  linha ou por lote pequeno, o que evita o problema dos arquivos pequenos.
+- **Um arquivo Parquet por partição** em cada execução, e não um por linha ou por lote pequeno,
+  o que evita o problema dos arquivos pequenos.
 - **zstd** no lugar do snappy, que é o padrão: a leitura da pergunta de gestão agrega poucas
-  colunas sobre o recorte inteiro, e o zstd comprime mais com descompressão rápida. A
-  comparação medida está no ADR 0002.
+  colunas sobre o recorte inteiro. A comparação medida entre as compressões fica no ADR 0004.
 
 ## Testes
 
@@ -103,17 +128,19 @@ O teste `test_republicacao_reescreve_so_a_particao_do_ano` repete isso com uma t
 
 - a regra de reescrita (pula o mesmo lote, reescreve no lote novo);
 - a republicação reescreve só a partição do ano, e a versão antiga continua no histórico;
+- uma coluna nova na origem entra na tabela;
 - zstd e um arquivo por partição;
 - nas tabelas gravadas: contagens por ano iguais às views vigentes, cada partição só com o lote
-  vigente, nenhuma linha duplicada.
+  vigente e nenhuma linha duplicada **pela chave primária do banco** (que começa por `id_lote`,
+  porque a PRF reusa IDs entre o BR-Brasil e o BAT).
 
 Se as tabelas do lote não existirem (o `docker compose up` não rodou), os testes que dependem
 delas são pulados, com o motivo.
 
 ## Limites
 
-- Um ano que deixe de existir no banco não é apagado do Delta: no nosso recorte, todo ano tem
-  sempre um lote vigente.
-- O histórico do Delta cresce a cada republicação (cerca de 5 MB por ano republicado, somando as
-  três tabelas). Um `VACUUM` com retenção limpa versões antigas, mas acaba com a viagem no tempo
+- Um ano que deixe de existir no banco não é apagado do Delta: no recorte, todo ano tem sempre
+  um lote vigente.
+- O histórico do Delta cresce a cada republicação (cerca de 7 MB por ano republicado, somando as
+  cinco tabelas). Um `VACUUM` com retenção limpa versões antigas, mas acaba com a viagem no tempo
   delas; por isso não é rodado automaticamente.
