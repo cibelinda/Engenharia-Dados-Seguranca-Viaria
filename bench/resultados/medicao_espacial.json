@@ -1,0 +1,279 @@
+{
+ "medido_em": "2026-10-13T01:31:46+00:00",
+ "postgis": "POSTGIS=\"3.6.4 94d984b\" [EXTENSION] PGSQL=\"180\" GEOS=\"3.14.1-CAPI-1.20.5\" (compiled against GEOS 3.13.1) PROJ=\"9.8.1 NETWORK_ENABLED=OFF URL_ENDPOINT=https://cdn.proj.org USER_WRITABLE_DIRECTORY=/var/lib/postgresql/.local/share/proj DATABASE_PATH=/usr/share/proj/proj.db\" (compiled against PROJ 9.6.0) LIBXML=\"2.9.14\" LIBJSON=\"0.18\" LIBPROTOBUF=\"1.5.1\" WAGYU=\"0.5.0 (Internal)\" TOPOLOGY",
+ "raio": {
+  "raio_m": 2000,
+  "ponto": {
+   "lat": -27.59122,
+   "lon": -48.61857
+  },
+  "graves_no_raio_postgis": 715,
+  "graves_no_raio_haversine": 715,
+  "e1_haversine_sem_indice": {
+   "mediana_ms": 608.4,
+   "min_ms": 600.0,
+   "max_ms": 610.2,
+   "usa_indice_espacial": false,
+   "buffers": 426112
+  },
+  "postgis_geography_gist": {
+   "mediana_ms": 45.8,
+   "min_ms": 43.8,
+   "max_ms": 48.2,
+   "usa_indice_espacial": true,
+   "buffers": 5220
+  }
+ },
+ "dbscan": {
+  "periodo": "2017-2025",
+  "todos_os_pontos": {
+   "eps_m": 100,
+   "minpoints": 25,
+   "grupos": 325,
+   "acidentes_em_grupos": 12224,
+   "segundos": 1.0,
+   "maiores": [
+    {
+     "acidentes": 114,
+     "anos": 8,
+     "br": 20,
+     "uf": "CE",
+     "km_mediano": 419.0,
+     "raio_m": 11,
+     "lat": -3.76999,
+     "lon": -38.67006
+    },
+    {
+     "acidentes": 108,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 206.0,
+     "raio_m": 135,
+     "lat": -27.59193,
+     "lon": -48.61823
+    },
+    {
+     "acidentes": 106,
+     "anos": 9,
+     "br": 101,
+     "uf": "ES",
+     "km_mediano": 270.0,
+     "raio_m": 162,
+     "lat": -20.22662,
+     "lon": -40.27081
+    },
+    {
+     "acidentes": 102,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 215.05,
+     "raio_m": 189,
+     "lat": -27.65185,
+     "lon": -48.67601
+    },
+    {
+     "acidentes": 99,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 212.0,
+     "raio_m": 114,
+     "lat": -27.62996,
+     "lon": -48.65901
+    },
+    {
+     "acidentes": 96,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 214.2,
+     "raio_m": 109,
+     "lat": -27.64443,
+     "lon": -48.67052
+    },
+    {
+     "acidentes": 94,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 207.0,
+     "raio_m": 162,
+     "lat": -27.59994,
+     "lon": -48.62258
+    },
+    {
+     "acidentes": 94,
+     "anos": 9,
+     "br": 101,
+     "uf": "ES",
+     "km_mediano": 269.1,
+     "raio_m": 128,
+     "lat": -20.21735,
+     "lon": -40.26992
+    },
+    {
+     "acidentes": 91,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 213.0,
+     "raio_m": 147,
+     "lat": -27.63701,
+     "lon": -48.66513
+    },
+    {
+     "acidentes": 86,
+     "anos": 9,
+     "br": 319,
+     "uf": "RO",
+     "km_mediano": 63.0,
+     "raio_m": 129,
+     "lat": -8.76671,
+     "lon": -63.88408
+    }
+   ]
+  },
+  "sem_pontos_repetidos": {
+   "eps_m": 300,
+   "minpoints": 20,
+   "grupos": 129,
+   "acidentes_em_grupos": 4160,
+   "segundos": 1.8,
+   "maiores": [
+    {
+     "acidentes": 167,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 205.8,
+     "raio_m": 1539,
+     "lat": -27.59122,
+     "lon": -48.61857
+    },
+    {
+     "acidentes": 130,
+     "anos": 8,
+     "br": 101,
+     "uf": "ES",
+     "km_mediano": 270.0,
+     "raio_m": 995,
+     "lat": -20.22796,
+     "lon": -40.27258
+    },
+    {
+     "acidentes": 119,
+     "anos": 9,
+     "br": 101,
+     "uf": "PE",
+     "km_mediano": 69.1,
+     "raio_m": 932,
+     "lat": -8.06585,
+     "lon": -34.9434
+    },
+    {
+     "acidentes": 92,
+     "anos": 9,
+     "br": 319,
+     "uf": "RO",
+     "km_mediano": 63.0,
+     "raio_m": 1062,
+     "lat": -8.75564,
+     "lon": -63.88666
+    },
+    {
+     "acidentes": 82,
+     "anos": 9,
+     "br": 101,
+     "uf": "PB",
+     "km_mediano": 88.0,
+     "raio_m": 717,
+     "lat": -7.16728,
+     "lon": -34.89714
+    },
+    {
+     "acidentes": 81,
+     "anos": 9,
+     "br": 101,
+     "uf": "SC",
+     "km_mediano": 214.6,
+     "raio_m": 1041,
+     "lat": -27.65105,
+     "lon": -48.67513
+    },
+    {
+     "acidentes": 66,
+     "anos": 8,
+     "br": 376,
+     "uf": "PR",
+     "km_mediano": 176.3,
+     "raio_m": 842,
+     "lat": -23.41207,
+     "lon": -51.93631
+    },
+    {
+     "acidentes": 60,
+     "anos": 9,
+     "br": 116,
+     "uf": "MG",
+     "km_mediano": 412.8,
+     "raio_m": 742,
+     "lat": -18.87603,
+     "lon": -41.96441
+    },
+    {
+     "acidentes": 56,
+     "anos": 9,
+     "br": 101,
+     "uf": "ES",
+     "km_mediano": 264.2,
+     "raio_m": 623,
+     "lat": -20.17702,
+     "lon": -40.26603
+    },
+    {
+     "acidentes": 54,
+     "anos": 8,
+     "br": 101,
+     "uf": "ES",
+     "km_mediano": 266.3,
+     "raio_m": 591,
+     "lat": -20.19467,
+     "lon": -40.26862
+    }
+   ]
+  }
+ },
+ "coerencia_ponto_trecho": {
+  "trechos_com_20_ou_mais": 4302,
+  "mediana_das_medianas_m": 2528,
+  "p90_das_medianas_m": 6168,
+  "fracao_ate_5km": 0.868
+ },
+ "coordenadas_repetidas": {
+  "pontos_com_10_ou_mais_acidentes": 8074,
+  "acidentes_nesses_pontos": 225005,
+  "maior_repeticao": 438,
+  "pontos_com_kms_diferentes": 7884,
+  "fracao_dos_acidentes_por_ano": {
+   "2017": 0.065,
+   "2018": 0.16,
+   "2019": 0.486,
+   "2020": 0.51,
+   "2021": 0.518,
+   "2022": 0.508,
+   "2023": 0.506,
+   "2024": 0.511,
+   "2025": 0.067,
+   "2026": 0.001
+  }
+ },
+ "espaco": {
+  "coluna_geom_mb": 18.8,
+  "indice_geom_mb": 29.7,
+  "indice_geography_mb": 53.5,
+  "ocorrencia_total_mb": 775.0,
+  "banco_mb": 2716.9
+ }
+}

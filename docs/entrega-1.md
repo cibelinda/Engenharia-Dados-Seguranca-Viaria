@@ -8,6 +8,13 @@ nav_exclude: false
 
 Tag [`e1`](https://github.com/cibelinda/Engenharia-Dados-Seguranca-Viaria/tree/e1) — 28/09/2026.
 
+> **Correções depois da avaliação (2026-10-12).** O banco passou a ser PostgreSQL com **PostGIS**,
+> porque a PRF publica a coordenada de cada acidente desde 2017
+> ([ADR 0002](adr/0002-banco-espacial-postgis.md)), e o recorte BAT 2017–2025 foi substituído pelo
+> **dataset completo** da PRF, de 2007 a 2026, com o BR-Brasil
+> ([ADR 0003](adr/0003-dataset-completo-br-brasil-e-bat.md)). Esta página descreve a entrega como
+> ela foi feita na tag `e1`.
+
 ## Em uma frase
 
 Um único `docker compose up` baixa os dados abertos de acidentes da PRF, cria o banco

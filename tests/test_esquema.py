@@ -22,8 +22,10 @@ else:
 MIGRACOES = Path(__file__).resolve().parent.parent / "db" / "migrations"
 
 TABELAS = {"lote_carga", "lote_arquivo", "causa_acidente", "tipo_acidente",
-           "ocorrencia", "veiculo", "pessoa", "linha_rejeitada"}
-VIEWS = {"lote_vigente", "ocorrencia_vigente", "veiculo_vigente", "pessoa_vigente"}
+           "ocorrencia", "veiculo", "pessoa", "linha_rejeitada",
+           "ocorrencia_causa", "ocorrencia_tipo"}
+VIEWS = {"lote_vigente", "ocorrencia_vigente", "veiculo_vigente", "pessoa_vigente",
+         "ocorrencia_causa_vigente", "ocorrencia_tipo_vigente"}
 
 # Colunas da chave primária de cada tabela, na ordem.
 PKS = {
@@ -35,6 +37,8 @@ PKS = {
     "veiculo": ["id_lote", "id", "id_veiculo"],
     "pessoa": ["id_lote", "pesid"],
     "linha_rejeitada": ["id_rejeicao"],
+    "ocorrencia_causa": ["id_lote", "id", "id_causa"],
+    "ocorrencia_tipo": ["id_lote", "id", "ordem"],
 }
 
 # (tabela, colunas) -> (tabela referenciada, colunas). Toda linha de dado aponta
@@ -48,6 +52,10 @@ FKS = {
     ("pessoa", ("id_lote", "id")): ("ocorrencia", ("id_lote", "id")),
     ("pessoa", ("id_lote", "id", "id_veiculo")): ("veiculo", ("id_lote", "id", "id_veiculo")),
     ("linha_rejeitada", ("id_lote", "dataset")): ("lote_arquivo", ("id_lote", "dataset")),
+    ("ocorrencia_causa", ("id_lote", "id")): ("ocorrencia", ("id_lote", "id")),
+    ("ocorrencia_causa", ("id_causa",)): ("causa_acidente", ("id_causa",)),
+    ("ocorrencia_tipo", ("id_lote", "id")): ("ocorrencia", ("id_lote", "id")),
+    ("ocorrencia_tipo", ("id_tipo",)): ("tipo_acidente", ("id_tipo",)),
 }
 
 
@@ -104,6 +112,16 @@ class TestMigracoes(TesteComBanco):
             with self.subTest(fk=chave):
                 self.assertEqual(existentes.get(chave), alvo)
 
+    def test_postgis_instalado_e_ponto_com_srid_sirgas(self):
+        # ADR 0002: o banco é espacial. geom é Point em SIRGAS 2000 (EPSG:4674).
+        self.assertIsNotNone(self.um("SELECT extversion FROM pg_extension WHERE extname = 'postgis'"))
+        self.assertEqual(
+            self.todos("SELECT type, srid FROM geometry_columns WHERE f_table_name = 'ocorrencia' "
+                       "AND f_geometry_column = 'geom'"),
+            [("POINT", 4674)])
+        indice = self.um("SELECT indexdef FROM pg_indexes WHERE indexname = 'ocorrencia_geom_idx'")
+        self.assertIn("USING gist", indice)
+
     def test_toda_tabela_e_view_declara_seu_carimbo_de_tempo(self):
         # O enunciado pede que cada tabela deixe claro que tempo guarda; o esquema
         # faz isso no COMMENT ON TABLE/VIEW.
@@ -129,8 +147,18 @@ class TestRestricoes(TesteComBanco):
 
     # --- lote ----------------------------------------------------------------------
 
-    def test_lote_fora_do_recorte(self):
-        self.assertFalha(CHECK, "INSERT INTO lote_carga (ano) VALUES (2016)")
+    def test_lote_antes_da_fonte(self):
+        # A PRF publica a partir de 2007.
+        self.assertFalha(CHECK, "INSERT INTO lote_carga (ano) VALUES (2006)")
+
+    def test_sistema_vem_do_ano(self):
+        br, bat = self.lote(ano=2016), self.lote(ano=2017)
+        self.assertEqual(
+            self.todos("SELECT id_lote, sistema FROM lote_carga WHERE id_lote IN (%s, %s) ORDER BY id_lote",
+                       (br, bat)),
+            [(br, "br_brasil"), (bat, "bat")])
+        self.assertFalha(errors.GeneratedAlways if psycopg else Exception,
+                         "INSERT INTO lote_carga (ano, sistema) VALUES (2017, 'br_brasil')")
 
     def test_lote_concluido_sem_fim(self):
         self.assertFalha(CHECK, "INSERT INTO lote_carga (ano, status) VALUES (%s, 'concluido')", (ANO,))
@@ -168,6 +196,26 @@ class TestRestricoes(TesteComBanco):
 
     def test_ocorrencia_sem_municipio(self):
         self.assertInsertFalha(NOT_NULL, "ocorrencia", self.linha_ocorrencia(self.id_lote, municipio=None))
+
+    def test_ponto_gerado_das_coordenadas(self):
+        self.inserir("ocorrencia", self.linha_ocorrencia(self.id_lote))
+        self.assertEqual(
+            self.todos("SELECT ST_X(geom), ST_Y(geom), ST_SRID(geom) FROM ocorrencia WHERE id_lote = %s",
+                       (self.id_lote,)),
+            [(-48.9, -16.3, 4674)])
+
+    def test_ocorrencia_sem_coordenada_nao_tem_ponto(self):
+        # Todo o BR-Brasil (2007–2016) vem sem coordenada.
+        self.inserir("ocorrencia", self.linha_ocorrencia(self.id_lote, latitude=None, longitude=None))
+        self.assertIsNone(self.um("SELECT geom FROM ocorrencia WHERE id_lote = %s", (self.id_lote,)))
+
+    def test_ponto_nao_e_gravado_pela_carga(self):
+        self.assertInsertFalha(errors.GeneratedAlways if psycopg else Exception, "ocorrencia",
+                               self.linha_ocorrencia(self.id_lote, geom="SRID=4674;POINT(-48.9 -16.3)"))
+
+    def test_ocorrencia_sem_trecho_entra(self):
+        # BR-Brasil: 12 ocorrências com uf, br e km (null). Entram, mas saem do ranking.
+        self.inserir("ocorrencia", self.linha_ocorrencia(self.id_lote, uf=None, br=None, km=None))
 
     def test_ocorrencia_sem_data(self):
         self.assertInsertFalha(NOT_NULL, "ocorrencia", self.linha_ocorrencia(self.id_lote, ocorrido_em=None))
@@ -230,14 +278,17 @@ class TestRestricoes(TesteComBanco):
         self.acidente(self.id_lote)
         self.assertInsertFalha(CHECK, "pessoa", self.linha_pessoa(self.id_lote, pesid=0))
 
-    def test_condutor_sem_veiculo(self):
-        self.inserir("ocorrencia", self.linha_ocorrencia(self.id_lote))
-        self.assertInsertFalha(CHECK, "pessoa", self.linha_pessoa(self.id_lote, id_veiculo=None))
-
-    def test_pedestre_com_veiculo(self):
+    def test_vocabulario_do_br_brasil_entra(self):
+        # A origem guarda o vocabulário de cada sistema, sem harmonizar (V0010).
         self.acidente(self.id_lote)
-        self.assertInsertFalha(CHECK, "pessoa", self.linha_pessoa(
-            self.id_lote, pesid=101, tipo_envolvido="Pedestre"))
+        self.inserir("pessoa", self.linha_pessoa(
+            self.id_lote, pesid=101, tipo_envolvido="Vítima", estado_fisico="Ferido Grave",
+            sexo="M", nacionalidade="Brasil", naturalidade="GO"))
+        self.inserir("ocorrencia", self.linha_ocorrencia(self.id_lote, id=2, classificacao_acidente="Ignorado"))
+
+    def test_tipo_envolvido_invalido(self):
+        self.acidente(self.id_lote)
+        self.assertInsertFalha(CHECK, "pessoa", self.linha_pessoa(self.id_lote, pesid=101, tipo_envolvido="NA"))
 
     def test_estado_fisico_invalido(self):
         self.acidente(self.id_lote)
@@ -246,6 +297,26 @@ class TestRestricoes(TesteComBanco):
     def test_pessoa_repetida_no_mesmo_lote(self):
         self.acidente(self.id_lote)
         self.assertInsertFalha(UNICO, "pessoa", self.linha_pessoa(self.id_lote))
+
+    # --- causas e tipos (todas_causas, BAT) ------------------------------------------
+
+    def test_duas_causas_principais(self):
+        self.inserir("ocorrencia", self.linha_ocorrencia(self.id_lote))
+        self.inserir("ocorrencia_causa", {"id_lote": self.id_lote, "id": 1, "id_causa": self.causa(),
+                                          "causa_principal": True})
+        self.assertInsertFalha(UNICO, "ocorrencia_causa", {"id_lote": self.id_lote, "id": 1,
+                                                           "id_causa": self.causa(), "causa_principal": True})
+
+    def test_causa_sem_ocorrencia(self):
+        self.assertInsertFalha(FK, "ocorrencia_causa", {"id_lote": self.id_lote, "id": 999,
+                                                        "id_causa": self.causa(), "causa_principal": True})
+
+    def test_ordem_de_tipo_invalida(self):
+        self.inserir("ocorrencia", self.linha_ocorrencia(self.id_lote))
+        id_tipo = self.um("INSERT INTO tipo_acidente (descricao) VALUES (%s) RETURNING id_tipo",
+                          (f"teste {self.id_lote}",))
+        self.assertInsertFalha(CHECK, "ocorrencia_tipo",
+                               {"id_lote": self.id_lote, "id": 1, "ordem": 0, "id_tipo": id_tipo})
 
     # --- linha rejeitada -----------------------------------------------------------
 

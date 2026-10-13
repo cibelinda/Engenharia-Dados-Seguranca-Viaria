@@ -1,13 +1,16 @@
-"""Perfil do recorte (BAT 2017–2025, ocorrência e pessoa) direto dos ZIPs baixados.
+"""Perfil do dataset completo da PRF (ocorrência e pessoa, 2007 em diante) direto dos ZIPs.
 
-Gera os números de cardinalidade, sazonalidade e chaves usados na caracterização
-da carga (issue #6), sem depender do banco. Quando a carga real (#4) existir, os
-mesmos números devem ser conferidos no PostgreSQL.
+Gera os números de cardinalidade, sazonalidade e chaves da caracterização da carga
+(issue #6) sem depender do banco, e serve de contagem independente para os testes
+de volume (tests/test_volume.py).
+
+Na E1 o recorte era BAT 2017–2025, e o resultado está em
+bench/resultados/perfil_recorte.json (tag e1). Com o dataset completo (ADR 0003), o
+resultado vai para bench/resultados/perfil_dataset_completo.json.
 
 Uso:
-    python -m blackspot.download --system bat --dataset ocorrencia --dataset pessoa \\
-        --year 2017 ... --year 2025
-    python bench/perfil_recorte.py            # grava bench/resultados/perfil_recorte.json
+    python -m blackspot.download
+    python bench/perfil_recorte.py     # grava bench/resultados/perfil_dataset_completo.json
 
 Só usa a biblioteca padrão.
 """
@@ -27,8 +30,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = REPO_ROOT / os.environ.get("BLACKSPOT_RAW_DIR", "data/raw")
-OUT = REPO_ROOT / "bench" / "resultados" / "perfil_recorte.json"
-ANOS = range(2017, 2026)
+OUT = REPO_ROOT / "bench" / "resultados" / "perfil_dataset_completo.json"
+ANOS = range(2007, 2027)  # 2026 é parcial
 ENCODING = "cp1252"  # todos os arquivos da PRF, sem BOM (docs/fontes/README.md)
 TRECHO_KM = 10
 
@@ -38,13 +41,33 @@ def log(msg: str) -> None:
 
 
 def ler(zip_name: str):
-    """Itera os registros do único CSV do ZIP como dicionários (valores com strip)."""
+    """Itera os registros do único CSV do ZIP como dicionários (valores com strip).
+
+    O separador sai do cabeçalho: `,` no arquivo de pessoa de 2007–2015, `;` no resto.
+    """
     with zipfile.ZipFile(RAW_DIR / zip_name) as zf:
         (member,) = [m for m in zf.namelist() if m.lower().endswith(".csv")]
         with zf.open(member) as raw:
             text = io.TextIOWrapper(raw, encoding=ENCODING, newline="")
-            for row in csv.DictReader(text, delimiter=";"):
+            primeira = text.readline()
+            sep = ";" if primeira.count(";") >= primeira.count(",") else ","
+            cabecalho = next(csv.reader([primeira.rstrip("\r\n")], delimiter=sep))
+            for row in csv.DictReader(text, fieldnames=cabecalho, delimiter=sep):
                 yield {k: (v or "").strip() for k, v in row.items()}
+
+
+def arquivo_pessoa(ano: int) -> str:
+    return "acidentes2016_atual.zip" if ano == 2016 else f"acidentes{ano}.zip"
+
+
+def mes(data: str) -> tuple[int, int] | None:
+    """(ano, mês) de data_inversa: aaaa-mm-dd, dd/mm/aaaa ou dd/mm/aa."""
+    if len(data) == 10 and data[4] == "-":
+        return int(data[:4]), int(data[5:7])
+    if len(data) in (8, 10) and data[2] == "/" and data[5] == "/":
+        a = int(data[6:])
+        return (a + 2000 if a < 100 else a), int(data[3:5])
+    return None
 
 
 def inteiro(v: str) -> int | None:
@@ -72,22 +95,25 @@ def perfil_ocorrencia() -> tuple[dict, set[str]]:
     por_ano, graves_ano, por_mes, por_ano_mes = Counter(), Counter(), Counter(), Counter()
     classificacao, causa, tipo, br, uf, municipio = Counter(), Counter(), Counter(), Counter(), Counter(), Counter()
     trechos: set[tuple] = set()
+    # IDs por ano: o id só é único dentro de cada sistema (490.283 colidem entre BR-Brasil e BAT).
     ids: Counter = Counter()
     ids_notacao: list[str] = []
+    id_invalido_ano: Counter = Counter()
     id_invalido = km_invalido = br_invalido = br_zero = sem_coord = data_invalida = 0
+    br_ausente = km_negativo = 0
     pessoas, veiculos = [], []
 
     for ano in ANOS:
         for r in ler(f"datatran{ano}.zip"):
             por_ano[ano] += 1
-            ids[r["id"]] += 1
+            ids[(ano, r["id"])] += 1
             if not r["id"].isdigit():
                 id_invalido += 1
+                id_invalido_ano[ano] += 1
                 ids_notacao.append(r["id"])
-            data = r["data_inversa"]
-            if len(data) == 10 and data[4] == "-":
-                por_mes[int(data[5:7])] += 1
-                por_ano_mes[data[:7]] += 1
+            if (am := mes(r["data_inversa"])) is not None:
+                por_mes[am[1]] += 1
+                por_ano_mes[f"{am[0]}-{am[1]:02d}"] += 1
             else:
                 data_invalida += 1
             mortos, fg = inteiro(r["mortos"]) or 0, inteiro(r["feridos_graves"]) or 0
@@ -100,15 +126,19 @@ def perfil_ocorrencia() -> tuple[dict, set[str]]:
             municipio[(r["uf"], r["municipio"])] += 1
             b, km = inteiro(r["br"]), decimal(r["km"])
             br[r["br"]] += 1
-            if b is None:
+            if r["br"] == "(null)":
+                br_ausente += 1  # BR-Brasil: uf, br e km (null) juntos
+            elif b is None:
                 br_invalido += 1
             elif b == 0:
                 br_zero += 1  # rodovia não identificada
-            if km is None:
+            if km is None and r["km"] != "(null)":
                 km_invalido += 1
-            if b is not None and km is not None:
+            if km is not None and km < 0:
+                km_negativo += 1
+            if b is not None and km is not None and km >= 0:
                 trechos.add((b, r["uf"], int(km // TRECHO_KM)))
-            if decimal(r["latitude"]) is None or decimal(r["longitude"]) is None:
+            if decimal(r.get("latitude", "")) is None or decimal(r.get("longitude", "")) is None:
                 sem_coord += 1
             if (p := inteiro(r["pessoas"])) is not None:
                 pessoas.append(p)
@@ -126,9 +156,12 @@ def perfil_ocorrencia() -> tuple[dict, set[str]]:
         "ids_distintos": len(ids),
         "ids_repetidos": sum(1 for n in ids.values() if n > 1),
         "ids_nao_numericos": id_invalido,
+        "ids_nao_numericos_por_ano": dict(id_invalido_ano),
         "ids_nao_numericos_valores": ids_notacao,
         "data_fora_do_formato": data_invalida,
         "br_invalida": br_invalido,
+        "br_uf_km_ausentes": br_ausente,
+        "km_negativo": km_negativo,
         "br_zero": br_zero,
         "km_invalido": km_invalido,
         "sem_coordenada_valida": sem_coord,
@@ -146,7 +179,7 @@ def perfil_ocorrencia() -> tuple[dict, set[str]]:
         "veiculos_por_ocorrencia_coluna": resumo(veiculos),
         "por_mes_do_ano_total": {m: por_mes[m] for m in range(1, 13)},
         "por_ano_mes": {k: por_ano_mes[k] for k in meses_ano},
-    }, set(ids)
+    }, {f"{a}/{i}" for a, i in ids}
 
 
 def perfil_pessoa(ids_ocorrencia: set[str]) -> dict:
@@ -159,13 +192,14 @@ def perfil_pessoa(ids_ocorrencia: set[str]) -> dict:
     pesid_real: Counter = Counter()  # pesid != 0, isto é, linha que é de fato uma pessoa
     pesid_zero_por_envolvido: Counter = Counter()
     registros_id_nao_numerico: Counter = Counter()
+    id_invalido_ano: Counter = Counter()
     dup_por_ano = {}
 
     for ano in ANOS:
         pares_ano, triplas_ano, linhas = set(), set(), 0
-        for r in ler(f"acidentes{ano}.zip"):
+        for r in ler(arquivo_pessoa(ano)):
             linhas += 1
-            i, p, v = r["id"], r["pesid"], r["id_veiculo"]
+            i, p, v = f"{ano}/{r['id']}", r["pesid"], r["id_veiculo"]
             por_ocorrencia[i] += 1
             veiculos_por_ocorrencia.setdefault(i, set()).add(v)
             pares[(i, p)] += 1
@@ -181,8 +215,9 @@ def perfil_pessoa(ids_ocorrencia: set[str]) -> dict:
             else:
                 pesid_real[p] += 1
             veic_vazio += not v
-            if not i.isdigit():
+            if not r["id"].isdigit():
                 registros_id_nao_numerico[i] += 1
+                id_invalido_ano[ano] += 1
         por_ano[ano] = linhas
         dup_por_ano[ano] = {
             "linhas": linhas,
@@ -204,6 +239,7 @@ def perfil_pessoa(ids_ocorrencia: set[str]) -> dict:
         "pesid_real_repetido": sum(1 for n in pesid_real.values() if n > 1),
         "pesid_zero_por_tipo_envolvido_estado_fisico": dict(pesid_zero_por_envolvido.most_common()),
         "registros_com_id_nao_numerico": sum(registros_id_nao_numerico.values()),
+        "registros_com_id_nao_numerico_por_ano": dict(id_invalido_ano),
         "registros_com_id_nao_numerico_por_id": dict(sorted(registros_id_nao_numerico.items())),
         "excedentes_id_pesid_com_pesid_zero": sum(n - 1 for (_, p), n in pares.items() if n > 1 and p == "0"),
         "chave_id_pesid": {
@@ -231,8 +267,8 @@ def sha256_of(path: Path) -> str:
 
 
 def main() -> int:
-    faltando = [f"{p}{a}.zip" for p in ("datatran", "acidentes") for a in ANOS
-                if not (RAW_DIR / f"{p}{a}.zip").exists()]
+    zips = [f"datatran{a}.zip" for a in ANOS] + [arquivo_pessoa(a) for a in ANOS]
+    faltando = [z for z in zips if not (RAW_DIR / z).exists()]
     if faltando:
         log(f"faltam arquivos em {RAW_DIR}: {', '.join(faltando)}; rode o download antes")
         return 1
@@ -242,9 +278,8 @@ def main() -> int:
     pe = perfil_pessoa(ids)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     # SHA-256 dos arquivos lidos: identifica a versão da PRF que gerou estes números.
-    arquivos = {z: sha256_of(RAW_DIR / z) for p in ("datatran", "acidentes") for z in
-                (f"{p}{a}.zip" for a in ANOS)}
-    OUT.write_text(json.dumps({"recorte": "BAT 2017-2025", "arquivos_sha256": arquivos,
+    arquivos = {z: sha256_of(RAW_DIR / z) for z in zips}
+    OUT.write_text(json.dumps({"recorte": f"dataset completo {ANOS[0]}-{ANOS[-1]}", "arquivos_sha256": arquivos,
                                "ocorrencia": oc, "pessoa": pe},
                               indent=1, ensure_ascii=False), encoding="utf-8")
     log(f"\nresultado em {OUT.relative_to(REPO_ROOT)}")
