@@ -6,11 +6,11 @@ nav_exclude: false
 
 # Release Notes 1 — Banco de Dados 2
 
-**Nome do grupo:** Squad BlackSpot
-**Integrantes:** Ana Luiza Komatsu (231011079), Cibelly Lourenço (231026680), Maria Clara Sena (231012281)
-**Data:** 13/10/2026
-**Domínio:** segurança viária nas rodovias federais brasileiras (acidentes registrados pela PRF)
-**Versão:** tag [`r1`](https://github.com/cibelinda/Engenharia-Dados-Seguranca-Viaria/tree/r1). Substitui a tag `e1` (28/09/2026) e inclui as correções feitas a partir da avaliação da E1.
+- **Nome do grupo:** Squad BlackSpot
+- **Integrantes:** Ana Luiza Komatsu (231011079), Cibelly Lourenço (231026680), Maria Clara Sena (231012281)
+- **Data:** 13/10/2026
+- **Domínio:** segurança viária nas rodovias federais brasileiras (acidentes registrados pela PRF)
+- **Versão:** tag [`r1`](https://github.com/cibelinda/Engenharia-Dados-Seguranca-Viaria/tree/r1). Substitui a tag `e1` (28/09/2026) e inclui as correções feitas a partir da avaliação da E1.
 
 ---
 
@@ -143,7 +143,7 @@ Correções feitas a partir da avaliação da E1 (12/10/2026):
 | O banco não era apropriado para dados com latitude e longitude | PostgreSQL com **PostGIS**: coluna `geom` gerada das coordenadas, em SIRGAS 2000, com índice GiST ([ADR 0002](adr/0002-banco-espacial-postgis.md), migração `V0009`) |
 | O BR-Brasil não podia ser descartado só por estar em outro formato | **Dataset completo**, 2007–2026: os dois sistemas no mesmo esquema, com o formato tratado na carga. O volume foi de 632 mil para 2,2 milhões de acidentes ([ADR 0003](adr/0003-dataset-completo-br-brasil-e-bat.md), migrações `V0010`–`V0012`) |
 | — | Causas e tipos de cada acidente do BAT em `ocorrencia_causa` e `ocorrencia_tipo` |
-| — | [Caracterização da carga](caracterizacao-da-carga.md) e medição do ADR 0001 refeitas sobre o dataset completo |
+| — | [Caracterização da carga](caracterizacao-da-carga.md) e medição do [ADR 0001](adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md) refeitas sobre o dataset completo. O volume disparou dois gatilhos de revisão do ADR 0001 (banco acima de 2 GB, Q2 acima de 2 s); a decisão foi reavaliada, se mantém e tem gatilhos recalibrados |
 
 As migrações da E1 (`V0001`–`V0008`) não foram editadas: um banco da E1 chega ao esquema novo só
 aplicando as quatro novas.
