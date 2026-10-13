@@ -1,5 +1,13 @@
 # Caracterização da carga
 
+> **Revisão de 2026-10-12.** Este documento caracteriza o recorte da E1 (BAT 2017–2025). Depois
+> da correção da E1, a origem carrega o dataset completo da PRF (2007–2026, BR-Brasil e BAT) num
+> banco PostgreSQL com PostGIS: ver os ADRs [0002](adr/0002-banco-espacial-postgis.md) e
+> [0003](adr/0003-dataset-completo-br-brasil-e-bat.md). O perfil do dataset completo está em
+> [`bench/resultados/perfil_dataset_completo.json`](../bench/resultados/perfil_dataset_completo.json),
+> gerado pelo mesmo [`bench/perfil_recorte.py`](../bench/perfil_recorte.py); o da E1 continua em
+> `perfil_recorte.json` (e na tag `e1`). Os números abaixo são os da E1.
+
 Passo 1 do Método de Decisão (issue #6). Recorte do PR #10: sistema BAT, 2017–2025,
 conjuntos `ocorrencia` (`datatranAAAA`) e `pessoa` (`acidentesAAAA`).
 
@@ -17,7 +25,7 @@ Para reproduzir:
 python -m blackspot.download --system bat --dataset ocorrencia --dataset pessoa \
     --year 2017 --year 2018 --year 2019 --year 2020 --year 2021 \
     --year 2022 --year 2023 --year 2024 --year 2025
-python bench/perfil_recorte.py      # ~1 min, só biblioteca padrão
+git switch --detach e1 && python bench/perfil_recorte.py   # versão da E1 (~1 min)
 ```
 
 Os números do banco (volume por tabela, tamanho em disco, rejeitados) vêm da carga real
