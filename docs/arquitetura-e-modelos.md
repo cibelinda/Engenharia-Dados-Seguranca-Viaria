@@ -9,8 +9,10 @@ nav_exclude: false
 Os diagramas desta página saem do que está implementado: o
 [`docker-compose.yml`](../docker-compose.yml) e as migrações em
 [`db/migrations/`](../db/migrations/V0001__lote_carga.sql). O raciocínio por trás do modelo
-está em [Modelagem da origem](modelagem-origem.md) e no
-[ADR 0001](adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md).
+está em [Modelagem da origem](modelagem-origem.md) e nos ADRs
+[0001](adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md) (histórico),
+[0002](adr/0002-banco-espacial-postgis.md) (PostGIS) e
+[0003](adr/0003-dataset-completo-br-brasil-e-bat.md) (dataset completo).
 
 1. TOC
 {:toc}
@@ -27,15 +29,15 @@ flowchart LR
     PRF[("Google Drive da PRF<br/>ZIPs com CSV")]
     subgraph compose["docker compose up"]
         direction LR
-        DL["download<br/>baixa o recorte e confere o SHA-256<br/>(sources.yaml)"]
-        MIG["migrate<br/>Flyway aplica V0001–V0008"]
-        LOAD["load<br/>carga ano a ano, com COPY"]
-        TESTS["tests<br/>80 testes (sob demanda)"]
+        DL["download<br/>baixa os 50 arquivos e confere o SHA-256<br/>(sources.yaml)"]
+        MIG["migrate<br/>Flyway aplica V0001–V0012"]
+        LOAD["load<br/>carga ano a ano (2007–2026),<br/>BR-Brasil e BAT, com COPY"]
+        TESTS["tests<br/>testes de esquema e de dados (sob demanda)"]
     end
-    RAW[("volume rawdata<br/>18 ZIPs")]
-    subgraph pg["PostgreSQL 18.6"]
+    RAW[("volume rawdata<br/>50 ZIPs")]
+    subgraph pg["PostgreSQL 18.6 + PostGIS 3.6"]
         direction TB
-        TAB["tabelas<br/>ocorrencia, veiculo, pessoa,<br/>lote_carga, lote_arquivo, linha_rejeitada"]
+        TAB["tabelas<br/>ocorrencia (com geom), veiculo, pessoa,<br/>ocorrencia_causa, ocorrencia_tipo,<br/>lote_carga, lote_arquivo, linha_rejeitada"]
         VIEW["views *_vigente<br/>versão mais recente de cada ano"]
         TAB --> VIEW
     end
@@ -87,10 +89,16 @@ erDiagram
     ACIDENTE ||--o{ VEICULO : "envolve"
     ACIDENTE ||--o{ PESSOA : "envolve"
     VEICULO |o--o{ PESSOA : "transporta"
-    CAUSA ||--o{ ACIDENTE : "explica"
-    TIPO_DE_ACIDENTE |o--o{ ACIDENTE : "classifica"
+    CAUSA |o--o{ ACIDENTE : "explica (principal)"
+    ACIDENTE }o--o{ CAUSA : "tem todas as causas (BAT)"
+    TIPO_DE_ACIDENTE |o--o{ ACIDENTE : "classifica (ordem 1)"
+    ACIDENTE }o--o{ TIPO_DE_ACIDENTE : "tem a sequência de tipos (BAT)"
     ARQUIVO_DA_PRF ||--o{ LINHA_REJEITADA : "tem"
 ```
+
+Cada lote é de um ano e, portanto, de um dos dois sistemas de registro da PRF: BR-Brasil
+(2007–2016) ou BAT (2017+). O acidente tem um **lugar**: o trecho (BR, UF e km) nos dois
+sistemas e, no BAT, também o ponto (latitude e longitude).
 
 Como ler: `||` é "exatamente um", `|o` é "zero ou um", `o{` é "zero ou muitos" e `|{` é
 "um ou muitos". Por exemplo, uma pessoa está em **zero ou um** veículo, e um veículo
@@ -106,25 +114,30 @@ dado começa por `id_lote`, porque a mesma linha da PRF pode existir em várias 
 
 ```mermaid
 erDiagram
-    lote_carga ||--|{ lote_arquivo : "1 lote, 2 arquivos"
+    lote_carga ||--|{ lote_arquivo : "1 lote, 2 ou 3 arquivos"
     lote_carga ||--o{ ocorrencia : "id_lote, ano"
     ocorrencia ||--o{ veiculo : "id_lote, id"
     ocorrencia ||--o{ pessoa : "id_lote, id"
     veiculo |o--o{ pessoa : "id_lote, id, id_veiculo"
-    causa_acidente ||--o{ ocorrencia : "id_causa"
+    causa_acidente |o--o{ ocorrencia : "id_causa"
     tipo_acidente |o--o{ ocorrencia : "id_tipo"
+    ocorrencia ||--o{ ocorrencia_causa : "id_lote, id"
+    causa_acidente ||--o{ ocorrencia_causa : "id_causa"
+    ocorrencia ||--o{ ocorrencia_tipo : "id_lote, id"
+    tipo_acidente ||--o{ ocorrencia_tipo : "id_tipo"
     lote_arquivo ||--o{ linha_rejeitada : "id_lote, dataset"
 
     lote_carga {
         inteiro id_lote PK
         inteiro ano
+        texto sistema "br_brasil ou bat, derivado do ano"
         texto status "em_carga, concluido ou falhou"
         datahora iniciado_em
         datahora finalizado_em
     }
     lote_arquivo {
         inteiro id_lote PK, FK
-        texto dataset PK "ocorrencia ou pessoa"
+        texto dataset PK "ocorrencia, pessoa ou pessoa_todas_causas"
         texto chave_manifesto
         texto arquivo
         texto sha256
@@ -150,8 +163,9 @@ erDiagram
         inteiro br
         decimal km
         texto municipio
-        decimal latitude
-        decimal longitude
+        decimal latitude "só BAT"
+        decimal longitude "só BAT"
+        ponto geom "derivado de latitude e longitude"
         inteiro id_causa FK
         inteiro id_tipo FK
         texto classificacao_acidente
@@ -190,6 +204,20 @@ erDiagram
         texto estado_fisico
         inteiro idade
         texto sexo
+        texto nacionalidade "só BR-Brasil"
+        texto naturalidade "só BR-Brasil"
+    }
+    ocorrencia_causa {
+        inteiro id_lote PK, FK
+        inteiro id PK, FK
+        inteiro id_causa PK, FK
+        booleano causa_principal
+    }
+    ocorrencia_tipo {
+        inteiro id_lote PK, FK
+        inteiro id PK, FK
+        inteiro ordem PK
+        inteiro id_tipo FK
     }
     linha_rejeitada {
         inteiro id_rejeicao PK
@@ -206,15 +234,18 @@ Decisões de normalização (detalhes em [Modelagem da origem](modelagem-origem.
 - O arquivo de pessoa da PRF mistura duas coisas: com `pesid = 0` a linha é um **veículo sem
   pessoa**, e com `id_veiculo = 0` é uma **pessoa sem veículo**. Por isso viram duas tabelas.
 - Os dados do acidente, que se repetem em cada linha de pessoa, ficam só em `ocorrencia`.
-- Causa e tipo de acidente viram tabelas de domínio, porque se repetem em 632 mil linhas.
+- Causa e tipo de acidente viram tabelas de domínio, porque se repetem em 2,2 milhões de linhas.
 - **Desnormalização proposital:** as contagens (`mortos`, `feridos_graves`...) ficam em
   `ocorrencia`, mesmo sendo deriváveis de `pessoa`, porque são o filtro da pergunta de gestão.
+- O arquivo de todas as causas e tipos (BAT) repete causas e tipos para cada pessoa, mas o
+  conteúdo é de nível de acidente: vira `ocorrencia_causa` e `ocorrencia_tipo`.
+- Os dois sistemas ficam nas mesmas tabelas, com o vocabulário de cada um; o sistema está no lote.
 
 ---
 
 ## Modelo físico
 
-O que existe no PostgreSQL, com os tipos, as restrições, os índices e as views.
+O que existe no PostgreSQL com PostGIS, com os tipos, as restrições, os índices e as views.
 
 ```mermaid
 erDiagram
@@ -223,13 +254,16 @@ erDiagram
     ocorrencia ||--o{ veiculo : ""
     ocorrencia ||--o{ pessoa : ""
     veiculo |o--o{ pessoa : ""
-    causa_acidente ||--o{ ocorrencia : ""
+    causa_acidente |o--o{ ocorrencia : ""
     tipo_acidente |o--o{ ocorrencia : ""
+    ocorrencia ||--o{ ocorrencia_causa : ""
+    ocorrencia ||--o{ ocorrencia_tipo : ""
     lote_arquivo ||--o{ linha_rejeitada : ""
 
     lote_carga {
         integer id_lote PK "identity"
-        smallint ano "2017 a 2025"
+        smallint ano "2007 ou mais"
+        text sistema "gerada do ano"
         text status "default em_carga"
         timestamptz iniciado_em "default now()"
         timestamptz finalizado_em "nulo enquanto em_carga"
@@ -258,15 +292,16 @@ erDiagram
         bigint id PK "maior que 0"
         timestamp ocorrido_em "sem fuso"
         smallint ano FK "gerada de ocorrido_em"
-        char uf "char(2), 27 UFs"
-        smallint br "0 a 999"
-        numeric km "numeric(6,1), 0 ou mais"
+        char uf "char(2), 27 UFs, ou nulo"
+        smallint br "0 a 999, ou nulo"
+        numeric km "numeric(6,1), 0 ou mais, ou nulo"
         text municipio
-        numeric latitude "numeric(12,10), nula se inválida"
-        numeric longitude "numeric(13,10), nula se inválida"
-        smallint id_causa FK
+        numeric latitude "numeric(12,10), nula se inválida ou BR-Brasil"
+        numeric longitude "numeric(13,10), nula se inválida ou BR-Brasil"
+        geometry geom "Point, SRID 4674, gerada"
+        smallint id_causa FK "nulo se não informado"
         smallint id_tipo FK "nulo se não informado"
-        text classificacao_acidente "3 valores ou nulo"
+        text classificacao_acidente "4 valores ou nulo"
         text tracado_via "text[], lista"
         boolean uso_solo_urbano
         smallint mortos "0 ou mais"
@@ -286,10 +321,24 @@ erDiagram
         bigint pesid PK "maior que 0"
         bigint id FK
         bigint id_veiculo FK "nulo sem veículo"
-        text tipo_envolvido "5 valores"
-        text estado_fisico "5 valores"
+        text tipo_envolvido "10 valores, dois sistemas"
+        text estado_fisico "9 valores, dois sistemas, ou nulo"
         smallint idade "nula se desconhecida"
-        text sexo
+        text sexo "nulo se ausente"
+        text nacionalidade "só BR-Brasil"
+        text naturalidade "só BR-Brasil"
+    }
+    ocorrencia_causa {
+        integer id_lote PK, FK
+        bigint id PK, FK
+        smallint id_causa PK, FK
+        boolean causa_principal "uma por ocorrência"
+    }
+    ocorrencia_tipo {
+        integer id_lote PK, FK
+        bigint id PK, FK
+        smallint ordem PK "1 ou mais"
+        smallint id_tipo FK
     }
     linha_rejeitada {
         bigint id_rejeicao PK "identity"
@@ -316,7 +365,11 @@ Em `ocorrencia`, o diagrama mostra só as colunas com restrição. As demais (`f
 | `ocorrencia` | `feridos = feridos_leves + feridos_graves` | contagens coerentes |
 | `veiculo` | `UNIQUE (id_lote, id_veiculo)` | um veículo não aparece em dois acidentes |
 | `pessoa` | FK `(id_lote, id, id_veiculo)` → `veiculo` | o veículo da pessoa é do mesmo acidente |
-| `pessoa` | `id_veiculo` nulo ⇔ pedestre, testemunha ou cavaleiro | pessoa sem veículo só nesses casos |
+| `ocorrencia_causa` | índice único parcial em `(id_lote, id)` com `causa_principal` | no máximo uma causa principal por acidente |
+
+A regra "`id_veiculo` nulo ⇔ pedestre, testemunha ou cavaleiro" era um CHECK na E1. Ela não vale
+no BR-Brasil (53 passageiros e 38 condutores sem veículo), então saiu do banco
+(`V0010`) e continua sendo exigida pela carga para o BAT.
 
 **Índices** (além dos das PKs):
 
@@ -325,13 +378,15 @@ Em `ocorrencia`, o diagrama mostra só as colunas com restrição. As demais (`f
 | `ocorrencia_grave_trecho_idx` | `(id_lote, br, uf, km)`, parcial: só acidentes graves | ranking de trechos graves por ano |
 | `ocorrencia_trecho_idx` | `(br, uf, km)` | detalhe de um trecho |
 | `pessoa_ocorrencia_veiculo_idx` | `(id_lote, id, id_veiculo)` | as duas FKs de pessoa |
+| `ocorrencia_geom_idx` | GiST em `geom`, parcial: só com ponto | contém/intersecta: polígonos (município, trecho), caixas |
+| `ocorrencia_geog_idx` | GiST em `geom::geography`, parcial | distância em metros: "acidentes graves a menos de 2 km" (46 ms, contra 608 ms sem índice; ADR 0002) |
 
 **Views** (tabelas virtuais, só leitura):
 
 | View | Mostra |
 |---|---|
 | `lote_vigente` | o maior lote concluído de cada ano |
-| `ocorrencia_vigente`, `veiculo_vigente`, `pessoa_vigente` | só as linhas do lote vigente; é o que as consultas usam |
+| `ocorrencia_vigente`, `veiculo_vigente`, `pessoa_vigente`, `ocorrencia_causa_vigente`, `ocorrencia_tipo_vigente` | só as linhas do lote vigente; é o que as consultas usam |
 
 **Carimbos de tempo:** `ocorrido_em` é `timestamp` **sem fuso** (hora local do acidente; a PRF
 não informa o fuso), e os de ingestão são `timestamptz` (com fuso). Os tipos são diferentes de

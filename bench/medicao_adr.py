@@ -3,7 +3,7 @@
 Roda contra o banco já carregado (esquema da #3, carga da #4), que é a alternativa C:
 
     docker compose up --build -d && docker compose wait load
-    docker compose run --rm -v ./bench:/app/bench tests python bench/medicao_adr.py
+    docker compose run --rm -v ./bench:/app/bench load python bench/medicao_adr.py
 
 O que faz:
 1. Monta a alternativa A no schema `alt_a`: uma tabela por arquivo da PRF, planas, sem FK e
@@ -31,16 +31,21 @@ import psycopg
 OUT = Path(__file__).resolve().parent / "resultados" / "medicao_adr.json"
 RODADAS = 5
 ANO_REGRAVADO = 2024
+# Anos completos da pergunta de gestão (2026 é parcial).
+ULTIMO_ANO = 2025
 
+# As tabelas de causas e tipos (V0011) vêm do arquivo de todas as causas do BAT, que A não
+# espelha: o tamanho de C é medido com e sem elas, para a comparação ser justa.
+TABELAS_CAUSAS_TIPOS = ["ocorrencia_causa", "ocorrencia_tipo"]
 TABELAS_C = ["lote_carga", "lote_arquivo", "causa_acidente", "tipo_acidente",
-             "ocorrencia", "veiculo", "pessoa", "linha_rejeitada"]
+             "ocorrencia", "veiculo", "pessoa", "linha_rejeitada"] + TABELAS_CAUSAS_TIPOS
 TABELAS_A = ["alt_a.datatran", "alt_a.acidentes"]
 
 Q1 = """
 SELECT br, uf, floor(km / 10) * 10 AS km_inicio, ano,
        count(*) FILTER (WHERE mortos > 0 OR feridos_graves > 0) AS graves
 FROM {fonte}
-WHERE br <> 0
+WHERE br <> 0 AND km IS NOT NULL AND ano <= {ultimo_ano}
 GROUP BY br, uf, km_inicio, ano
 """
 
@@ -49,7 +54,7 @@ WITH por_trecho AS (
     SELECT br, uf, floor(km / 10) * 10 AS km_inicio, ano,
            count(*) FILTER (WHERE mortos > 0 OR feridos_graves > 0) AS graves
     FROM {fonte}
-    WHERE br <> 0
+    WHERE br <> 0 AND km IS NOT NULL AND ano <= {ultimo_ano}
     GROUP BY br, uf, km_inicio, ano
 ), ranqueado AS (
     SELECT *, rank() OVER (PARTITION BY ano ORDER BY graves DESC) AS posicao
@@ -68,15 +73,16 @@ MONTA_A = """
 DROP SCHEMA IF EXISTS alt_a CASCADE;
 CREATE SCHEMA alt_a;
 
--- datatranAAAA: uma linha por ocorrência, causa e tipo como texto.
+-- datatranAAAA: uma linha por ocorrência, causa e tipo como texto. id_lote identifica o
+-- arquivo de origem: os IDs só são únicos dentro de um sistema (BR-Brasil × BAT, ADR 0003).
 CREATE TABLE alt_a.datatran AS
-SELECT o.id, o.ocorrido_em, o.ano, o.uf, o.br, o.km, o.municipio, o.latitude, o.longitude,
+SELECT o.id_lote, o.id, o.ocorrido_em, o.ano, o.uf, o.br, o.km, o.municipio, o.latitude, o.longitude,
        c.descricao AS causa_acidente, t.descricao AS tipo_acidente, o.classificacao_acidente,
        o.fase_dia, o.sentido_via, o.condicao_meteorologica, o.tipo_pista, o.tracado_via,
        o.uso_solo_urbano, o.pessoas, o.mortos, o.feridos_leves, o.feridos_graves, o.feridos,
        o.ilesos, o.ignorados, o.veiculos, o.regional, o.delegacia, o.uop
 FROM ocorrencia_vigente o
-JOIN causa_acidente c USING (id_causa)
+LEFT JOIN causa_acidente c USING (id_causa)
 LEFT JOIN tipo_acidente t USING (id_tipo);
 
 -- acidentesAAAA: uma linha por pessoa (ou por veículo sem pessoa), repetindo o acidente e o
@@ -85,13 +91,13 @@ CREATE TABLE alt_a.acidentes AS
 SELECT d.*, p.pesid, v.id_veiculo, v.tipo_veiculo, v.marca, v.ano_fabricacao,
        p.tipo_envolvido, p.estado_fisico, p.idade, p.sexo
 FROM pessoa_vigente p
-JOIN alt_a.datatran d ON d.id = p.id
+JOIN alt_a.datatran d ON d.id_lote = p.id_lote AND d.id = p.id
 LEFT JOIN veiculo_vigente v ON v.id_lote = p.id_lote AND v.id = p.id AND v.id_veiculo = p.id_veiculo
 UNION ALL
 SELECT d.*, 0, v.id_veiculo, v.tipo_veiculo, v.marca, v.ano_fabricacao,
        NULL, NULL, NULL, NULL
 FROM veiculo_vigente v
-JOIN alt_a.datatran d ON d.id = v.id
+JOIN alt_a.datatran d ON d.id_lote = v.id_lote AND d.id = v.id
 WHERE NOT EXISTS (SELECT 1 FROM pessoa_vigente p
                   WHERE p.id_lote = v.id_lote AND p.id = v.id AND p.id_veiculo = v.id_veiculo);
 
@@ -128,24 +134,27 @@ def medir(conn, sql: str) -> dict:
 
 
 def consultas(conn) -> dict:
-    return {f"{q}_{alt}": medir(conn, sql.format(fonte=fonte))
+    return {f"{q}_{alt}": medir(conn, sql.format(fonte=fonte, ultimo_ano=ULTIMO_ANO))
             for q, sql in (("Q1", Q1), ("Q2", Q2)) for alt, fonte in FONTES.items()}
 
 
 def main() -> int:
     res: dict = {"gerado_em": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                 "rodadas": RODADAS}
+                 "rodadas": RODADAS, "anos": f"2007–{ULTIMO_ANO}"}
     with psycopg.connect(autocommit=True) as conn:
         res["postgres"] = conn.execute("SHOW server_version").fetchone()[0]
         log("montando a alternativa A...")
         conn.execute(MONTA_A)
-        conn.execute("VACUUM ANALYZE ocorrencia, veiculo, pessoa")
+        conn.execute("VACUUM ANALYZE ocorrencia, veiculo, pessoa, ocorrencia_causa, ocorrencia_tipo")
 
         res["linhas"] = {
             "A": {t: linhas(conn, t) for t in TABELAS_A},
-            "C": {t: linhas(conn, t) for t in ("ocorrencia", "veiculo", "pessoa", "linha_rejeitada")},
+            "C": {t: linhas(conn, t) for t in ("ocorrencia", "veiculo", "pessoa", "linha_rejeitada")
+                  + tuple(TABELAS_CAUSAS_TIPOS)},
         }
-        res["tamanho_bytes"] = {"A": tamanho(conn, TABELAS_A), "C": tamanho(conn, TABELAS_C)}
+        res["tamanho_bytes"] = {
+            "A": tamanho(conn, TABELAS_A), "C": tamanho(conn, TABELAS_C),
+            "C_sem_causas_tipos": tamanho(conn, [t for t in TABELAS_C if t not in TABELAS_CAUSAS_TIPOS])}
         res["tamanho_por_tabela_C"] = {t: tamanho(conn, [t]) for t in TABELAS_C}
 
         log("medindo as consultas...")
@@ -160,23 +169,23 @@ def main() -> int:
                 "INSERT INTO lote_carga (ano, status, finalizado_em) VALUES (%s, 'concluido', now()) RETURNING id_lote",
                 (ANO_REGRAVADO,)).fetchone()[0]
             n = {}
-            for tabela in ("ocorrencia", "veiculo", "pessoa"):
+            for tabela in ("ocorrencia", "veiculo", "pessoa") + tuple(TABELAS_CAUSAS_TIPOS):
                 cols = [r[0] for r in conn.execute(
                     "SELECT column_name FROM information_schema.columns WHERE table_name = %s "
-                    "AND column_name NOT IN ('id_lote', 'ano') ORDER BY ordinal_position", (tabela,))]
+                    "AND column_name NOT IN ('id_lote', 'ano') AND is_generated = 'NEVER' ORDER BY ordinal_position", (tabela,))]
                 lista = ", ".join(cols)
                 n[tabela] = conn.execute(
                     f"INSERT INTO {tabela} (id_lote, {lista}) SELECT %s, {lista} FROM {tabela} WHERE id_lote = %s",
                     (novo, velho)).rowcount
-            conn.execute("ANALYZE ocorrencia, veiculo, pessoa")
+            conn.execute("ANALYZE ocorrencia, veiculo, pessoa, ocorrencia_causa, ocorrencia_tipo")
             res["republicacao"] = {
                 "ano": ANO_REGRAVADO,
                 "linhas_adicionadas": n,
                 "bytes_adicionados": tamanho(conn, TABELAS_C) - antes,
                 "consultas_C_com_duas_versoes": {
-                    q: medir(conn, sql.format(fonte=FONTES["C"])) for q, sql in (("Q1", Q1), ("Q2", Q2))},
+                    q: medir(conn, sql.format(fonte=FONTES["C"], ultimo_ano=ULTIMO_ANO)) for q, sql in (("Q1", Q1), ("Q2", Q2))},
             }
-        conn.execute("VACUUM ocorrencia, veiculo, pessoa, lote_carga")
+        conn.execute("VACUUM ocorrencia, veiculo, pessoa, ocorrencia_causa, ocorrencia_tipo, lote_carga")
         conn.execute("DROP SCHEMA alt_a CASCADE")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)

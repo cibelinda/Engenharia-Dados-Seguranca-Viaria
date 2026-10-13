@@ -53,8 +53,11 @@ Recorte `uf = DF`: cerca de 1.000 ocorrências por ano (1.066 em 2016, 1.011 em 
 | Separador | `pessoa` 2007–2015: `,` — todo o resto: `;` |
 | Aspas | `ocorrencia` 2007–2011 sem aspas; demais com aspas |
 | `data_inversa` | `dd/mm/aaaa` (2007–2011) · `aaaa-mm-dd` (2012–2015 e 2017+) · `dd/mm/aa` (2016) |
-| `km` | Decimal com ponto até 2016; com vírgula a partir de 2017 |
-| Colunas `ocorrencia` | 26 → 25 em 2016 (sai `ano`) → 30 em 2017 (entram `latitude`, `longitude`, `regional`, `delegacia`, `uop`) |
+| `km` | Decimal com ponto até 2015; com vírgula em 2016 e no BAT (verificado em 2026-10-12) |
+| Ausência | O BR-Brasil marca valor ausente com o texto `(null)` (e `NA` em 2016); o BAT usa vazio, `NA` ou `N/A` |
+| Espaços | O BR-Brasil completa alguns textos com espaços (ex.: `estado_fisico = 'Ileso       '`, `marca`) |
+| Vocabulário | Muda entre os sistemas: `Morto`/`Ferido Grave` × `Óbito`/`Lesões Graves`; `Urbano`/`Rural` × `Sim`/`Não`; `Ceu Claro` × `Céu Claro`; `classificacao_acidente = 'Ignorado'` só no BR-Brasil |
+| Colunas `ocorrencia` | 26 → 25 em 2016 (sai `ano`) → 30 em 2017 (entram `latitude`, `longitude`, `regional`, `delegacia`, `uop`). **Coordenada só existe no BAT**: nenhum arquivo de 2007–2016 tem latitude ou longitude (conferido nos cabeçalhos dos 50 arquivos em 2026-10-12) |
 | Colunas `pessoa` | 28 → 35 em 2017 (entram `ilesos`, `feridos_leves`, `feridos_graves`, `mortos` binários por pessoa, coordenadas e unidades da PRF; saem `nacionalidade` e `naturalidade`) |
 
 Dentro de cada sistema, os nomes das colunas são estáveis.
@@ -143,8 +146,13 @@ A questão do espelhamento continua em aberto.
    que em 2020, 2022 e 2023 ele tem 1 `id` a mais que `pessoa`?
 5. Como `estado_fisico`, as binárias por pessoa, as contagens por ocorrência e
    `classificacao_acidente` se relacionam. É a base para definir "grave" operacionalmente.
-6. Os domínios de causa, tipo e estado físico são comparáveis entre BR-Brasil e BAT? Isso decide
-   o recorte temporal.
-7. Completude e qualidade de `latitude`/`longitude` (BAT).
+6. Os domínios de causa, tipo e estado físico são comparáveis entre BR-Brasil e BAT? Desde o
+   [ADR 0003](../adr/0003-dataset-completo-br-brasil-e-bat.md) isso **não decide mais o recorte**:
+   os dois sistemas são carregados, com o vocabulário de cada um, e a harmonização é da E3.
+   Medido no banco: o BR-Brasil tem 11 causas e 16 tipos; o BAT (2017–2026), 92 causas e 21 tipos.
+7. ~~Completude e qualidade de `latitude`/`longitude` (BAT).~~ **Respondida em 2026-10-12:**
+   100% das ocorrências do BAT (2017–2026) têm latitude e longitude; 33 pares de 2017 estão
+   fora do limite válido e 20 pontos caem fora de uma caixa que contém o Brasil. O BR-Brasil
+   não tem coordenadas. Ver [ADR 0002](../adr/0002-banco-espacial-postgis.md).
 8. O que muda quando a PRF regrava um arquivo: volume e natureza das revisões (comparar as
    versões de 2024 e 2026 com a linha de base).

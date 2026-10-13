@@ -7,16 +7,33 @@ from __future__ import annotations
 
 import unittest
 
-from banco import ANOS, TesteComCarga
+from banco import ANOS, ANOS_BAT, TesteComCarga
 
 
 class TestVolume(TesteComCarga):
 
-    def test_todo_ano_do_recorte_tem_lote_com_os_dois_arquivos(self):
+    def test_todo_ano_tem_lote_com_os_seus_arquivos(self):
+        # Ocorrência e pessoa em todo ano; no BAT, também todas as causas e tipos.
         rows = self.todos(
             """SELECT l.ano, count(*), bool_and(a.linhas_lidas IS NOT NULL)
                FROM lote_vigente l JOIN lote_arquivo a USING (id_lote) GROUP BY l.ano""")
-        self.assertEqual({ano: (n, ok) for ano, n, ok in rows}, {ano: (2, True) for ano in ANOS})
+        self.assertEqual({ano: (n, ok) for ano, n, ok in rows},
+                         {ano: (3 if ano in ANOS_BAT else 2, True) for ano in ANOS})
+
+    def test_todo_ano_do_bat_tem_causas_e_tipos(self):
+        for tabela in ("ocorrencia_causa_vigente", "ocorrencia_tipo_vigente"):
+            with self.subTest(tabela=tabela):
+                anos = {r[0] for r in self.todos(
+                    f"SELECT DISTINCT o.ano FROM {tabela} t JOIN ocorrencia_vigente o USING (id_lote, id)")}
+                self.assertEqual(anos, set(ANOS_BAT))
+
+    def test_toda_ocorrencia_do_bat_tem_uma_causa_principal(self):
+        n = self.um(
+            """SELECT count(*) FROM ocorrencia_vigente o JOIN lote_vigente l USING (id_lote)
+               WHERE l.sistema = 'bat' AND NOT EXISTS (
+                   SELECT 1 FROM ocorrencia_causa_vigente c
+                   WHERE c.id_lote = o.id_lote AND c.id = o.id AND c.causa_principal AND c.id_causa = o.id_causa)""")
+        self.assertEqual(n, 0)
 
     def test_nenhum_ano_sem_linhas(self):
         for tabela in ("ocorrencia_vigente", "veiculo_vigente", "pessoa_vigente"):
@@ -72,29 +89,47 @@ class TestVolume(TesteComCarga):
         rows = self.todos(
             """SELECT l.ano, a.dataset, a.linhas_lidas
                FROM lote_vigente l JOIN lote_arquivo a USING (id_lote)
-               WHERE l.ano = ANY(%s)""", (self.anos_iguais_ao_perfil(),))
+               WHERE l.ano = ANY(%s) AND a.dataset IN ('ocorrencia', 'pessoa')""", (self.anos_iguais_ao_perfil(),))
         for ano, dataset, lidas in rows:
             with self.subTest(ano=ano, dataset=dataset):
                 self.assertEqual(lidas, esperado[dataset][str(ano)])
 
     def test_rejeitadas_sao_so_os_casos_conhecidos(self):
-        # Os únicos problemas que o perfil achou e que o esquema não aceita: IDs em
-        # notação científica e a linha com pesid = 0 e id_veiculo = 0. Um motivo novo
-        # indica mudança na fonte ou na carga, e precisa ser olhado.
+        # Os problemas que o perfil achou e que o esquema não aceita. Um motivo novo indica
+        # mudança na fonte ou na carga, e precisa ser olhado.
+        #   BAT: IDs em notação científica e a linha com pesid = 0 e id_veiculo = 0; no
+        #        arquivo de todas as causas, também as linhas das ocorrências rejeitadas.
+        #   BR-Brasil: pessoa sem ocorrência no datatran (821 em 2007), id de ocorrência
+        #        repetido no arquivo (0 a 7 por ano) e o que decorre dele (pesid repetido,
+        #        veículo em duas ocorrências), e ano de fabricação entre 1851 e 1899.
+        conhecidos = (
+            r"id não inteiro: '\de\+\d+'",
+            r"pesid = 0 e id_veiculo = 0: nem pessoa nem veículo",
+            r"sem ocorrência carregada: id \d+",
+            r"id repetido no arquivo: \d+",
+            r"pesid repetido: \d+",
+            r"id_veiculo \d+ em duas ocorrências",
+            r"ano_fabricacao_veiculo inválido: '1[89]\d\d'",
+        )
         perfil = self.perfil()
         anos = self.anos_iguais_ao_perfil()
         motivos = self.todos(
-            """SELECT r.motivo, count(*) FROM linha_rejeitada r
-               JOIN lote_vigente l USING (id_lote) WHERE l.ano = ANY(%s) GROUP BY r.motivo""", (anos,))
-        for motivo, _ in motivos:
+            """SELECT r.motivo, l.sistema, count(*) FROM linha_rejeitada r
+               JOIN lote_vigente l USING (id_lote) WHERE l.ano = ANY(%s) GROUP BY 1, 2""", (anos,))
+        for motivo, sistema, _ in motivos:
             with self.subTest(motivo=motivo):
-                self.assertRegex(
-                    motivo, r"^(id não inteiro: '\de\+\d+'|pesid = 0 e id_veiculo = 0: nem pessoa nem veículo)$")
-        if list(anos) == list(ANOS):
-            esperado = (perfil["ocorrencia"]["ids_nao_numericos"]
-                        + perfil["pessoa"]["registros_com_id_nao_numerico"] + 1)
-            self.assertEqual(sum(n for _, n in motivos), esperado)
-
+                self.assertRegex(motivo, "^(" + "|".join(conhecidos) + ")$")
+        # Contagem exata dos IDs em notação científica nos arquivos de ocorrência e pessoa,
+        # contra a contagem independente do perfil.
+        notacao = dict(self.todos(
+            """SELECT l.ano, count(*) FROM linha_rejeitada r JOIN lote_vigente l USING (id_lote)
+               WHERE l.ano = ANY(%s) AND r.dataset IN ('ocorrencia', 'pessoa')
+                 AND r.motivo LIKE 'id não inteiro%%' GROUP BY 1""", (anos,)))
+        for ano in anos:
+            with self.subTest(ano=ano):
+                esperado = (perfil["ocorrencia"]["ids_nao_numericos_por_ano"].get(str(ano), 0)
+                            + perfil["pessoa"]["registros_com_id_nao_numerico_por_ano"].get(str(ano), 0))
+                self.assertEqual(notacao.get(ano, 0), esperado)
 
 if __name__ == "__main__":
     unittest.main()

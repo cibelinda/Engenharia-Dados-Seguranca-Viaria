@@ -8,6 +8,35 @@ nav_exclude: false
 
 Tag [`e1`](https://github.com/cibelinda/Engenharia-Dados-Seguranca-Viaria/tree/e1) — 28/09/2026.
 
+> **Correções depois da avaliação (2026-10-12).** O banco passou a ser PostgreSQL com **PostGIS**,
+> porque a PRF publica a coordenada de cada acidente desde 2017
+> ([ADR 0002](adr/0002-banco-espacial-postgis.md)), e o recorte BAT 2017–2025 foi substituído pelo
+> **dataset completo** da PRF, de 2007 a 2026, com o BR-Brasil
+> ([ADR 0003](adr/0003-dataset-completo-br-brasil-e-bat.md)). Esta página descreve a entrega como
+> ela foi feita na tag `e1`. A entrega corrigida está na [Release Notes 1](release-notes-1.md).
+
+## Estado atual (Release 1, 13/10/2026)
+
+| | Tag `e1` (28/09) | Release 1 (13/10) |
+|---|---|---|
+| Banco | PostgreSQL 18.6 | PostgreSQL 18.6 + PostGIS 3.6 |
+| Dados | BAT 2017–2025 | Dataset completo, 2007–2026 (BR-Brasil e BAT) |
+| Pergunta de gestão | 2017–2025 | 2007–2025 |
+| Migrações | 8 | 12 |
+| Ocorrências / veículos / pessoas | 632 mil / 1,2 mi / 1,5 mi | 2,2 mi / 4,0 mi / 5,0 mi, mais 934 mil causas e 1,1 mi tipos |
+| Linhas rejeitadas (com motivo) | 29 | 1.275 |
+| Banco em disco | 731 MB | 2,7 GB |
+| Subida do zero | ~2 min | ~13 min (download ~5 min, carga ~8 min) |
+| Testes | 80 | 99 |
+| ADRs | 0001 | 0001 (revisado), 0002 (PostGIS), 0003 (dataset completo) |
+
+A [caracterização da carga](caracterizacao-da-carga.md) e a medição do
+[ADR 0001](adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md) foram refeitas sobre o
+dataset completo. O volume disparou dois gatilhos de revisão do ADR 0001 (banco acima de 2 GB e Q2
+acima de 2 s). A decisão foi reavaliada e se mantém, com gatilhos recalibrados.
+
+O restante desta página descreve a tag `e1`.
+
 ## Em uma frase
 
 Um único `docker compose up` baixa os dados abertos de acidentes da PRF, cria o banco

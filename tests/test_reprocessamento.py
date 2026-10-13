@@ -15,7 +15,7 @@ import contextlib
 import io
 import unittest
 
-from banco import ANOS, EXIGIR_BANCO, TesteComCarga
+from banco import EXIGIR_BANCO, TesteComCarga
 
 try:
     from blackspot import load
@@ -24,7 +24,7 @@ except ImportError:  # Python local sem psycopg/PyYAML
         raise
     load = None
 
-# Ano usado na simulação de republicação: o menor do recorte, para o teste ser rápido.
+# Ano usado na simulação de republicação: um dos menores do BAT, que tem os três arquivos.
 ANO_REPUBLICADO = 2020
 
 # Todas as tabelas em que a carga grava, incluindo os catálogos de causa e tipo, que
@@ -33,7 +33,8 @@ CONTAGENS = """
     SELECT (SELECT count(*) FROM lote_carga), (SELECT count(*) FROM lote_arquivo),
            (SELECT count(*) FROM causa_acidente), (SELECT count(*) FROM tipo_acidente),
            (SELECT count(*) FROM ocorrencia), (SELECT count(*) FROM veiculo),
-           (SELECT count(*) FROM pessoa), (SELECT count(*) FROM linha_rejeitada)
+           (SELECT count(*) FROM pessoa), (SELECT count(*) FROM linha_rejeitada),
+           (SELECT count(*) FROM ocorrencia_causa), (SELECT count(*) FROM ocorrencia_tipo)
 """
 
 # Chave de ordenação de cada tabela de dado dentro de um lote, para a impressão digital.
@@ -42,6 +43,8 @@ ORDEM = {
     "veiculo": "id, id_veiculo",
     "pessoa": "pesid",
     "linha_rejeitada": "dataset, numero_linha",
+    "ocorrencia_causa": "id, id_causa",
+    "ocorrencia_tipo": "id, ordem",
 }
 
 
@@ -53,7 +56,7 @@ class TestReprocessamento(TesteComCarga):
         super().setUpClass()
         try:
             with contextlib.redirect_stderr(io.StringIO()):
-                cls.arquivos = load.arquivos_do_recorte()
+                cls.arquivos = load.arquivos_por_ano()
         except SystemExit as e:  # ZIPs ausentes
             cls.conn.close()
             if EXIGIR_BANCO:
@@ -61,7 +64,7 @@ class TestReprocessamento(TesteComCarga):
             raise unittest.SkipTest(f"arquivos do recorte indisponíveis: {e}") from None
 
     def test_segunda_carga_nao_grava_nada(self):
-        for ano in ANOS:
+        for ano in self.arquivos:
             if not load.ja_carregado(self.conn, ano, self.arquivos[ano]):
                 self.skipTest(f"{ano} não está carregado com os arquivos atuais; rode a carga antes")
         antes = self.conn.execute(CONTAGENS).fetchone()
@@ -72,13 +75,13 @@ class TestReprocessamento(TesteComCarga):
 
         self.assertEqual(codigo, 0, saida.getvalue())
         self.assertEqual(self.conn.execute(CONTAGENS).fetchone(), antes)
-        self.assertEqual(saida.getvalue().count("já carregado"), len(ANOS))
+        self.assertEqual(saida.getvalue().count("já carregado"), len(self.arquivos))
 
     def test_arquivo_republicado_cria_lote_novo_e_preserva_o_antigo(self):
         ano = ANO_REPUBLICADO
         # Cópia dos arquivos do ano com um SHA-256 diferente: é como a carga enxerga uma
         # republicação da PRF (mesmo nome, conteúdo novo).
-        arqs = {d: load.Arquivo(a.dataset, a.chave, a.path, "f" * 64, a.tamanho, a.drive_last_modified)
+        arqs = {d: load.Arquivo(a.dataset, a.sistema, a.chave, a.path, "f" * 64, a.tamanho, a.drive_last_modified)
                 for d, a in self.arquivos[ano].items()}
         antigo = self.um("SELECT id_lote FROM lote_vigente WHERE ano = %s", (ano,))
         self.assertFalse(load.ja_carregado(self.conn, ano, arqs))

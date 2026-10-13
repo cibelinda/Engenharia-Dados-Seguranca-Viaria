@@ -33,8 +33,11 @@ x-app: &app
     - rawdata:/app/data/raw
 
 services:
+  # PostgreSQL 18 com a extensão espacial PostGIS 3.6 (ADR 0002): a PRF publica latitude
+  # e longitude das ocorrências desde 2017, e a pergunta de gestão é sobre onde os
+  # acidentes graves se concentram.
   db:
-    image: postgres:18.6
+    image: postgis/postgis:18-3.6
     container_name: blackspot-db
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-blackspot}
@@ -74,17 +77,14 @@ services:
       db:
         condition: service_healthy
 
-  # Baixa o recorte do projeto (docs/pergunta-e-recorte.md): BAT 2017–2025,
-  # ocorrência e pessoa. Arquivos já baixados e íntegros não são baixados de novo.
+  # Baixa o dataset completo da PRF (docs/pergunta-e-recorte.md): os 50 arquivos do
+  # sources.yaml, BR-Brasil 2007–2016 e BAT 2017 em diante, ~370 MB. Arquivos já
+  # baixados e íntegros não são baixados de novo.
   download:
     <<: *app
-    command: >
-      python -m blackspot.download
-      --system bat --dataset ocorrencia --dataset pessoa
-      --year 2017 --year 2018 --year 2019 --year 2020 --year 2021
-      --year 2022 --year 2023 --year 2024 --year 2025
+    command: python -m blackspot.download
 
-  # Carga no banco. Por enquanto é a carga provisória da issue #5; a real é a #4.
+  # Carga no banco, um ano por vez (blackspot/load.py).
   load:
     <<: *app
     command: python -m blackspot.load

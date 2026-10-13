@@ -12,7 +12,7 @@ arquivos da sua parte**, abre o PR e pede revisão. Nenhum PR depende de outro.
 |---|---|---|---|
 | Ingestão em lote | #31 | Ana | `compose/lote.yml`, `blackspot/ingestao_lote.py`, `tests/test_ingestao_lote.py`, [`docs/e2/lote.md`](lote.md) |
 | Captura de mudanças (CDC) | #32 | Cibelly | `compose/cdc.yml`, `blackspot/cdc/`, `tests/test_cdc.py`, [`docs/e2/cdc.md`](cdc.md) |
-| ADR 0002, medição e diário | #33 | Maria | `docs/adr/0002-*.md`, `bench/medicao_e2.py`, `bench/resultados/medicao_e2.json`, `diario-de-bordo.md` |
+| ADR 0004, medição e diário | #33 | Maria | `docs/adr/0004-*.md`, `bench/medicao_e2.py`, `bench/resultados/medicao_e2.json`, `diario-de-bordo.md` |
 
 Arquivos compartilhados (`docker-compose.yml`, `requirements.txt`, `README.md`,
 `_config.yml`) **não devem ser editados** nos PRs das partes: o que era comum já está na
