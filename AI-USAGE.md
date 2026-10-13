@@ -275,7 +275,33 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### Ingestão em lote — Ana Luiza Komatsu
 
-[a preencher no PR da ingestão em lote]
+#### 2026-10-12 — Base compartilhada da E2 (PR #34)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `docker-compose.yml`, `compose/`, `Dockerfile`, `requirements.txt`, `docs/e2/README.md`
+- **O que foi pedido:** deixar pronto o que as três partes da E2 usariam em comum, para cada
+  uma trabalhar sem depender do PR das outras.
+- **O que foi aproveitado:** a base inteira: `wal_level=logical`, volume `lakehouse`, arquivos
+  `compose/lote.yml` e `compose/cdc.yml` incluídos, bibliotecas e o contrato entre as partes. A
+  troca do MinIO por um volume veio da conferência: as imagens do MinIO não puderam ser baixadas.
+- **Como foi verificado:** a E1 subiu do zero com a base e os 80 testes passaram; a inclusão
+  dos arquivos de `compose/` e o volume compartilhado foram testados antes.
+- **Quem revisou:** [revisor do PR #34]
+
+#### 2026-10-12 — Ingestão em lote (#31)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `blackspot/ingestao_lote.py`, `compose/lote.yml`, `tests/test_ingestao_lote.py`,
+  `docs/e2/lote.md`
+- **O que foi pedido:** a ingestão em lote do PostgreSQL para tabelas Delta, idempotente, com
+  tratamento de dado atrasado, os testes e a documentação.
+- **O que foi aproveitado:** o código, o serviço, os testes e o texto, inteiros.
+- **Como foi verificado:** subida do zero: 27 partições gravadas em 46 s, com as mesmas
+  contagens da carga da E1; segunda execução sem gravar nada; um arquivo Parquet por partição,
+  em zstd; republicação de 2020 simulada num banco de teste reescreveu só as 3 partições de 2020,
+  sem duplicar, com a versão anterior acessível no histórico; 87 testes passando (80 da E1 e 7
+  novos).
+- **Quem revisou:** [revisor do PR da #31]
 
 &nbsp;
 

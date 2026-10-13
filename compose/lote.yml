@@ -1,6 +1,25 @@
-# Ingestão em lote da E2 (issue da Ana): lê as views *_vigente do PostgreSQL e escreve as
-# tabelas Delta (Parquet) no volume lakehouse, em /app/lake/lote/. Só a dona da issue mexe
-# neste arquivo. Contrato em docs/e2/README.md.
-#
-# Por enquanto vazio: os serviços entram no PR da issue.
-services: {}
+# Ingestão em lote da E2 (issue #31): lê as views *_vigente do PostgreSQL e escreve as
+# tabelas Delta (Parquet, zstd) no volume lakehouse, em /app/lake/lote/, particionadas por
+# ano. Roda depois da carga (`load`); rodar de novo sem mudança na origem não grava nada.
+# Contrato em docs/e2/README.md; detalhes em docs/e2/lote.md.
+services:
+  ingestao-lote:
+    build: ..
+    image: blackspot-app:local
+    pull_policy: build
+    command: python -m blackspot.ingestao_lote
+    environment:
+      BLACKSPOT_LAKE_DIR: lake/lote
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-blackspot}
+      PGUSER: ${POSTGRES_USER:-blackspot}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+    volumes:
+      - lakehouse:/app/lake
+    depends_on:
+      load:
+        condition: service_completed_successfully
+
+volumes:
+  lakehouse:
