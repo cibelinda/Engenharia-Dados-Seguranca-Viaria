@@ -3,7 +3,7 @@
 Roda contra o banco já carregado (esquema da #3, carga da #4), que é a alternativa C:
 
     docker compose up --build -d && docker compose wait load
-    docker compose run --rm -v ./bench:/app/bench tests python bench/medicao_adr.py
+    docker compose run --rm -v ./bench:/app/bench load python bench/medicao_adr.py
 
 O que faz:
 1. Monta a alternativa A no schema `alt_a`: uma tabela por arquivo da PRF, planas, sem FK e
@@ -73,9 +73,10 @@ MONTA_A = """
 DROP SCHEMA IF EXISTS alt_a CASCADE;
 CREATE SCHEMA alt_a;
 
--- datatranAAAA: uma linha por ocorrência, causa e tipo como texto.
+-- datatranAAAA: uma linha por ocorrência, causa e tipo como texto. id_lote identifica o
+-- arquivo de origem: os IDs só são únicos dentro de um sistema (BR-Brasil × BAT, ADR 0003).
 CREATE TABLE alt_a.datatran AS
-SELECT o.id, o.ocorrido_em, o.ano, o.uf, o.br, o.km, o.municipio, o.latitude, o.longitude,
+SELECT o.id_lote, o.id, o.ocorrido_em, o.ano, o.uf, o.br, o.km, o.municipio, o.latitude, o.longitude,
        c.descricao AS causa_acidente, t.descricao AS tipo_acidente, o.classificacao_acidente,
        o.fase_dia, o.sentido_via, o.condicao_meteorologica, o.tipo_pista, o.tracado_via,
        o.uso_solo_urbano, o.pessoas, o.mortos, o.feridos_leves, o.feridos_graves, o.feridos,
@@ -90,13 +91,13 @@ CREATE TABLE alt_a.acidentes AS
 SELECT d.*, p.pesid, v.id_veiculo, v.tipo_veiculo, v.marca, v.ano_fabricacao,
        p.tipo_envolvido, p.estado_fisico, p.idade, p.sexo
 FROM pessoa_vigente p
-JOIN alt_a.datatran d ON d.id = p.id
+JOIN alt_a.datatran d ON d.id_lote = p.id_lote AND d.id = p.id
 LEFT JOIN veiculo_vigente v ON v.id_lote = p.id_lote AND v.id = p.id AND v.id_veiculo = p.id_veiculo
 UNION ALL
 SELECT d.*, 0, v.id_veiculo, v.tipo_veiculo, v.marca, v.ano_fabricacao,
        NULL, NULL, NULL, NULL
 FROM veiculo_vigente v
-JOIN alt_a.datatran d ON d.id = v.id
+JOIN alt_a.datatran d ON d.id_lote = v.id_lote AND d.id = v.id
 WHERE NOT EXISTS (SELECT 1 FROM pessoa_vigente p
                   WHERE p.id_lote = v.id_lote AND p.id = v.id AND p.id_veiculo = v.id_veiculo);
 
