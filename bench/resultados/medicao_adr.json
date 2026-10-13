@@ -1,61 +1,67 @@
 {
- "gerado_em": "2026-09-28T14:15:50Z",
+ "gerado_em": "2026-10-13T03:42:39Z",
  "rodadas": 5,
+ "anos": "2007–2025",
  "postgres": "18.6 (Debian 18.6-1.pgdg13+2)",
  "linhas": {
   "A": {
-   "alt_a.datatran": 632708,
-   "alt_a.acidentes": 1654173
+   "alt_a.datatran": 2243584,
+   "alt_a.acidentes": 5155023
   },
   "C": {
-   "ocorrencia": 632708,
-   "veiculo": 1191461,
-   "pessoa": 1509549,
-   "linha_rejeitada": 29
+   "ocorrencia": 2243584,
+   "veiculo": 4008904,
+   "pessoa": 4998779,
+   "linha_rejeitada": 1275,
+   "ocorrencia_causa": 934079,
+   "ocorrencia_tipo": 1051668
   }
  },
  "tamanho_bytes": {
-  "A": 822050816,
-  "C": 766590976
+  "A": 2322513920,
+  "C": 2834866176,
+  "C_sem_causas_tipos": 2607611904
  },
  "tamanho_por_tabela_C": {
   "lote_carga": 98304,
-  "lote_arquivo": 32768,
+  "lote_arquivo": 65536,
   "causa_acidente": 81920,
   "tipo_acidente": 49152,
-  "ocorrencia": 225689600,
-  "veiculo": 241876992,
-  "pessoa": 298680320,
-  "linha_rejeitada": 81920
+  "ocorrencia": 801538048,
+  "veiculo": 762896384,
+  "pessoa": 1042153472,
+  "linha_rejeitada": 729088,
+  "ocorrencia_causa": 120602624,
+  "ocorrencia_tipo": 106651648
  },
  "consultas": {
   "Q1_A": {
-   "mediana_ms": 668.5,
-   "min_ms": 572.3,
-   "max_ms": 802.7,
-   "buffers_8kb": 22618,
-   "linhas_resultado": 47871
+   "mediana_ms": 1695.9,
+   "min_ms": 1635.3,
+   "max_ms": 1771.2,
+   "buffers_8kb": 69200,
+   "linhas_resultado": 100919
   },
   "Q1_C": {
-   "mediana_ms": 684.5,
-   "min_ms": 674.3,
-   "max_ms": 717.5,
-   "buffers_8kb": 23404,
-   "linhas_resultado": 47871
+   "mediana_ms": 2430.5,
+   "min_ms": 2399.4,
+   "max_ms": 2492.7,
+   "buffers_8kb": 71554,
+   "linhas_resultado": 100919
   },
   "Q2_A": {
-   "mediana_ms": 618.1,
-   "min_ms": 583.5,
-   "max_ms": 651.0,
-   "buffers_8kb": 22618,
-   "linhas_resultado": 101
+   "mediana_ms": 1726.8,
+   "min_ms": 1707.5,
+   "max_ms": 1764.4,
+   "buffers_8kb": 69200,
+   "linhas_resultado": 135
   },
   "Q2_C": {
-   "mediana_ms": 708.3,
-   "min_ms": 696.2,
-   "max_ms": 715.9,
-   "buffers_8kb": 23404,
-   "linhas_resultado": 101
+   "mediana_ms": 2759.4,
+   "min_ms": 2639.3,
+   "max_ms": 2823.9,
+   "buffers_8kb": 71554,
+   "linhas_resultado": 135
   }
  },
  "republicacao": {
@@ -63,23 +69,25 @@
   "linhas_adicionadas": {
    "ocorrencia": 73201,
    "veiculo": 139693,
-   "pessoa": 179244
+   "pessoa": 179244,
+   "ocorrencia_causa": 111388,
+   "ocorrencia_tipo": 124271
   },
-  "bytes_adicionados": 89243648,
+  "bytes_adicionados": 72245248,
   "consultas_C_com_duas_versoes": {
    "Q1": {
-    "mediana_ms": 815.9,
-    "min_ms": 715.1,
-    "max_ms": 849.3,
-    "buffers_8kb": 23443,
-    "linhas_resultado": 47871
+    "mediana_ms": 2710.3,
+    "min_ms": 2664.3,
+    "max_ms": 2755.4,
+    "buffers_8kb": 71712,
+    "linhas_resultado": 100919
    },
    "Q2": {
-    "mediana_ms": 755.9,
-    "min_ms": 727.8,
-    "max_ms": 788.4,
-    "buffers_8kb": 23443,
-    "linhas_resultado": 101
+    "mediana_ms": 2729.4,
+    "min_ms": 2558.6,
+    "max_ms": 3042.9,
+    "buffers_8kb": 71712,
+    "linhas_resultado": 135
    }
   }
  }
