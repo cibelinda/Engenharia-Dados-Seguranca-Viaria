@@ -234,7 +234,7 @@ Decisões de normalização (detalhes em [Modelagem da origem](modelagem-origem.
 - O arquivo de pessoa da PRF mistura duas coisas: com `pesid = 0` a linha é um **veículo sem
   pessoa**, e com `id_veiculo = 0` é uma **pessoa sem veículo**. Por isso viram duas tabelas.
 - Os dados do acidente, que se repetem em cada linha de pessoa, ficam só em `ocorrencia`.
-- Causa e tipo de acidente viram tabelas de domínio, porque se repetem em 632 mil linhas.
+- Causa e tipo de acidente viram tabelas de domínio, porque se repetem em 2,2 milhões de linhas.
 - **Desnormalização proposital:** as contagens (`mortos`, `feridos_graves`...) ficam em
   `ocorrencia`, mesmo sendo deriváveis de `pessoa`, porque são o filtro da pergunta de gestão.
 - O arquivo de todas as causas e tipos (BAT) repete causas e tipos para cada pessoa, mas o
