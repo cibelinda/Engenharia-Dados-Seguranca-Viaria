@@ -1,0 +1,19 @@
+// Esquema de cores do site (just-the-docs): base clara com roxo como cor de destaque.
+// Ativado em _config.yml (color_scheme: roxo). Os detalhes de layout ficam em
+// _sass/custom/custom.scss.
+
+@import "./color_schemes/light";
+
+$roxo-escuro: #3b1f7a;
+$roxo: #6b3fd4;
+$roxo-medio: #8b6be0;
+$lilas: #ede7fb;
+$lilas-claro: #f7f4fe;
+
+$link-color: $roxo;
+$btn-primary-color: $roxo;
+$sidebar-color: $lilas-claro;
+$border-color: #e2daf7;
+$feedback-color: darken($sidebar-color, 3%);
+$table-background-color: $white;
+$code-background-color: #f6f3fd;

@@ -1,6 +1,7 @@
 ---
 title: Release Notes 1
-nav_order: 3
+parent: Entregas
+nav_order: 1
 nav_exclude: false
 ---
 
