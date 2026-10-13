@@ -8,6 +8,12 @@
 # `migrate` e `download` rodam em paralelo; `load` só começa quando os dois
 # terminaram sem erro. Se algum falhar, `load` não roda.
 
+# E2: cada parte tem o próprio arquivo de serviços, para que cada pessoa trabalhe sem
+# mexer neste arquivo (ver docs/e2/README.md). Um `docker compose up` sobe tudo junto.
+include:
+  - compose/lote.yml   # ingestão em lote: Postgres -> Parquet/Delta (issue da Ana)
+  - compose/cdc.yml    # captura de mudanças: Debezium e Redpanda (issue da Cibelly)
+
 # Configuração comum aos serviços que usam o código Python (Dockerfile).
 x-app: &app
   build: .
@@ -42,6 +48,9 @@ services:
     volumes:
       # A partir do PostgreSQL 18 a imagem oficial usa /var/lib/postgresql como volume.
       - pgdata:/var/lib/postgresql
+    # wal_level=logical: o WAL passa a guardar o suficiente para a captura de mudanças (CDC,
+    # E2) ler as alterações com decodificação lógica.
+    command: ["postgres", "-c", "wal_level=logical"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -111,3 +120,6 @@ volumes:
   # Os ZIPs baixados ficam num volume do Docker, e não em ./data/raw, para não
   # haver problema de permissão de arquivo entre o container e a máquina.
   rawdata:
+  # Camada analítica da E2: tabelas Delta (Parquet) do lote e do CDC. Os arquivos em
+  # compose/ declaram o mesmo volume, e o Compose junta tudo num volume só.
+  lakehouse:

@@ -1,0 +1,6 @@
+# Ingestão em lote da E2 (issue da Ana): lê as views *_vigente do PostgreSQL e escreve as
+# tabelas Delta (Parquet) no volume lakehouse, em /app/lake/lote/. Só a dona da issue mexe
+# neste arquivo. Contrato em docs/e2/README.md.
+#
+# Por enquanto vazio: os serviços entram no PR da issue.
+services: {}

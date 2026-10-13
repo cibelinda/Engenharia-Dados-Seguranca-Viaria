@@ -55,6 +55,12 @@ Isso reescreve o bloco `reference` da entrada no `sources.yaml`; faça commit da
 Testes do downloader (sem rede): `python -m unittest discover tests`. Sem banco acessível, os
 testes de dados são pulados; para rodá-los, veja "Testes de dados" abaixo.
 
+## Entrega 2: ingestão em lote e captura de mudanças
+
+Em andamento. Divisão, contrato entre as partes e checklist em
+[`docs/e2/README.md`](docs/e2/README.md): [ingestão em lote](docs/e2/lote.md) e
+[captura de mudanças](docs/e2/cdc.md).
+
 ## Como subir o projeto
 
 Pré-requisito: Docker com Compose v2. Não é preciso ter Python nem PostgreSQL instalados.

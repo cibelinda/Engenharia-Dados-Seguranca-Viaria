@@ -265,3 +265,26 @@ PRs no GitHub.
   (commit `3dcbde3`) foram tirados do GitHub e do histórico do git.
 - **Como foi verificado:** o diff foi lido antes do commit.
 - **Quem revisou:** o PR #24 não tem revisão registrada no GitHub; o merge foi feito por Cibelly.
+
+---
+
+## E2
+
+Cada pessoa preenche só a própria entrada abaixo, no PR da sua parte, no mesmo formato das
+entradas acima. Se a parte não usou IA, escreva isso no lugar.
+
+### Ingestão em lote — Ana Luiza Komatsu
+
+[a preencher no PR da ingestão em lote]
+
+&nbsp;
+
+### Captura de mudanças (CDC) — Cibelly
+
+[a preencher no PR do CDC]
+
+&nbsp;
+
+### ADR 0002, medição e diário — Maria Clara
+
+[a preencher no PR do ADR 0002]
