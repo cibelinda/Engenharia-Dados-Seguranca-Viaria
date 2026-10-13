@@ -1,0 +1,100 @@
+// Ajustes visuais do site, sobre o esquema de cores roxo (_sass/color_schemes/roxo.scss).
+
+$roxo-escuro: #3b1f7a;
+$roxo: #6b3fd4;
+$roxo-medio: #8b6be0;
+$lilas: #ede7fb;
+$lilas-claro: #f7f4fe;
+
+// Faixa roxa no topo da página.
+.main-header {
+  border-bottom: 3px solid $roxo;
+}
+
+// Barra lateral: nome do site em roxo e item atual destacado.
+.site-title {
+  color: $roxo-escuro;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nav-list .nav-list-item .nav-list-link.active {
+  color: $roxo-escuro;
+  font-weight: 600;
+  background-image: linear-gradient(-90deg, rgba($lilas, 0) 0%, $lilas 80%, $lilas 100%);
+}
+
+.nav-list .nav-list-item > .nav-list-link {
+  border-radius: 4px;
+}
+
+// Título da página com um sublinhado roxo.
+.main-content h1:first-of-type {
+  color: $roxo-escuro;
+  padding-bottom: 0.4rem;
+  border-bottom: 3px solid $roxo;
+}
+
+// Seções (h2) separadas por uma faixa roxa à esquerda.
+.main-content h2 {
+  color: $roxo-escuro;
+  margin-top: 2.5rem;
+  padding: 0.45rem 0.8rem;
+  border-left: 5px solid $roxo;
+  background: linear-gradient(90deg, $lilas 0%, rgba($lilas, 0) 100%);
+  border-radius: 0 6px 6px 0;
+}
+
+.main-content h3 {
+  color: $roxo;
+}
+
+// Linha horizontal em roxo.
+.main-content hr {
+  height: 2px;
+  background: linear-gradient(90deg, $roxo 0%, rgba($roxo, 0) 100%);
+  border: 0;
+}
+
+// Tabelas: cabeçalho lilás.
+.main-content th {
+  background-color: $lilas;
+  color: $roxo-escuro;
+  border-bottom: 2px solid $roxo-medio;
+}
+
+.main-content tr:nth-child(even) td {
+  background-color: $lilas-claro;
+}
+
+// Citações (a pergunta de gestão, avisos) como quadro roxo.
+.main-content blockquote {
+  margin-left: 0;
+  padding: 0.75rem 1rem;
+  border-left: 5px solid $roxo;
+  background-color: $lilas-claro;
+  border-radius: 0 6px 6px 0;
+  color: $roxo-escuro;
+}
+
+// Código em linha com tom lilás.
+.main-content :not(pre) > code {
+  color: $roxo-escuro;
+  background-color: $lilas-claro;
+  border-color: #e2daf7;
+}
+
+// Sumário das páginas de seção (lista automática de filhos).
+.main-content .text-delta {
+  color: $roxo;
+}
+
+// Botões.
+.btn-primary {
+  background-image: linear-gradient($roxo-medio, $roxo);
+}
+
+// Rodapé.
+.site-footer {
+  color: $roxo-escuro;
+}

@@ -1,6 +1,7 @@
 ---
-title: Entrega 1
-nav_order: 3
+title: Entrega 1 (tag e1)
+parent: Entregas
+nav_order: 2
 nav_exclude: false
 ---
 
