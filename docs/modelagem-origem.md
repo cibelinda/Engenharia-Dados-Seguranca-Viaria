@@ -5,7 +5,11 @@ Documento de modelagem da issue #3: o raciocínio e a evidência por trás do es
 normalização e carimbos de tempo) é o ADR 0001, da issue #6, que pode citar ou incorporar
 este texto.
 
-**Data:** 2026-09-27
+**Data:** 2026-09-27. **Revisto em 2026-10-12** (seção "Dataset completo e banco espacial"),
+depois da correção da E1: o banco passou a ser PostgreSQL com PostGIS
+([ADR 0002](adr/0002-banco-espacial-postgis.md)) e a origem passou a carregar o dataset
+completo da PRF ([ADR 0003](adr/0003-dataset-completo-br-brasil-e-bat.md)). As seções 1 a 4
+continuam valendo; os números delas são do recorte BAT 2017–2025 da E1.
 
 ## Contexto
 
@@ -175,7 +179,65 @@ Não resolvidos no esquema. O esquema só define o que é válido:
   substituir a recarga do ano inteiro.
 - As regravações ficarem frequentes a ponto de o volume duplicado pesar.
 - A PRF quebrar a unicidade global de `pesid` ou `id_veiculo`.
-- A E2 usar 2026 (parcial e regravado todo mês): `lote_carga.ano` e o `CHECK` de ano de
-  `ocorrencia` estão fixos em 2017–2025 e precisam de uma migração nova.
-- O recorte passar a incluir o BR-Brasil: a chave de ocorrência precisa incluir o sistema
-  de origem (490.283 IDs colidem).
+- ~~A E2 usar 2026~~ e ~~o recorte passar a incluir o BR-Brasil~~: os dois aconteceram em
+  2026-10-12 e estão tratados na seção abaixo. A chave **não** precisou incluir o sistema de
+  origem, porque toda PK começa por `id_lote` e cada lote é de um só sistema.
+
+## Dataset completo e banco espacial (2026-10-12)
+
+Migrações [`V0009`](../db/migrations/V0009__postgis.sql) a
+[`V0012`](../db/migrations/V0012__visoes_vigentes.sql). As de `V0001` a `V0008` não foram
+editadas: um banco da E1 chega ao esquema novo aplicando só as quatro novas.
+
+### Coordenadas e PostGIS
+
+| Fato | Evidência |
+|---|---|
+| O BAT publica latitude e longitude | 100% das 681.425 ocorrências de 2017–2026 |
+| O BR-Brasil não publica coordenada | Nenhum dos 20 arquivos de 2007–2016 tem as colunas |
+| Coordenada inválida | 33 pares fora do limite em 2017 (a carga anula); 20 pontos fora do Brasil |
+
+Daí: `ocorrencia.geom geometry(Point, 4674)`, **coluna gerada** de `longitude`/`latitude`, com
+índice GiST parcial. A carga não grava o ponto: ele não pode divergir dos números publicados.
+SIRGAS 2000 (EPSG:4674) é o referencial oficial do Brasil; para medir em metros, as consultas
+projetam para EPSG:5880 ou usam `geography`. O trecho (`br`, `uf`, `km`) continua sendo o
+referencial comum aos 20 anos.
+
+### Dois sistemas no mesmo esquema
+
+Verificado nos arquivos do BR-Brasil (2007–2016):
+
+| Fato | Evidência | No esquema |
+|---|---|---|
+| IDs colidem com o BAT | 490.283 | Nada muda: a PK começa por `id_lote`, e o lote é de um ano e de um sistema (`lote_carga.sistema`, gerada do ano) |
+| `(null)` em `uf`, `br` e `km` | 12 ocorrências, todas com mortos/feridos contados | Colunas aceitam NULL; a ocorrência entra e sai do ranking |
+| `km` negativo | 19 ocorrências (ex.: -687,4 em Garuva/SC, repetido em 2008 e 2009) | `km` NULL (a carga anula, como as coordenadas inválidas) |
+| `(null)` em causa, fase do dia, condição, pista, traçado e uso do solo | 2 a 69 ocorrências por campo | Colunas aceitam NULL |
+| `classificacao_acidente = 'Ignorado'` | 11.660 ocorrências | Valor aceito no CHECK |
+| `id` repetido em `datatran` | 0 a 7 por ano (35 no total), com atributos diferentes (ex.: condição meteorológica) | A segunda linha vai para `linha_rejeitada`, e as pessoas dela também (`pesid repetido`) |
+| Não há `pesid = 0` | Toda linha de pessoa é uma pessoa | — |
+| Pessoa sem veículo é `id_veiculo` `(null)`/`NA`, não 0 | 52.250 linhas | Mesma regra: `id_veiculo` NULL |
+| "Sem veículo ⇔ pedestre, testemunha, cavaleiro" **não vale** | 53 passageiros e 38 condutores sem veículo; 17 pedestres com veículo | O CHECK sai do banco; a carga continua exigindo a regra no BAT |
+| Outro vocabulário de pessoa | `estado_fisico`: Ileso, Ferido Leve, Ferido Grave, Morto, Ignorado; `tipo_envolvido`: também Vítima, Autor, Ciclista, Proprietário de Carga/CNH | CHECKs com os dois vocabulários, sem harmonizar |
+| Textos completados com espaços | `'Ileso       '`, `marca` | A carga tira os espaços |
+| `nacionalidade` e `naturalidade` | Só no BR-Brasil | Colunas novas em `pessoa`, NULL no BAT |
+| Ano de fabricação no futuro | 157 veículos (9999, 2222, 7788...) | NULL, como `idade` acima de 110 |
+| Mortos e feridos graves batem com pessoa | Em todas as ocorrências menos 8 e 19, que perderam pessoas rejeitadas | Contagens mantidas em `ocorrencia`, como no BAT |
+
+**Alternativa descartada:** um esquema por sistema. Toda consulta de 2007 a 2025 viraria um
+`UNION`, e as views, os índices e os testes se duplicariam
+([ADR 0003](adr/0003-dataset-completo-br-brasil-e-bat.md)).
+
+### Todas as causas e tipos (BAT)
+
+O arquivo `acidentesAAAA_todas_causas_tipos` tem uma linha por pessoa × causa × tipo. Medido em
+2024 (603.839 linhas): as causas e os tipos são os mesmos para todas as pessoas da ocorrência,
+cada ocorrência tem exatamente uma causa principal, e a causa principal e o tipo de ordem 1 são os
+do arquivo de ocorrência em 100% dos casos. Por isso entram duas tabelas de nível de ocorrência,
+e não uma tabela de pessoa × causa × tipo:
+
+- `ocorrencia_causa (id_lote, id, id_causa, causa_principal)`, com no máximo uma principal por
+  ocorrência (índice único parcial);
+- `ocorrencia_tipo (id_lote, id, ordem, id_tipo)`.
+
+Responde à pergunta aberta 4 do reconhecimento (a granularidade do arquivo).
