@@ -5,7 +5,10 @@ decidido**. O que foi feito em cada commit, por quem e quando, fica no históric
 O antigo `commits.md` (removido no PR #15) continua em `git show 58468f7:commits.md`.
 Os usos de IA ficam registrados no [`AI-USAGE.md`](AI-USAGE.md).
 
-## Semana 1 — E1 (27 e 28/09/2026)
+As semanas seguem o [cronograma da disciplina](https://github.com/UnB-BD2/PlanoEnsino/blob/main/_data/cronograma.yml):
+a Semana 7 começa em 22/09/2026 e a Semana 10, em 13/10/2026, data da E2.
+
+## Semana 7 — E1 (22 a 28/09/2026)
 
 Reconhecimento da fonte, pergunta e recorte, esquema, carga e ADR 0001.
 
@@ -59,9 +62,18 @@ Reconhecimento da fonte, pergunta e recorte, esquema, carga e ADR 0001.
   - cada PR é revisado por outra pessoa da Squad antes do merge;
   - quem usar IA num PR atualiza o `AI-USAGE.md` no mesmo PR.
 
-## Correções da E1 (12/10/2026)
+## Semana 8 (29/09 a 05/10/2026)
 
-Duas correções da professora na avaliação da E1: o banco não era apropriado para dados com
+Semana sem desenvolvimento no pipeline: a E1 foi entregue em 28/09 (tag `e1`) e a Squad
+esperou a avaliação.
+
+- **Feito:** aba de arquitetura e modelos no site (PR #30), com o pipeline e os modelos
+  conceitual, lógico e físico.
+- **Medido, surpreendeu, decidido:** nada nesta semana.
+
+## Semana 9 — correções da E1 e início da E2 (06 a 12/10/2026)
+
+Avaliação da E1 em 12/10. Duas correções da professora na avaliação da E1: o banco não era apropriado para dados com
 latitude e longitude, e o BR-Brasil não podia ser descartado só por estar em outro formato.
 
 ### O que foi medido
@@ -78,6 +90,9 @@ latitude e longitude, e o BR-Brasil não podia ser descartado só por estar em o
 - **Coordenada × BR + km:** em 87% dos trechos de 10 km do BAT, a distância mediana dos
   acidentes ao centro do trecho fica até 5 km.
 
+- **E2, primeira versão do lote** (PR #35, ainda sobre o recorte da E1): 27 partições Delta
+  (3 tabelas × 9 anos) em 46 s; a segunda execução não grava nada (2 s).
+
 ### O que surpreendeu
 
 - **Metade das coordenadas de 2019 a 2024 não é o local do acidente.** São pontos padrão
@@ -90,6 +105,9 @@ latitude e longitude, e o BR-Brasil não podia ser descartado só por estar em o
   9999 e IDs de ocorrência repetidos no mesmo arquivo (35).
 - O `km` de 2016 já usa vírgula decimal, e não ponto, como dizia o reconhecimento.
 
+- **As imagens do MinIO deixaram de ser publicadas:** o `docker pull` de `minio/minio` e de
+  `quay.io/minio/minio` é recusado. A camada analítica fica num volume do Docker.
+
 ### O que foi decidido
 
 - **Banco espacial:** PostgreSQL 18.6 com PostGIS 3.6. `ocorrencia.geom` é uma coluna gerada
@@ -99,3 +117,50 @@ latitude e longitude, e o BR-Brasil não podia ser descartado só por estar em o
 - **Migrações novas** (`V0009`–`V0012`), sem editar as da E1: um banco da E1 sobe para o esquema
   novo só aplicando as quatro.
 - **Coordenadas repetidas** ficam como a PRF publicou; marcar e tratar é trabalho da E3.
+- **Divisão da E2 em três partes independentes** (PR #34): lote (#31, Ana), CDC (#32, Cibelly)
+  e ADR 0004, medição e diário (#33, Maria). A base comum (`wal_level=logical`, volume
+  `lakehouse`, `compose/lote.yml` e `compose/cdc.yml`) vai para a `main` antes, para nenhum PR
+  depender de outro.
+- **Contrato da camada analítica** ([`docs/e2/README.md`](docs/e2/README.md)): Parquet com
+  tabela Delta, zstd, partição pelo ano do evento.
+
+## Semana 10 — E2 (13/10/2026)
+
+Ingestão em lote, revisão dos PRs da E2, Release Notes 1 e ADR 0004.
+
+### O que foi medido
+
+- **Lote com os 20 anos** ([`docs/e2/lote.md`](docs/e2/lote.md)): 80 partições Delta (5 tabelas)
+  em 87–94 s, com 138 MB; a segunda execução não grava nada. A republicação simulada de 2024
+  reescreve só as 5 partições do ano, sem duplicar.
+- **Medição do ADR 0004** ([`bench/medicao_e2.py`](bench/medicao_e2.py)):
+  - recarga completa dentro do banco (opção nula) em 11 s, mas com 1,4 GB e sem formato aberto;
+  - recarga completa em Delta em 82–86 s;
+  - lote incremental: 7 s sem mudança e 3,3 s para republicar 2024;
+  - uma republicação de 2024 são 627.797 eventos de INSERT para um CDC, numa transação;
+  - zstd ocupa 21% (ocorrência) e 36% (pessoa) menos que o snappy.
+- **Delta × Iceberg:** a Q1 lida pelo DuckDB leva 108 ms no Delta e 79 ms no Iceberg. Das quatro
+  mudanças de esquema testadas, o deltalake faz uma (adicionar coluna) e o Iceberg faz as quatro.
+
+### O que surpreendeu
+
+- **O lote da E2 quebrava em cima da `main`:** a branch saiu de antes do PostGIS, e a coluna `geom`
+  (tipo `USER-DEFINED`) não tinha conversão para o Arrow. Só apareceu rodando a esteira inteira
+  com o merge, na revisão do PR #35.
+- **A PRF reusa IDs entre o BR-Brasil e o BAT**, e o teste de duplicata, que contava só o ID,
+  falhava com os 20 anos. Pela chave primária do banco, que começa por `id_lote`, não há
+  duplicata.
+- **O Delta, pelo deltalake, ignora sem aviso o alargamento de tipo:** a escrita de int64 numa
+  coluna int32 passa, e a coluna continua int32.
+- **zstd não deixa a leitura mais rápida:** a Q1 varia mais entre rodadas do que entre codecs.
+
+### O que foi decidido
+
+- **Revisão do lote (PR #35):** a geometria vai em WKB (`ST_AsBinary`), a escrita usa
+  `schema_mode="merge"` para coluna nova, a leitura acontece numa transação `REPEATABLE READ` e os
+  testes contam duplicata pela chave primária. As tabelas de causas e tipos entraram no lote.
+- **ADR 0004 (proposto):** lote incremental por ano como caminho principal da camada analítica,
+  com o CDC como trilha de mudanças. Delta com zstd, partição pelo ano do evento.
+- **Release Notes 1** (tag `r1`), com as correções da E1.
+- **Pendente na E2:** o CDC (#32).
+
