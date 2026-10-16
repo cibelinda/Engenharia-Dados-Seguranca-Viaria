@@ -1,6 +1,110 @@
-# Captura de mudanças da E2 (issue da Cibelly): Debezium lê o WAL do PostgreSQL, publica no
-# Redpanda, e um consumidor grava as mudanças como tabela Delta no volume lakehouse, em
-# /app/lake/cdc/. Só a dona da issue mexe neste arquivo. Contrato em docs/e2/README.md.
+# Captura de mudanças da E2 (issue #32): o Debezium lê o WAL do PostgreSQL e publica cada
+# mudança no Redpanda; o consumidor grava as mudanças como tabelas Delta no volume lakehouse,
+# em /app/lake/cdc/<tabela>. Contrato em docs/e2/README.md; detalhes em docs/e2/cdc.md.
 #
-# Por enquanto vazio: os serviços entram no PR da issue.
-services: {}
+#   db ──► connect (Debezium) ──► redpanda ──► cdc-consumidor ──► /app/lake/cdc/
+#               ▲
+#   cdc-conector: registra o conector depois da carga (`load`)
+#
+# O conector só é registrado depois da carga: o histórico já está no banco e chega à camada
+# analítica pelo lote (#31). O CDC é a trilha das mudanças daí em diante (ADR 0004).
+services:
+  # Broker compatível com o protocolo do Kafka, num processo só (sem ZooKeeper).
+  redpanda:
+    image: redpandadata/redpanda:v25.2.9
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=1G
+      - --kafka-addr=internal://0.0.0.0:9092
+      - --advertise-kafka-addr=internal://redpanda:9092
+    volumes:
+      # Tópicos e offsets sobrevivem ao `docker compose down`: o slot de replicação do
+      # PostgreSQL lembra até onde o Debezium leu, e os dois precisam andar juntos.
+      - redpanda:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Kafka Connect com o conector do PostgreSQL do Debezium. Guarda a própria configuração,
+  # os offsets e o status em tópicos do Redpanda.
+  connect:
+    image: quay.io/debezium/connect:3.3.1.Final
+    environment:
+      BOOTSTRAP_SERVERS: redpanda:9092
+      GROUP_ID: blackspot-connect
+      CONFIG_STORAGE_TOPIC: connect_configs
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      STATUS_STORAGE_TOPIC: connect_statuses
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8083/connectors > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # Registra (ou atualiza) o conector e espera ele ficar RUNNING. Roda e termina.
+  cdc-conector:
+    build: ..
+    image: blackspot-app:local
+    pull_policy: build
+    command: python -m blackspot.cdc.conector
+    environment: &cdc-env
+      BLACKSPOT_CDC_CONNECT: http://connect:8083
+      BLACKSPOT_CDC_BROKER: redpanda:9092
+      BLACKSPOT_CDC_LAKE_DIR: lake/cdc
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-blackspot}
+      PGUSER: ${POSTGRES_USER:-blackspot}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+    depends_on:
+      connect:
+        condition: service_healthy
+      load:
+        condition: service_completed_successfully
+
+  # Lê os tópicos e grava as mudanças em Delta. Fica rodando.
+  cdc-consumidor:
+    build: ..
+    image: blackspot-app:local
+    pull_policy: build
+    command: python -m blackspot.cdc.consumidor
+    environment: *cdc-env
+    volumes:
+      - lakehouse:/app/lake
+    restart: unless-stopped
+    depends_on:
+      cdc-conector:
+        condition: service_completed_successfully
+
+  # Demonstrações (docs/e2/cdc.md), fora do `docker compose up`:
+  #   docker compose run --rm cdc-demo                                   # republicação
+  #   docker compose run --rm cdc-demo python -m blackspot.cdc.mudanca latencia
+  #   docker compose stop cdc-consumidor
+  #   docker compose run --rm cdc-demo python -m blackspot.cdc.semantica
+  #   docker compose start cdc-consumidor
+  cdc-demo:
+    build: ..
+    image: blackspot-app:local
+    pull_policy: build
+    profiles: [cdc-demo]
+    command: python -m blackspot.cdc.mudanca republicar
+    environment: *cdc-env
+    volumes:
+      - lakehouse:/app/lake
+
+volumes:
+  lakehouse:
+  redpanda:
