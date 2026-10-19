@@ -15,6 +15,11 @@ Semântica de entrega: pelo menos uma vez na leitura, sem duplicata na gravaçã
 - A gravação é idempotente: um MERGE pela chave do evento (LSN + chave primária) só
   insere o que ainda não está na tabela. Mensagem relida, por queda do consumidor ou
   por reenvio do Debezium depois de reiniciar, não vira linha nova.
+
+Arquivos pequenos: cada lote de mensagens grava um arquivo por partição tocada. Quando o
+consumidor fica ocioso, as partições com ARQUIVOS_PARA_COMPACTAR arquivos ou mais são
+compactadas num arquivo só (OPTIMIZE do Delta). A compactação não muda nenhuma linha, e
+os arquivos antigos continuam no histórico da tabela (viagem no tempo).
 """
 
 from __future__ import annotations
@@ -24,7 +29,7 @@ import json
 import signal
 import sys
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -39,6 +44,9 @@ from blackspot.ingestao_lote import ESCRITA
 
 ASSINATURA = [rf"^{PREFIXO}\.public\.({'|'.join(TABELAS)})$"]
 MENSAGENS_POR_LOTE = 20_000
+# Uma mudança de uma linha vira um arquivo Parquet. Abaixo deste número de arquivos numa
+# partição, compactar não compensa a versão nova que cria na tabela.
+ARQUIVOS_PARA_COMPACTAR = 10
 
 
 class QuedaSimulada(Exception):
@@ -78,6 +86,22 @@ def gravar_eventos(caminho: Path, tabela: pa.Table, chave: list[str]) -> int:
     return metricas["num_target_rows_inserted"]
 
 
+def compactar(caminho: Path, minimo: int = ARQUIVOS_PARA_COMPACTAR) -> tuple[int, int]:
+    """Junta os arquivos das partições com `minimo` arquivos ou mais, um arquivo por partição.
+
+    Devolve (arquivos removidos, arquivos adicionados). Não muda nenhuma linha.
+    """
+    if not (caminho / "_delta_log").exists():
+        return 0, 0
+    dt = DeltaTable(str(caminho))
+    por_ano = Counter(f.split("ano=")[1].split("/")[0] for f in dt.file_uris())
+    anos = sorted(a for a, n in por_ano.items() if n >= minimo)
+    if not anos:
+        return 0, 0
+    m = dt.optimize.compact(partition_filters=[("ano", "in", anos)], writer_properties=ESCRITA)
+    return m["numFilesRemoved"], m["numFilesAdded"]
+
+
 # --- gravador ---------------------------------------------------------------------
 
 
@@ -110,6 +134,9 @@ class Gravador:
         self.conn = conn
         self.lake = lake
         self.esquemas = {t: eventos.esquema(conn, t) for t in TABELAS}
+        # Tabelas gravadas desde a última compactação. Começa com todas, para compactar o que
+        # uma execução anterior deixou.
+        self.tocadas: set[str] = set(TABELAS)
         # id_lote -> ano. Vem do banco, da tabela Delta de lote_carga (que guarda também os
         # lotes já apagados do banco), dos próprios eventos de lote_carga e, em último caso,
         # do tópico de lote_carga (reprocessamento com a tabela Delta apagada).
@@ -155,12 +182,23 @@ class Gravador:
             if linhas:
                 inseridos = gravar_eventos(self.lake / tabela, eventos.tabela_arrow(linhas, esq),
                                            esq.chave_do_evento)
+                self.tocadas.add(tabela)
             resumo[tabela] = [len(linhas), inseridos]
             latencias = [(ln["_gravado_em"] - ln["_confirmado_em"]).total_seconds()
                          for ln in linhas if ln["_op"] != "r"]
             lat = f", latência até {max(latencias):.2f} s" if latencias else ""
             log(f"  {tabela:<10} {len(linhas):>6} evento(s), {inseridos:>6} inserido(s){lat}")
         return resumo
+
+    def compactar_tocadas(self) -> None:
+        """Compacta as tabelas gravadas desde a última vez (chamado com o consumidor ocioso)."""
+        for tabela in sorted(self.tocadas, key=TABELAS.index):
+            t0 = time.monotonic()
+            removidos, adicionados = compactar(self.lake / tabela)
+            if removidos:
+                log(f"  {tabela:<10} compactada: {removidos} arquivo(s) -> {adicionados} "
+                    f"({time.monotonic() - t0:.1f} s)")
+        self.tocadas.clear()
 
 
 # --- consumo ----------------------------------------------------------------------
@@ -224,6 +262,8 @@ def consumir(do_inicio: bool = False, ate_em_dia: bool = False, falhar_apos_grav
                     elif m.error().code() != KafkaError._PARTITION_EOF:
                         log(f"erro do broker: {m.error()}")
                 if not validas:
+                    # Ocioso: hora de juntar os arquivos pequenos das últimas gravações.
+                    gravador.compactar_tocadas()
                     if ate_em_dia and em_dia(consumer):
                         break
                     continue
