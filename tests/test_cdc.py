@@ -149,6 +149,25 @@ class TestGravacaoIdempotente(unittest.TestCase):
         arquivos = DeltaTable(str(self.caminho)).file_uris()
         self.assertEqual(sorted(f.split("ano=")[1].split("/")[0] for f in arquivos), ["2025", "2026"])
 
+    def test_compactacao_junta_os_arquivos_sem_mudar_as_linhas(self):
+        # Uma mudança por lote de mensagens: um arquivo por evento na partição de 2026.
+        for i in range(12):
+            self.gravar(self.tabela(evento("c", 100 + i, None, {**DEPOIS, "id": 42 + i})))
+        self.gravar(self.tabela(evento("c", 200, None, {**DEPOIS, "id_lote": 4})))  # 2025: 1 arquivo
+        dt = DeltaTable(str(self.caminho))
+        antes = sorted(dt.to_pyarrow_table(columns=["_lsn"]).column("_lsn").to_pylist())
+        self.assertEqual(len(dt.file_uris()), 13)
+
+        self.assertEqual(consumidor.compactar(self.caminho, minimo=10), (12, 1))
+        dt = DeltaTable(str(self.caminho))
+        arquivos = sorted(f.split("ano=")[1].split("/")[0] for f in dt.file_uris())
+        self.assertEqual(arquivos, ["2025", "2026"])  # um arquivo por partição
+        self.assertEqual(sorted(dt.to_pyarrow_table(columns=["_lsn"]).column("_lsn").to_pylist()), antes)
+        # Sem partição acima do mínimo, não cria versão nova; e reler os eventos continua sem duplicar.
+        self.assertEqual(consumidor.compactar(self.caminho, minimo=10), (0, 0))
+        self.assertEqual(self.gravar(self.tabela(evento("c", 100, None, DEPOIS))), 0)
+        self.assertEqual(self.linhas(), 13)
+
 
 @unittest.skipIf(eventos is None, "deltalake/pyarrow/confluent-kafka indisponíveis")
 class TestTabelasDoCdc(TesteComBanco):
