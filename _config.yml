@@ -28,7 +28,7 @@ callouts:
 # Rodapé: _includes/footer_custom.html.
 heading_anchors: true
 
-# Diagramas em Mermaid (docs/arquitetura-e-modelos.md).
+# Diagramas em Mermaid.
 mermaid:
   version: "11.12.0"
 back_to_top: true
@@ -41,42 +41,26 @@ relative_links:
   enabled: true
   collections: false
 
-# Os dados baixados não vão para o site. O resto fica, para os links dos documentos
-# para arquivos de código (ex.: blackspot/load.py) continuarem funcionando.
+# O site é a apresentação do projeto: a página inicial (index.md) e as páginas de paginas/. A
+# documentação técnica completa (docs/, ADRs, README) e os registros do processo ficam só no
+# repositório, e as páginas apontam para lá.
 exclude:
+  - README.md
+  - AI-USAGE.md
+  - diario-de-bordo.md
+  - docs/
   - data/
+  - bench/
+  - blackspot/
+  - compose/
+  - db/
+  - tests/
+  - Dockerfile
+  - docker-compose.yml
+  - requirements.txt
+  - sources.yaml
 
-# Menu: as páginas ficam em quatro seções (parent), cada uma com uma página de abertura.
+# Menu: a ordem vem do nav_order de cada página.
 defaults:
   - scope: { path: "" }
-    values: { layout: default, nav_exclude: true }
-  - scope: { path: "README.md" }
-    values: { title: "Início", nav_order: 1, nav_exclude: false, permalink: / }
-  # Dados e modelagem
-  - scope: { path: "docs/pergunta-e-recorte.md" }
-    values: { title: "Pergunta e recorte", parent: "Dados e modelagem", nav_order: 1, nav_exclude: false }
-  - scope: { path: "docs/fontes/README.md" }
-    values: { title: "Fonte de dados", parent: "Dados e modelagem", nav_order: 2, nav_exclude: false }
-  - scope: { path: "docs/caracterizacao-da-carga.md" }
-    values: { title: "Caracterização da carga", parent: "Dados e modelagem", nav_order: 3, nav_exclude: false }
-  - scope: { path: "docs/modelagem-origem.md" }
-    values: { title: "Modelagem da origem", parent: "Dados e modelagem", nav_order: 4, nav_exclude: false }
-  # Decisões (ADRs)
-  - scope: { path: "docs/adr/0001-modelo-normalizado-insert-only-versionado-por-lote.md" }
-    values: { title: "ADR 0001 · Histórico insert-only", parent: "Decisões (ADRs)", nav_order: 1, nav_exclude: false }
-  - scope: { path: "docs/adr/0002-banco-espacial-postgis.md" }
-    values: { title: "ADR 0002 · Banco com PostGIS", parent: "Decisões (ADRs)", nav_order: 2, nav_exclude: false }
-  - scope: { path: "docs/adr/0003-dataset-completo-br-brasil-e-bat.md" }
-    values: { title: "ADR 0003 · Dataset completo", parent: "Decisões (ADRs)", nav_order: 3, nav_exclude: false }
-  # Processo
-  - scope: { path: "diario-de-bordo.md" }
-    values: { title: "Diário de bordo", parent: "Processo", nav_order: 1, nav_exclude: false }
-  - scope: { path: "AI-USAGE.md" }
-    values: { title: "Uso de IA", parent: "Processo", nav_order: 2, nav_exclude: false }
-  # Entrega 2 (dentro de "Entregas")
-  - scope: { path: "docs/e2/README.md" }
-    values: { title: "Entrega 2", parent: "Entregas", nav_order: 3, nav_exclude: false, has_children: true }
-  - scope: { path: "docs/e2/lote.md" }
-    values: { title: "Ingestão em lote", parent: "Entrega 2", grand_parent: "Entregas", nav_order: 1, nav_exclude: false }
-  - scope: { path: "docs/e2/cdc.md" }
-    values: { title: "Captura de mudanças", parent: "Entrega 2", grand_parent: "Entregas", nav_order: 2, nav_exclude: false }
+    values: { layout: default }

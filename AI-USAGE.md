@@ -311,7 +311,24 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### Captura de mudanças (CDC) — Cibelly
 
-[a preencher no PR do CDC]
+#### 2026-10-18 — Captura de mudanças (#32)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5), usado em conjunto com a Cibelly
+- **Onde:** `blackspot/cdc/`, `compose/cdc.yml`, `tests/test_cdc.py`, `docs/e2/cdc.md`
+- **O que foi pedido:** o CDC do PostgreSQL para tabelas Delta (Debezium e Redpanda), com o
+  script que altera linhas no banco, a demonstração da semântica de entrega, a medição da
+  latência, os testes e a documentação. Depois, a conferência de tudo contra a issue antes do PR.
+- **O que foi aproveitado:** o trabalho foi feito em conjunto: código, serviços, testes e texto
+  saíram da conversa entre a Cibelly e o assistente, com as decisões tomadas por ela. Na
+  conferência, entrou a compactação das tabelas do CDC quando o consumidor fica ocioso, porque
+  cada lote de mensagens gravava um arquivo (o `lote_carga` tinha 158 arquivos para 167 linhas).
+- **Como foi verificado:** a esteira subiu com `docker compose up --build`, com o conector
+  RUNNING; a republicação simulada de 2026 (264 mil eventos) chegou no Delta com os km alterados
+  e a ocorrência removida, e o desfazer levou os DELETEs; na demonstração da semântica, o
+  consumidor caiu antes de confirmar o offset, releu 2 eventos sem inserir nada, e o
+  reprocessamento do início leu 1,58 milhão de eventos sem inserir nada; latência mediana de
+  1,03 s (p95 1,13 s) com a compactação; 119 testes passando (12 do CDC).
+- **Quem revisou:** [revisor do PR da #32]
 
 &nbsp;
 
