@@ -53,6 +53,12 @@ Decisões:
   texto (`decimal.handling.mode=string`) para não perder casas decimais.
 - **Tópicos sem expiração**, com uma partição cada (ordem total por tabela), para o consumidor
   poder reprocessar do início.
+- **Compactação quando ocioso.** Cada lote de mensagens grava um arquivo por partição tocada, e
+  uma mudança de uma linha vira um arquivo Parquet. Quando não há mensagem para ler, o consumidor
+  compacta (`OPTIMIZE` do Delta) as partições com 10 arquivos ou mais num arquivo só. Nenhuma
+  linha muda, e os arquivos antigos continuam no histórico da tabela (viagem no tempo). Em
+  2026-10-18, a primeira compactação juntou 139 arquivos de `lote_carga` (2026) em um, e 41, 51
+  e 58 de `ocorrencia`, `veiculo` e `pessoa`, em menos de meio segundo cada.
 
 O estado atual de uma tabela sai da trilha pegando o último evento de cada chave. Exemplo com
 DuckDB, para `lote_carga`:
@@ -200,6 +206,11 @@ deltalake 1.6.6), 60 mudanças:
 | a mudança visível numa leitura do Delta (medido por fora) | **1,23 s** | 1,73 s | 0,53 s | 2,02 s |
 | a gravação pelo consumidor (`_gravado_em − _confirmado_em`) | 0,75 s | 1,11 s | 0,22 s | 1,18 s |
 
+Medido de novo em 2026-10-18, já com a compactação quando ocioso, 60 mudanças: mediana de
+**1,03 s** (p95 1,13 s) até a mudança visível no Delta e de 0,84 s (p95 0,91 s) até a gravação.
+A compactação roda nos intervalos sem mensagem e não atrasa o fluxo; com menos arquivos, a leitura
+de quem mede fica mais rápida.
+
 A diferença entre as duas linhas é o próprio `MERGE` mais o intervalo de consulta de quem mede.
 Para mudanças em bloco, a latência é dominada pela vazão: a republicação de 2026 (264 mil
 eventos) fica inteira no Delta **32 s** depois do commit.
@@ -211,7 +222,8 @@ Em [`tests/test_cdc.py`](../../tests/test_cdc.py), no serviço `tests`:
 - **Sem infraestrutura:** conversão dos eventos do Debezium (tipos, `DELETE` só com a chave,
   ano do lote em vez do `0` que o Debezium preenche) e gravação idempotente (reler os mesmos
   eventos em outros offsets não insere nada; evento repetido no mesmo lote de mensagens; INSERT
-  e DELETE da mesma chave são eventos diferentes; partição pelo ano).
+  e DELETE da mesma chave são eventos diferentes; partição pelo ano; a compactação junta os
+  arquivos de cada partição num só sem mudar nenhuma linha).
 - **Sobre as tabelas do CDC:** nenhum evento repetido nas quatro tabelas, e o estado de
   `lote_carga` reconstruído da trilha (último evento de cada chave, por LSN) é igual ao do banco.
 - **Fluxo:** confirma uma linha em `lote_carga` e espera o `INSERT` e o `DELETE` chegarem no
@@ -219,15 +231,14 @@ Em [`tests/test_cdc.py`](../../tests/test_cdc.py), no serviço `tests`:
 
 ```bash
 docker compose up --build -d && docker compose wait cdc-conector ingestao-lote
-docker compose run --rm tests        # 118 testes, 11 do CDC
+docker compose run --rm tests        # 119 testes, 12 do CDC
 ```
 
 ## Limites
 
-- **Arquivos pequenos.** Cada lote de mensagens grava um arquivo por partição tocada; uma
-  mudança de uma linha vira um arquivo Parquet. Não há compactação automática:
-  `DeltaTable(...).optimize.compact()` junta os arquivos (e o `VACUUM` apaga os antigos, com o
-  mesmo custo para a viagem no tempo descrito no ADR 0004).
+- **Arquivos antigos.** A compactação tira os arquivos pequenos da versão atual, mas eles
+  continuam no disco, no histórico da tabela. O `VACUUM` os apagaria, com o mesmo custo para a
+  viagem no tempo descrito no ADR 0004; por isso não é rodado automaticamente.
 - **Slot de replicação.** Com o Debezium parado, o PostgreSQL retém WAL até ele voltar
   (`max_slot_wal_keep_size` está no padrão, sem limite). O heartbeat a cada 10 s evita reter
   WAL quando só tabelas fora da publicação mudam.
