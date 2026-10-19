@@ -98,3 +98,287 @@ $lilas-claro: #f7f4fe;
 .site-footer {
   color: $roxo-escuro;
 }
+
+// --- Componentes das páginas de apresentação ------------------------------------
+
+// Abertura da página inicial.
+.hero {
+  margin: 0.5rem 0 2rem;
+  padding: 2rem 1.75rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, $roxo-escuro 0%, $roxo 100%);
+  color: #fff;
+
+  .hero-titulo {
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
+  }
+
+  .hero-texto {
+    margin: 0;
+    max-width: 46rem;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: rgba(#fff, 0.92);
+  }
+
+  .hero-pergunta {
+    margin: 1.25rem 0 0;
+    padding: 0.85rem 1rem;
+    border-left: 4px solid rgba(#fff, 0.7);
+    border-radius: 0 6px 6px 0;
+    background: rgba(#fff, 0.12);
+    font-size: 0.98rem;
+    color: #fff;
+  }
+}
+
+// Números em destaque: uma grade de cartões.
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.numero {
+  padding: 1rem;
+  border: 1px solid #e2daf7;
+  border-radius: 10px;
+  background: $lilas-claro;
+
+  .valor {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: $roxo-escuro;
+  }
+
+  .rotulo {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    color: #4a4560;
+  }
+}
+
+// Cartões que levam às seções, ou que resumem uma decisão.
+.cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.9rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.cartao {
+  display: block;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid #e2daf7;
+  border-top: 4px solid $roxo;
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+
+  .cartao-titulo {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+    color: $roxo-escuro;
+  }
+
+  .cartao-texto {
+    display: block;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #4a4560;
+  }
+
+  .cartao-numero {
+    display: block;
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $roxo;
+  }
+}
+
+a.cartao:hover,
+a.cartao:focus {
+  border-color: $roxo-medio;
+  box-shadow: 0 4px 14px rgba($roxo, 0.15);
+  text-decoration: none;
+}
+
+// Etiquetas de tecnologia.
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0 1.5rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    margin: 0;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid #d9cdf5;
+    border-radius: 999px;
+    background: $lilas-claro;
+    font-size: 0.85rem;
+    color: $roxo-escuro;
+
+    &::before {
+      content: none;
+    }
+  }
+}
+
+// Gráfico de colunas (SVG em linha).
+.grafico {
+  margin: 1.25rem 0 1.75rem;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .grafico-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.88rem;
+    color: #4a4560;
+  }
+
+  .amostra {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 0.4rem;
+    border-radius: 3px;
+    vertical-align: -1px;
+  }
+
+  .coluna:hover rect,
+  .coluna:hover path {
+    opacity: 0.8;
+  }
+
+  details {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  summary {
+    cursor: pointer;
+    color: $roxo;
+  }
+}
+
+// Etapas em sequência, com seta entre elas (quebram linha em telas estreitas).
+.fluxo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem 1.6rem;
+  margin: 1.25rem 0 1.75rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: etapa;
+
+  > li {
+    position: relative;
+    flex: 1 1 110px;
+    margin: 0;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #e2daf7;
+    border-radius: 10px;
+    background: $lilas-claro;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: #4a4560;
+    counter-increment: etapa;
+
+    &::before {
+      content: counter(etapa);
+      position: static;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      margin: 0 0 0.4rem;
+      border-radius: 50%;
+      background: $roxo;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    &:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -1.3rem;
+      transform: translateY(-50%);
+      color: $roxo-medio;
+      font-size: 1.1rem;
+    }
+
+    strong {
+      display: block;
+      margin-bottom: 0.2rem;
+      color: $roxo-escuro;
+    }
+
+    &.alerta {
+      border-color: #f0d58a;
+      background: #fdf8e8;
+
+      &::before {
+        background: #a87b00;
+      }
+    }
+  }
+}
+
+// O tema põe um marcador (ou número) fora de cada item de lista e recua a lista; as
+// etiquetas e as etapas usam o próprio desenho.
+.main-content ul.etiquetas,
+.main-content ol.fluxo {
+  padding-left: 0;
+}
+
+.main-content ul.etiquetas > li::before {
+  content: none;
+  display: none;
+}
+
+.main-content ol.fluxo > li::before {
+  position: static;
+  top: auto;
+  left: auto;
+  content: counter(etapa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 0 0.4rem;
+  border-radius: 50%;
+  background: $roxo;
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.main-content ol.fluxo > li.alerta::before {
+  background: #a87b00;
+}
