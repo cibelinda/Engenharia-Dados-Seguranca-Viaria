@@ -1,0 +1,15 @@
+# Tabelas de origem (E1/E2): a versão vigente de cada ano, no schema public.
+version: 2
+
+sources:
+  - name: origem
+    schema: public
+    tables:
+      - name: lote_vigente
+      - name: ocorrencia_vigente
+      - name: veiculo_vigente
+      - name: pessoa_vigente
+      - name: ocorrencia_causa_vigente
+      - name: ocorrencia_tipo_vigente
+      - name: causa_acidente
+      - name: tipo_acidente

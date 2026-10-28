@@ -1,0 +1,6 @@
+# Painel analítico da E3 (issue da Ana): responde à pergunta de gestão lendo as tabelas
+# finais do dbt (schema analitico_marts). Só a dona da issue mexe neste arquivo. Contrato
+# em docs/e3/README.md.
+#
+# Por enquanto vazio: os serviços entram no PR da issue.
+services: {}

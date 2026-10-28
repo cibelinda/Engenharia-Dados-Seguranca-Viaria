@@ -1,0 +1,14 @@
+# Conexão do dbt com o PostgreSQL do compose. Sem senha no arquivo: vem das mesmas
+# variáveis dos outros serviços (PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD).
+blackspot:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('PGHOST', 'db') }}"
+      port: "{{ env_var('PGPORT', '5432') | as_number }}"
+      dbname: "{{ env_var('PGDATABASE', 'blackspot') }}"
+      user: "{{ env_var('PGUSER', 'blackspot') }}"
+      password: "{{ env_var('PGPASSWORD', 'blackspot') }}"
+      schema: analitico
+      threads: 4

@@ -1,0 +1,31 @@
+# Projeto dbt da E3 (base comum). Roda sob demanda, fora do `docker compose up`:
+#
+#   docker compose run --rm dbt build      # modelos e testes
+#   docker compose run --rm dbt debug      # confere a conexão
+#
+# A ordem de execução no dia a dia é da orquestração (compose/orquestracao.yml).
+# O projeto em dbt/ é montado só para leitura; os artefatos do dbt (target/, logs/) vão
+# para /tmp dentro do container. Contrato em docs/e3/README.md.
+services:
+  dbt:
+    build: ..
+    image: blackspot-app:local
+    pull_policy: build
+    profiles: [dbt]
+    working_dir: /app/dbt
+    entrypoint: ["dbt"]
+    command: ["build"]
+    environment:
+      DBT_PROFILES_DIR: /app/dbt
+      DBT_TARGET_PATH: /tmp/dbt/target
+      DBT_LOG_PATH: /tmp/dbt/logs
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-blackspot}
+      PGUSER: ${POSTGRES_USER:-blackspot}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+    volumes:
+      - ../dbt:/app/dbt:ro
+    depends_on:
+      db:
+        condition: service_healthy

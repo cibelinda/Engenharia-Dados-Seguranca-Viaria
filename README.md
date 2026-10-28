@@ -59,6 +59,12 @@ Isso reescreve o bloco `reference` da entrada no `sources.yaml`; faça commit da
 Testes do downloader (sem rede): `python -m unittest discover tests`. Sem banco acessível, os
 testes de dados são pulados; para rodá-los, veja "Testes de dados" abaixo.
 
+## Entrega 3: camada analítica transformada, testada e orquestrada
+
+Em andamento. Divisão, contrato entre as partes e checklist em
+[`docs/e3/README.md`](docs/e3/README.md). O projeto dbt fica em [`dbt/`](dbt/):
+`docker compose run --rm dbt build`.
+
 ## Entrega 2: ingestão em lote e captura de mudanças
 
 Em andamento. Divisão, contrato entre as partes e checklist em

@@ -1,0 +1,6 @@
+# Orquestração agendada da E3 (issue da Maria): roda as etapas na ordem (ingestões, dbt),
+# com retry e backfill. Só a dona da issue mexe neste arquivo. Contrato em
+# docs/e3/README.md.
+#
+# Por enquanto vazio: os serviços entram no PR da issue.
+services: {}

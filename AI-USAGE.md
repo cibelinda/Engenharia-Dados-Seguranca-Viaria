@@ -366,3 +366,26 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
   que pegou mínimos e máximos copiados de uma rodada anterior. O diário segue o cronograma da
   disciplina (Semana 7 = 22/09).
 - **Quem revisou:** [revisor do PR da #33]
+
+---
+
+## E3
+
+Cada pessoa preenche só a própria entrada abaixo, no PR da sua parte, no mesmo formato das
+entradas acima. Se a parte não usou IA, escreva isso no lugar.
+
+### Base do IBGE, município e painel — Ana Luiza Komatsu
+
+[a preencher no PR da base do IBGE e do painel]
+
+&nbsp;
+
+### Modelo dimensional, testes e consulta otimizada — Cibelly
+
+[a preencher no PR do dbt]
+
+&nbsp;
+
+### Orquestração, freshness, ADR 0005 e diário — Maria Clara
+
+[a preencher no PR da orquestração]

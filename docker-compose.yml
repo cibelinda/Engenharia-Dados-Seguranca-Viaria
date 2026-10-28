@@ -13,6 +13,11 @@
 include:
   - compose/lote.yml   # ingestão em lote: Postgres -> Parquet/Delta (issue da Ana)
   - compose/cdc.yml    # captura de mudanças: Debezium e Redpanda (issue da Cibelly)
+  # E3: cada parte tem o próprio arquivo, como na E2 (ver docs/e3/README.md).
+  - compose/dbt.yml            # projeto dbt (base comum da E3)
+  - compose/ibge.yml           # base de municípios do IBGE (issue da Ana)
+  - compose/orquestracao.yml   # orquestração agendada (issue da Maria)
+  - compose/painel.yml         # painel analítico (issue da Ana)
 
 # Configuração comum aos serviços que usam o código Python (Dockerfile).
 x-app: &app
