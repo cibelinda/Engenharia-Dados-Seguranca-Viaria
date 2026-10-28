@@ -1,0 +1,1 @@
+Testes singulares do dbt (cada parte cria os seus com prefixo: trecho_*, municipio_*).

@@ -1,0 +1,6 @@
+# Base de municípios do IBGE (issue da Ana): ingestão dos municípios, da população e da
+# malha municipal para o schema `ibge` do PostgreSQL. Só a dona da issue mexe neste
+# arquivo. Contrato em docs/e3/README.md.
+#
+# Por enquanto vazio: os serviços entram no PR da issue.
+services: {}

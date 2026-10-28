@@ -1,0 +1,37 @@
+# Projeto dbt da E3. Camadas:
+#   staging       -> uma view por tabela de origem (versão vigente), só renomeia e limpa
+#   intermediate  -> ligações e regras de negócio (ex.: acidente -> município)
+#   marts         -> tabelas de consumo: fatos, dimensões e as respostas da pergunta de gestão
+# Cada camada vira um schema no PostgreSQL: analitico_staging, analitico_intermediate,
+# analitico_marts e analitico_snapshots. Contrato em docs/e3/README.md.
+name: blackspot
+version: "1.0.0"
+profile: blackspot
+config-version: 2
+
+model-paths: ["models"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+clean-targets: ["target"]
+# Sem pacotes do dbt (dbt_utils, dbt_expectations) por decisão da base: a pasta dbt/ é
+# montada só para leitura, e os testes ficam nos genéricos do próprio dbt (unique,
+# not_null, relationships, accepted_values) e em testes singulares em SQL (dbt/tests/).
+# Se um pacote ficar indispensável, combine no grupo antes: o `dbt deps` precisa gravar
+# package-lock.yml na pasta do projeto.
+packages-install-path: "/tmp/dbt/packages"
+
+models:
+  blackspot:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
+
+snapshots:
+  blackspot:
+    +schema: snapshots
