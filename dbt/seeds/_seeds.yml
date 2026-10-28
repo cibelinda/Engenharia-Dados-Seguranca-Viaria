@@ -1,0 +1,18 @@
+version: 2
+
+seeds:
+  - name: municipio_nome_antigo
+    description: >
+      Nomes de município que a PRF usou e que não batem com o nome atual do IBGE: na maioria,
+      municípios que mudaram de nome (ex.: Embu virou Embu das Artes). Cada código foi
+      conferido na tabela do IBGE. Uma linha por nome antigo.
+    config:
+      column_types:
+        cod_municipio: char(7)
+    columns:
+      - name: cod_municipio
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_ibge_municipio')
+                field: cod_municipio
