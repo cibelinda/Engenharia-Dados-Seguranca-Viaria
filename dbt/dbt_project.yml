@@ -12,8 +12,13 @@ config-version: 2
 model-paths: ["models"]
 snapshot-paths: ["snapshots"]
 test-paths: ["tests"]
-target-path: "{{ env_var('DBT_TARGET_PATH', 'target') }}"
 clean-targets: ["target"]
+# Sem pacotes do dbt (dbt_utils, dbt_expectations) por decisão da base: a pasta dbt/ é
+# montada só para leitura, e os testes ficam nos genéricos do próprio dbt (unique,
+# not_null, relationships, accepted_values) e em testes singulares em SQL (dbt/tests/).
+# Se um pacote ficar indispensável, combine no grupo antes: o `dbt deps` precisa gravar
+# package-lock.yml na pasta do projeto.
+packages-install-path: "/tmp/dbt/packages"
 
 models:
   blackspot:

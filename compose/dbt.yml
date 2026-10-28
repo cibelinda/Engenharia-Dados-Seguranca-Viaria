@@ -4,6 +4,8 @@
 #   docker compose run --rm dbt debug      # confere a conexão
 #
 # A ordem de execução no dia a dia é da orquestração (compose/orquestracao.yml).
+# O serviço só espera o banco ficar saudável: num banco novo, rode antes o `migrate` e o
+# `load` (`docker compose up`), senão as views de origem ainda não existem e o build falha.
 # O projeto em dbt/ é montado só para leitura; os artefatos do dbt (target/, logs/) vão
 # para /tmp dentro do container. Contrato em docs/e3/README.md.
 services:

@@ -5,7 +5,8 @@ Prazo: 03/11/2026.
 
 ## Como dividimos
 
-Como na E2: cada parte é independente. Cada pessoa cria a branch a partir da `main`, mexe
+Como na E2: cada parte é independente. Cada pessoa cria a branch a partir da `chore/e3-base`
+enquanto a base não for mergeada (depois, a partir da `main`), mexe
 **só nos arquivos da sua parte**, abre o PR e pede revisão. Nenhum PR depende de outro: as
 partes se encontram pelos **nomes combinados** abaixo, e não pelo código umas das outras.
 
@@ -52,6 +53,9 @@ No `AI-USAGE.md`, cada uma preenche só a própria entrada, reservada no fim do 
 - **Chave do acidente:** `(id_lote, id)`, a mesma do banco.
 - **"Grave":** `mortos > 0 or feridos_graves > 0`, como no resto do projeto.
 - **Trecho:** BR + UF + faixa de 10 km (`floor(km / 10) * 10`); `br = 0` fica fora do ranking.
+- **Sem pacotes do dbt:** testes com os genéricos do dbt (`unique`, `not_null`, `relationships`,
+  `accepted_values`) e testes singulares em SQL. Unicidade de chave composta vai como teste
+  singular. Ver o comentário em `dbt/dbt_project.yml`.
 - **Migrações:** só a parte do IBGE cria migrações (`V0013`–`V0019`). Para índice em tabela do
   dbt, use a configuração `indexes` do próprio modelo, e não migração.
 - **O painel lê só** `mart_risco_trecho_ano` e `mart_risco_municipio_ano`.
