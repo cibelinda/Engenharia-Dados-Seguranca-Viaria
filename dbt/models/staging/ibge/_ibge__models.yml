@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_ibge_municipio
+    description: "Um município por linha, com o nome normalizado para comparar com a PRF."
+    columns:
+      - name: cod_municipio
+        data_tests: [unique, not_null]
+      - name: uf
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [AC, AL, AM, AP, BA, CE, DF, ES, GO, MA, MG, MS, MT, PA, PB, PE, PI, PR, RJ, RN, RO, RR, RS, SC, SE, SP, TO]
+  - name: stg_ibge_populacao
+    description: "Uma linha por município por ano."
+    columns:
+      - name: cod_municipio
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_ibge_municipio')
+                field: cod_municipio
+      - name: populacao
+        data_tests: [not_null]

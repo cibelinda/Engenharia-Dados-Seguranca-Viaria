@@ -1,0 +1,11 @@
+# Dados brutos do IBGE, gravados pela ingestão (blackspot/ibge/ingestao.py) no schema ibge.
+version: 2
+
+sources:
+  - name: ibge
+    schema: ibge
+    tables:
+      - name: municipio
+      - name: populacao
+      - name: malha_municipal
+      - name: carga

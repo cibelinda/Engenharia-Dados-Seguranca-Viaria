@@ -1,0 +1,9 @@
+# Histórico do município (dimensão de variação lenta): cada vez que o IBGE muda o nome ou a
+# UF de um município, o snapshot guarda a versão antiga com a data em que deixou de valer.
+snapshots:
+  - name: snap_municipio
+    relation: source('ibge', 'municipio')
+    config:
+      unique_key: cod_municipio
+      strategy: check
+      check_cols: [nome, uf]
