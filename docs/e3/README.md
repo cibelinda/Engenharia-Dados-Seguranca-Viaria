@@ -12,7 +12,7 @@ partes se encontram pelos **nomes combinados** abaixo, e não pelo código umas 
 
 | Parte | Issue | Quem | Arquivos que só ela mexe |
 |---|---|---|---|
-| Base do IBGE e município | #42 | Ana | `compose/ibge.yml`, `blackspot/ibge/`, `db/migrations/V0013`–`V0019`, `dbt/models/staging/ibge/`, `dbt/models/intermediate/municipio/`, `dbt/models/marts/municipio/`, `dbt/snapshots/`, testes `dbt/tests/municipio_*`, [`docs/e3/ibge.md`](ibge.md) |
+| Base do IBGE e município | #42 | Ana | `compose/ibge.yml`, `blackspot/ibge/`, `db/migrations/V0013`–`V0019`, `dbt/models/staging/ibge/`, `dbt/models/intermediate/municipio/`, `dbt/models/marts/municipio/`, `dbt/snapshots/`, `dbt/seeds/`, testes `dbt/tests/municipio_*`, [`docs/e3/ibge.md`](ibge.md) |
 | Modelo dimensional, testes e consulta otimizada | #43 | Cibelly | `dbt/models/staging/stg_*.sql` e `_origem__*.yml`, `dbt/models/marts/trecho/`, testes `dbt/tests/trecho_*`, [`docs/e3/dbt.md`](dbt.md), `docs/e3/explain/` |
 | Orquestração, freshness, ADR 0005 e diário | #44 | Maria | `compose/orquestracao.yml`, `orquestracao/`, [`docs/e3/orquestracao.md`](orquestracao.md), `docs/adr/0005-*.md`, `diario-de-bordo.md` |
 | Painel | #45 | Ana | `compose/painel.yml`, `painel/`, [`docs/e3/painel.md`](painel.md) |
@@ -43,7 +43,7 @@ No `AI-USAGE.md`, cada uma preenche só a própria entrada, reservada no fim do 
 |---|---|---|---|
 | `ibge.*` (schema no Postgres) | Ana | Dados brutos do IBGE: municípios, população por ano, malha municipal | — |
 | `dim_municipio` | Ana | Dimensão de município **com histórico** (variação lenta): `cod_municipio`, `nome`, `uf`, `valido_de`, `valido_ate`, `atual` | uma linha por município **por versão** |
-| `int_ocorrencia_municipio` | Ana | Ligação acidente → município: `id_lote`, `id`, `cod_municipio`, `metodo` (`coordenada` ou `nome`) | uma linha por acidente |
+| `int_ocorrencia_municipio` | Ana | Ligação acidente → município: `id_lote`, `id`, `ano`, `cod_municipio` (nulo se não achou), `metodo` (`coordenada`, `nome`, `nome_antigo` ou `sem_ligacao`), `coordenada_e_nome_divergem` | uma linha por acidente |
 | `mart_risco_municipio_ano` | Ana | Resposta "município mais perigoso": acidentes graves, população e taxa por 100 mil habitantes | uma linha por município por ano |
 | `fct_ocorrencia` | Cibelly | Fato do acidente, com as chaves das dimensões | uma linha por acidente |
 | `dim_trecho`, `dim_tempo`, `dim_causa` | Cibelly | Dimensões do acidente | uma linha por trecho / dia / causa |

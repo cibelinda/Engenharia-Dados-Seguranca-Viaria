@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: dim_municipio
+    description: "Uma linha por município por versão (histórico de nome e UF)."
+    columns:
+      - name: chave_municipio
+        data_tests: [unique, not_null]
+      - name: cod_municipio
+        data_tests: [not_null]
+  - name: mart_risco_municipio_ano
+    description: "Uma linha por município por ano: acidentes graves e a taxa por 100 mil habitantes."
+    columns:
+      - name: cod_municipio
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_municipio')
+                field: cod_municipio
+      - name: populacao
+        data_tests: [not_null]
+      - name: nome
+        data_tests: [not_null]

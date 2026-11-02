@@ -1,6 +1,18 @@
-# Base de municípios do IBGE (issue da Ana): ingestão dos municípios, da população e da
-# malha municipal para o schema `ibge` do PostgreSQL. Só a dona da issue mexe neste
-# arquivo. Contrato em docs/e3/README.md.
-#
-# Por enquanto vazio: os serviços entram no PR da issue.
-services: {}
+# Base de municípios do IBGE (issue #42): baixa a lista de municípios, a população por ano e
+# o contorno de cada município, e grava no schema `ibge` do PostgreSQL. Roda no
+# `docker compose up`, depois das migrações. Pode rodar de novo sem duplicar.
+services:
+  ingestao-ibge:
+    build: ..
+    image: blackspot-app:local
+    pull_policy: build
+    command: python -m blackspot.ibge.ingestao
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-blackspot}
+      PGUSER: ${POSTGRES_USER:-blackspot}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully

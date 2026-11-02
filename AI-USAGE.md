@@ -376,7 +376,18 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### Base do IBGE, município e painel — Ana Luiza Komatsu
 
-[a preencher no PR da base do IBGE e do painel]
+#### 2026-10-28 — Planejamento da E3, base do IBGE e painel (#42, #45, PR #46)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** divisão da E3 e base compartilhada (`docs/e3/README.md`, PR #46), base do IBGE e painel
+- **O que foi pedido:** ajuda para planejar o que cada uma faria na E3, de forma que as partes
+  fossem independentes, e apoio na base do IBGE (ingestão, ligação do acidente ao município,
+  histórico do município, ranking) e no painel.
+- **O que foi aproveitado:** a divisão das issues e o contrato entre as partes; o código e a
+  documentação do IBGE e do painel, usados como apoio.
+- **Como foi verificado:** o `dbt build` com os 39 itens passando; 14 de 2,2 milhões de
+  acidentes sem município; o histórico testado com uma troca de nome; o painel rodado sem erro.
+- **Quem revisou:** [revisora do PR]
 
 &nbsp;
 

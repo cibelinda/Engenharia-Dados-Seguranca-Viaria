@@ -1,6 +1,18 @@
-# Painel analítico da E3 (issue da Ana): responde à pergunta de gestão lendo as tabelas
-# finais do dbt (schema analitico_marts). Só a dona da issue mexe neste arquivo. Contrato
-# em docs/e3/README.md.
-#
-# Por enquanto vazio: os serviços entram no PR da issue.
-services: {}
+# Painel da E3 (issue #45): responde à pergunta de gestão lendo as tabelas finais do dbt.
+# Abre em http://localhost:8501 depois do `docker compose up`.
+services:
+  painel:
+    build: ../painel
+    image: blackspot-painel:local
+    pull_policy: build
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-blackspot}
+      PGUSER: ${POSTGRES_USER:-blackspot}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+    ports:
+      - "127.0.0.1:${PAINEL_PORT:-8501}:8501"
+    depends_on:
+      db:
+        condition: service_healthy

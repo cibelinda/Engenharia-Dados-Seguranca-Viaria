@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_ocorrencia_municipio
+    description: "Uma linha por acidente, com o município e como ele foi achado."
+    columns:
+      - name: cod_municipio
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_ibge_municipio')
+                field: cod_municipio
+      - name: metodo
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [coordenada, nome, nome_antigo, sem_ligacao]
