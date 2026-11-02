@@ -17,3 +17,4 @@ que se perde, e quando revisar.
 | [0002](0002-banco-espacial-postgis.md) | Banco espacial: PostgreSQL com PostGIS | Aceito (correção da E1) |
 | [0003](0003-dataset-completo-br-brasil-e-bat.md) | Dataset completo da PRF, BR-Brasil e BAT no mesmo esquema | Aceito (correção da E1) |
 | [0004](0004-ingestao-por-lote-incremental-em-delta.md) | Camada analítica alimentada por lote incremental por ano, em Delta com zstd; CDC como trilha de mudanças | Proposto (E2) |
+| [0005](0005-dbt-e-dagster-em-vez-de-cron-com-sql.md) | Transformação em dbt e orquestração em Dagster, em vez de `cron` com scripts SQL | Proposto (E3) |
