@@ -19,6 +19,7 @@ import json
 import sys
 import time
 import urllib.request
+from datetime import date
 
 import psycopg
 
@@ -27,8 +28,9 @@ MALHA = ("https://servicodados.ibge.gov.br/api/v3/malhas/paises/BR?intrarregiao=
          "&qualidade=intermediaria&formato=application/vnd.geo%2Bjson")
 SIDRA = "https://apisidra.ibge.gov.br/values"
 # Estimativas anuais (tabela 6579). A API limita 50 mil valores por consulta, então vai um
-# ano por vez. 2007, 2010, 2022 e 2023 não têm estimativa.
-ANOS_ESTIMATIVA = [a for a in range(2001, 2027) if a not in (2007, 2010, 2022, 2023)]
+# ano por vez. 2007, 2010, 2022 e 2023 não têm estimativa. Um ano ainda não publicado volta
+# vazio (só o cabeçalho), então a lista vai até o ano corrente.
+ANOS_ESTIMATIVA = [a for a in range(2001, date.today().year + 1) if a not in (2007, 2010, 2022, 2023)]
 CENSOS = {
     2010: "/t/1378/n6/all/v/93/p/2010/c1/0/c2/0/c287/0/c455/0",
     2022: "/t/4709/n6/all/v/93/p/2022",
@@ -49,7 +51,8 @@ def baixar_json(url: str, tentativas: int = 3):
             if corpo[:2] == b"\x1f\x8b":
                 corpo = gzip.decompress(corpo)
             return json.loads(corpo)
-        except OSError as e:
+        # ValueError: se vier uma página de erro no lugar do JSON, tenta de novo também.
+        except (OSError, ValueError) as e:
             if tentativa == tentativas:
                 raise RuntimeError(f"falha ao baixar {url}: {e}") from e
             time.sleep(2 ** tentativa)

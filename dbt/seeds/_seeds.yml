@@ -7,6 +7,7 @@ seeds:
       municípios que mudaram de nome (ex.: Embu virou Embu das Artes). Cada código foi
       conferido na tabela do IBGE. Uma linha por nome antigo.
     config:
+      schema: staging  # analitico_staging, como as outras tabelas de referência
       column_types:
         cod_municipio: char(7)
     columns:
