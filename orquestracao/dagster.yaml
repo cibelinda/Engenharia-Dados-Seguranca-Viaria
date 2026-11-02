@@ -1,0 +1,25 @@
+# Configuração da instância do Dagster (DAGSTER_HOME=/app/orquestracao).
+
+# Histórico das execuções, agendamentos e logs no volume `orquestracao`: sobrevive a um
+# `docker compose down` (sem -v) e a uma reconstrução da imagem.
+storage:
+  sqlite:
+    base_dir: /var/lib/dagster/storage
+local_artifact_storage:
+  module: dagster._core.storage.root
+  class: LocalArtifactStorage
+  config:
+    base_dir: /var/lib/dagster
+compute_logs:
+  module: dagster._core.storage.local_compute_log_manager
+  class: LocalComputeLogManager
+  config:
+    base_dir: /var/lib/dagster/logs
+
+# Uma execução por vez: todas escrevem no mesmo banco e no mesmo volume lakehouse. Se o
+# agendamento disparar durante um backfill, ele espera na fila em vez de rodar junto.
+run_queue:
+  max_concurrent_runs: 1
+
+telemetry:
+  enabled: false

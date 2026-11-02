@@ -1,6 +1,46 @@
-# Orquestração agendada da E3 (issue da Maria): roda as etapas na ordem (ingestões, dbt),
-# com retry e backfill. Só a dona da issue mexe neste arquivo. Contrato em
-# docs/e3/README.md.
+# Orquestração agendada da E3 (issue #44): Dagster com o grafo da esteira (PRF -> origem ->
+# Delta e dbt; IBGE -> dbt), novas tentativas, backfill por ano e freshness/SLA. Sobe no
+# `docker compose up` e abre em http://localhost:3000. Detalhes em docs/e3/orquestracao.md.
 #
-# Por enquanto vazio: os serviços entram no PR da issue.
-services: {}
+# As etapas rodam dentro deste container, com os mesmos comandos dos serviços da esteira, e
+# usam os mesmos volumes (rawdata e lakehouse) e o mesmo projeto dbt. O agendamento diário
+# começa ligado.
+services:
+  orquestracao:
+    build:
+      context: ..
+      dockerfile: orquestracao/Dockerfile
+    image: blackspot-orquestracao:local
+    pull_policy: build
+    environment:
+      BLACKSPOT_RAW_DIR: data/raw
+      BLACKSPOT_LAKE_DIR: lake/lote
+      BLACKSPOT_DOWNLOAD_JOBS: ${BLACKSPOT_DOWNLOAD_JOBS:-4}
+      DBT_PROFILES_DIR: /app/dbt
+      DBT_TARGET_PATH: /tmp/dbt/target
+      DBT_LOG_PATH: /tmp/dbt/logs
+      ORQUESTRACAO_SLA_HORAS: ${ORQUESTRACAO_SLA_HORAS:-26}
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-blackspot}
+      PGUSER: ${POSTGRES_USER:-blackspot}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+    ports:
+      # Só localhost, como o banco e o painel.
+      - "127.0.0.1:${ORQUESTRACAO_PORT:-3000}:3000"
+    volumes:
+      - rawdata:/app/data/raw
+      - lakehouse:/app/lake
+      - ../dbt:/app/dbt:ro
+      # Histórico das execuções do Dagster (ver orquestracao/dagster.yaml).
+      - orquestracao:/var/lib/dagster
+    # Só espera o esquema existir. A primeira carga continua sendo a do `docker compose up`
+    # (serviço load); o agendamento é para as execuções seguintes.
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  rawdata:
+  lakehouse:
+  orquestracao:

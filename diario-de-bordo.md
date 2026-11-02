@@ -164,3 +164,54 @@ Ingestão em lote, revisão dos PRs da E2, Release Notes 1 e ADR 0004.
 - **Release Notes 1** (tag `r1`), com as correções da E1.
 - **Pendente na E2:** o CDC (#32).
 
+## Semanas 11 a 13 — E3 (20/10 a 03/11/2026)
+
+Modelagem (Semana 11) e transformações (Semana 12) nas aulas. No repositório, a E3 começou em
+27/10: base comum, base do IBGE e painel, orquestração e ADR 0005.
+
+### O que foi medido
+
+- **Ligação acidente → município** (#42, [`docs/e3/ibge.md`](docs/e3/ibge.md)): só **14 de
+  2.243.584** acidentes ficaram sem município. São 680.172 ligados pela coordenada, 1.553.509 pelo
+  nome e 9.889 pelo nome antigo de municípios que mudaram de nome (21 nomes). Em 46.952 acidentes
+  de 2017 em diante (6,9%), o município da coordenada e o do nome não batem.
+- **`dbt build`** com a base e a #42: 39 itens (13 modelos, 1 seed, 1 snapshot, 24 testes) em
+  52 s (mediana de 3). A ligação ao município sozinha leva 28 s.
+- **Esteira no Dagster** ([`docs/e3/orquestracao.md`](docs/e3/orquestracao.md)): o grafo inteiro
+  em 151 s. Com o banco derrubado no meio do `dbt build`, a nova tentativa 30 s depois terminou com
+  os 39 testes passando. Com a API do IBGE fora do ar, a etapa falhou depois de 3 tentativas, a
+  cadeia da PRF terminou, e o dbt não rodou.
+- **Backfill de 2015 e 2016:** 96 s e 91 s por ano, com lote novo e totais iguais antes e depois,
+  no banco, no Delta e na tabela de consumo.
+- **ADR 0005:** o `dbt parse` custa 5,2 s, 10% do `dbt build`. Parados, o Dagster ocupa 481 MiB e
+  sobe em 7,2 s; o Airflow 3.3, 966 MiB e 15,5 s; o `crond`, 660 KiB.
+
+### O que surpreendeu
+
+- **O `pip` instala uma versão beta do dbt:** o `dbt-postgres 1.11.0` pede `dbt-core>=1.8.0rc1`, e
+  o `rc` no limite faz o `pip` aceitar pré-lançamentos. Todas as medições rodaram no `dbt-core
+  1.13.0b1`.
+- **A primeira execução agendada pegou uma republicação de verdade:** os três arquivos de 2026 já
+  não eram os da última carga (21/10), e a carga criou um lote novo para o ano. O download normal
+  não teria visto, porque só baixa o que falta.
+- **O backoff exponencial do Dagster não dobra a espera:** com 30 s, as esperas são 30, 90 e 210 s
+  (`30 × (2ⁿ − 1)`), e não 30, 60 e 120.
+- A PRF escreve o nome antigo de municípios que mudaram de nome (Embu, Parati), e o IBGE só publica
+  o nome atual. Sem uma tabela fixa com esses 21 nomes, 9.889 acidentes ficavam sem município.
+
+### O que foi decidido
+
+- **Divisão da E3 em quatro partes independentes** (PR #46): IBGE e município (#42, Ana), modelo
+  dimensional e consulta otimizada (#43, Cibelly), orquestração, ADR 0005 e diário (#44, Maria) e
+  painel (#45, Ana). A base comum (dbt na imagem, views de staging, arquivos do compose) foi para a
+  `main` antes, com o contrato de nomes em [`docs/e3/README.md`](docs/e3/README.md). Sem pacotes do
+  dbt: os testes usam os genéricos e SQL.
+- **ADR 0005 (proposto):** transformação em dbt e orquestração em Dagster. A opção nula (`cron`
+  com scripts SQL) foi descartada porque não registra o que aconteceu, e não por desempenho.
+- **SLA das tabelas de consumo:** no máximo 26 h desde o último `dbt build` sem erro, verificado
+  de hora em hora.
+- **Backfill** é recarregar o ano mesmo sem mudança nos arquivos: cria um lote novo, e o anterior
+  fica no banco (ADR 0001).
+- **Pendente:** fixar a versão do `dbt-core` no `requirements.txt`, e o modelo dimensional da #43,
+  com a `mart_risco_trecho_ano` que o painel e a verificação de freshness esperam.
+

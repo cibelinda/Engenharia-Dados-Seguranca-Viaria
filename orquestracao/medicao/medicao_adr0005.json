@@ -1,0 +1,56 @@
+{
+ "medido_em": "2026-11-02T15:26:50Z",
+ "dbt": [
+  "  - installed: 1.13.0-b1",
+  "  - latest:    1.12.6    - Ahead of latest version!"
+ ],
+ "rodadas": 3,
+ "parse_s": [
+  5.19,
+  5.16,
+  5.18
+ ],
+ "build": [
+  {
+   "total_s": 54.42,
+   "nos": 39,
+   "por_tipo_s": {
+    "model": 49.34,
+    "seed": 0.47,
+    "snapshot": 0.71,
+    "test": 6.29
+   },
+   "sql_transformacao_s": 50.52,
+   "testes_s": 6.29
+  },
+  {
+   "total_s": 52.05,
+   "nos": 39,
+   "por_tipo_s": {
+    "model": 47.23,
+    "seed": 0.32,
+    "snapshot": 0.76,
+    "test": 5.55
+   },
+   "sql_transformacao_s": 48.31,
+   "testes_s": 5.55
+  },
+  {
+   "total_s": 51.21,
+   "nos": 39,
+   "por_tipo_s": {
+    "model": 46.38,
+    "seed": 0.36,
+    "snapshot": 0.81,
+    "test": 6.08
+   },
+   "sql_transformacao_s": 47.55,
+   "testes_s": 6.08
+  }
+ ],
+ "mediana": {
+  "total_s": 52.05,
+  "sql_transformacao_s": 48.31,
+  "testes_s": 6.08
+ }
+}
