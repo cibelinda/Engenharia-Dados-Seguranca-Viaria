@@ -1,0 +1,20 @@
+-- EXPLAIN (ANALYZE, BUFFERS) da consulta.sql DEPOIS do índice (ano, graves), criado pela
+-- config indexes do modelo (dbt/models/marts/trecho/mart_risco_trecho_ano.sql).
+-- PostgreSQL 18.6, mesmo banco, 2026-11-09. Terceira de três execuções seguidas.
+-- Tempos das três: 0,097 / 0,050 / 0,068 ms.
+
+                                                                                    QUERY PLAN                                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.29..69.31 rows=20 width=42) (actual time=0.038..0.046 rows=20.00 loops=1)
+   Buffers: shared hit=7
+   ->  Index Scan Backward using "0175106c6d8d1af4d436dd7e4a512104" on mart_risco_trecho_ano  (cost=0.29..1818.89 rows=527 width=42) (actual time=0.037..0.044 rows=20.00 loops=1)
+         Index Cond: (ano = 2025)
+         Filter: (br <> 0)
+         Index Searches: 1
+         Buffers: shared hit=7
+ Planning:
+   Buffers: shared hit=130
+ Planning Time: 0.376 ms
+ Execution Time: 0.068 ms
+(11 rows)
+
