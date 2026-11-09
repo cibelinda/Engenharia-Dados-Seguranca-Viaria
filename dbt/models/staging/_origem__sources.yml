@@ -6,6 +6,9 @@ sources:
     schema: public
     tables:
       - name: lote_vigente
+      # Só para o teste de volume (trecho_fato_volume_bate_com_carga): quantas linhas a carga
+      # gravou de cada arquivo.
+      - name: lote_arquivo
       - name: ocorrencia_vigente
       - name: veiculo_vigente
       - name: pessoa_vigente
