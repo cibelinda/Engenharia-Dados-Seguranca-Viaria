@@ -1,0 +1,116 @@
+# Modelo dimensional do acidente e resposta da pergunta de gestão (issue #43).
+# Granularidade de cada modelo na descrição. Testes singulares em dbt/tests/trecho_*.sql.
+version: 2
+
+models:
+  - name: fct_ocorrencia
+    description: "Fato do acidente. Uma linha por acidente (id_lote, id), versão vigente, 2007 em diante."
+    columns:
+      - name: data
+        description: "Dia do acidente (hora local da PRF, sem fuso)."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_tempo')
+                field: data
+      - name: chave_trecho
+        description: "BR-UF-km_inicio. NULL quando br = 0 ou sem br, uf ou km."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_trecho')
+                field: chave_trecho
+      - name: id_causa
+        description: "Causa principal (NULL em 2 acidentes do BR-Brasil)."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_causa')
+                field: id_causa
+      - name: sistema
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [br_brasil, bat]
+      - name: coordenada_padrao
+        description: "O ponto é compartilhado por 10+ acidentes de kms diferentes (ADR 0002)."
+      - name: coordenada_confiavel
+        description: "Tem ponto, não é ponto padrão e está dentro do retângulo do Brasil."
+
+  - name: dim_trecho
+    description: "Uma linha por trecho de 10 km (BR + UF + faixa de km) com ao menos um acidente."
+    columns:
+      - name: chave_trecho
+        data_tests: [unique, not_null]
+      - name: br
+        description: "Número da BR. Nunca 0: rodovia não identificada não forma trecho."
+      - name: uf
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [AC, AL, AM, AP, BA, CE, DF, ES, GO, MA, MG, MS, MT, PA, PB, PE, PI, PR, RJ, RN, RO, RR, RS, SC, SE, SP, TO]
+      - name: km_isolado
+        description: "Até 5 acidentes em 20 anos e mais de 100 km depois do último trecho com mais de 5 acidentes da mesma BR e UF: km digitado errado."
+
+  - name: dim_tempo
+    description: "Uma linha por dia, do primeiro ao último acidente da origem (inclusive dias sem acidente)."
+    columns:
+      - name: data
+        data_tests: [unique, not_null]
+
+  - name: dim_causa
+    description: "Uma linha por causa como a PRF escreveu (id_causa), com a causa harmonizada e o grupo."
+    columns:
+      - name: id_causa
+        data_tests: [unique, not_null]
+      - name: grupo
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Condutor, Pedestre, Veículo, Via, Ambiente, Outras]
+              config:
+                # Uma causa nova da PRF entra como 'Não classificada': avisa, mas não para a esteira.
+                severity: warn
+
+  - name: mart_risco_trecho_ano
+    description: "Uma linha por trecho por ano: acidentes graves e a posição do trecho no ranking do ano."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: chave_trecho
+        data_type: text
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trecho')
+                field: chave_trecho
+      - name: br
+        data_type: smallint
+      - name: uf
+        data_type: text
+      - name: km_inicio
+        data_type: integer
+      - name: km_fim
+        data_type: integer
+      - name: rotulo
+        data_type: text
+      - name: ano
+        data_type: smallint
+      - name: ano_completo
+        data_type: boolean
+      - name: acidentes
+        data_type: integer
+      - name: graves
+        data_type: integer
+      - name: mortos
+        data_type: integer
+      - name: feridos_graves
+        data_type: integer
+      - name: posicao
+        data_type: integer
+        description: "Posição no ano pelo número de graves (rank). NULL quando graves = 0."
+      - name: percentil_graves
+        data_type: numeric(5,4)
+        description: "percent_rank pelo número de graves no ano: 0 = o pior trecho, 1 = o melhor."
