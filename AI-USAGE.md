@@ -399,4 +399,54 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### Orquestração, freshness, ADR 0005 e diário — Maria Clara
 
-[a preencher no PR da orquestração]
+#### 2026-10-28 — Revisão do PR #46
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** revisão da base compartilhada da E3 (PR #46)
+- **O que foi pedido:** a revisão do PR.
+- **O que foi aproveitado:** o comentário, publicado como está: o `target-path` obsoleto no
+  `dbt_project.yml`, o `dbt deps` que não funciona com o projeto montado só para leitura, o
+  `dbt build` que falha num banco ainda sem carga, a branch de partida contraditória entre o
+  README e o PR e os comentários das views de staging. A Ana corrigiu os cinco pontos no mesmo PR.
+- **Como foi verificado:** a imagem do PR foi construída e o `dbt parse` rodou com o projeto
+  montado só para leitura; `pip check` sem conflito; as fontes conferidas contra as migrações.
+- **Quem revisou:** não se aplica (é uma revisão)
+
+#### 2026-11-02 — Revisão do PR #47
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** revisão da base do IBGE e do painel (PR #47)
+- **O que foi pedido:** a revisão do PR e, depois, os ajustes pequenos.
+- **O que foi aproveitado:** os ajustes pequenos, combinados com a Ana e feitos direto na branch
+  do PR: o contrato com as colunas e os valores do `int_ocorrencia_municipio` e a pasta
+  `dbt/seeds/`, a seed no schema `analitico_staging`, e a ingestão do IBGE tentando de novo quando
+  a resposta não é JSON e pedindo as estimativas até o ano corrente. Ficaram de fora o número de
+  divergências do `ibge.md` (não era erro: depende da carga de 2026 no banco) e o `hard_deletes`
+  no snapshot (decisão da Ana). As colunas da `mart_risco_trecho_ano` que o painel espera ficaram
+  para combinar com a Cibelly.
+- **Como foi verificado:** o PR rodou numa cópia do banco carregado: migração, ingestão do IBGE e
+  `dbt build` (39 itens passando); as contagens do `docs/e3/ibge.md` refeitas no banco; o painel
+  rodou com a ferramenta de teste do Streamlit.
+- **Quem revisou:** não se aplica (é uma revisão)
+
+#### 2026-11-02 — Orquestração, freshness, ADR 0005 e diário (#44)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `orquestracao/`, `compose/orquestracao.yml`, `docs/e3/orquestracao.md`,
+  `docs/adr/0005-dbt-e-dagster-em-vez-de-cron-com-sql.md`, `docs/adr/index.md` e
+  `diario-de-bordo.md`
+- **O que foi pedido:** a parte da #44: o orquestrador agendado com o grafo, o retry e o backfill
+  demonstrados, a freshness e o SLA, o ADR 0005 com a opção nula e o diário das Semanas 11 a 13.
+- **O que foi aproveitado:** o código da orquestração, o ADR 0005, a medição, a documentação
+  e o diário, revisados antes do commit e mantidos como estão, com as demonstrações de retry
+  (banco derrubado no meio do `dbt build`, API do IBGE bloqueada até esgotar as tentativas), de
+  backfill (2015 e 2016) e de freshness.
+- **Como foi verificado:** tudo rodou numa cópia do banco carregado com os 20 anos, junto com a
+  #42: a esteira inteira, o banco derrubado no meio do `dbt build`, a API do IBGE bloqueada até
+  esgotar as tentativas, o backfill de 2015 e 2016 (lotes e totais conferidos no banco, no Delta e
+  na tabela de consumo) e a verificação de freshness dentro e fora do SLA. Os números do ADR e da
+  documentação foram copiados do `medicao_adr0005.json` e do histórico do Dagster. A primeira
+  versão tinha dois erros, corrigidos antes de usar: as esperas do retry descritas como 30, 60 e
+  120 s (são 30, 90 e 210 s), e o resumo do dbt vazio na interface, porque a linha vem com o
+  horário na frente.
+- **Quem revisou:** [revisora do PR da #44]
