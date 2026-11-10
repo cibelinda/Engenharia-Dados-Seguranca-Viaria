@@ -1,11 +1,42 @@
 # Dados brutos do IBGE, gravados pela ingestão (blackspot/ibge/ingestao.py) no schema ibge.
+# Descrições e linhagem até as APIs do IBGE (issue #53): ver docs/e4/linhagem.md.
 version: 2
 
 sources:
   - name: ibge
+    description: >
+      Base de municípios do IBGE: lista, população por ano e contorno. O serviço
+      `ingestao-ibge` (blackspot/ibge/ingestao.py) chama três APIs públicas do IBGE e troca o
+      conteúdo das tabelas pelo que o IBGE publica hoje (pode rodar de novo sem duplicar).
     schema: ibge
+    loader: "blackspot.ibge.ingestao (serviço ingestao-ibge do docker compose)"
+    meta:
+      produtor: "Instituto Brasileiro de Geografia e Estatística (IBGE)"
+      linhagem: "docs/e4/linhagem.md"
     tables:
       - name: municipio
+        description: "Um município por linha: código, nome e UF."
+        meta:
+          api: "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
+        columns:
+          - name: cod_municipio
+            description: "Código IBGE de 7 dígitos (campo `id` da API de localidades)."
+          - name: nome
+            description: "Nome atual do município (campo `nome`)."
+          - name: uf
+            description: "Sigla da UF (da microrregião ou, sem ela, da região imediata do município na API)."
       - name: populacao
+        description: "População por município e ano: estimativas anuais (SIDRA, tabela 6579) e censos de 2010 (tabela 1378) e 2022 (tabela 4709)."
+        meta:
+          api: "https://apisidra.ibge.gov.br/values"
+        columns:
+          - name: populacao
+            description: "Habitantes: variável 9324 do SIDRA nas estimativas, 93 nos censos."
+          - name: fonte
+            description: "estimativa ou censo (no ano de censo, o censo substitui a estimativa)."
       - name: malha_municipal
+        description: "O contorno de cada município (GeoJSON da API de malhas), para ligar o acidente pela coordenada."
+        meta:
+          api: "https://servicodados.ibge.gov.br/api/v3/malhas/paises/BR?intrarregiao=municipio"
       - name: carga
+        description: "Registro de cada execução da ingestão do IBGE."
