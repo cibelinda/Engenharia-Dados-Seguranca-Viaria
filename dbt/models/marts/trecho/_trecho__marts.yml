@@ -1,11 +1,28 @@
-# Modelo dimensional do acidente e resposta da pergunta de gestão (issue #43).
-# Granularidade de cada modelo na descrição. Testes singulares em dbt/tests/trecho_*.sql.
+# Modelo dimensional do acidente e resposta da pergunta de gestão (issues #43 e #53).
+# Granularidade de cada modelo na descrição. Testes singulares em dbt/tests/trecho_*.sql e
+# dbt/tests/metrica_*.sql. As descrições são o catálogo (dbt docs) e também vão para o banco
+# como COMMENT (persist_docs), para quem consulta pelo psql ou pelo painel ver o mesmo texto.
 version: 2
 
 models:
   - name: fct_ocorrencia
-    description: "Fato do acidente. Uma linha por acidente (id_lote, id), versão vigente, 2007 em diante."
+    description: >
+      Fato do acidente. Uma linha por acidente (id_lote, id), na versão vigente de cada ano,
+      2007 em diante, BR-Brasil e BAT juntos. Vem de stg_ocorrencia (origem
+      public.ocorrencia_vigente, carregada do arquivo datatran da PRF).
+    config:
+      persist_docs: {relation: true, columns: true}
     columns:
+      - name: id_lote
+        description: "Lote de carga (public.lote_carga) da versão vigente do ano."
+      - name: id
+        description: "Identificador do acidente na PRF (coluna id do arquivo datatran)."
+      - name: sistema
+        description: "Sistema da PRF que publicou o ano: br_brasil (2007–2016) ou bat (2017+)."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [br_brasil, bat]
       - name: data
         description: "Dia do acidente (hora local da PRF, sem fuso)."
         data_tests:
@@ -13,8 +30,12 @@ models:
               arguments:
                 to: ref('dim_tempo')
                 field: data
+      - name: hora
+        description: "Hora do acidente (0–23), hora local."
+      - name: ano
+        description: "Ano do acidente."
       - name: chave_trecho
-        description: "BR-UF-km_inicio. NULL quando br = 0 ou sem br, uf ou km."
+        description: "BR-UF-km_inicio (ex.: 101-SC-0200). NULL quando br = 0 ou sem br, uf ou km."
         data_tests:
           - relationships:
               arguments:
@@ -27,11 +48,18 @@ models:
               arguments:
                 to: ref('dim_causa')
                 field: id_causa
-      - name: sistema
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: [br_brasil, bat]
+      - name: uf
+        description: "UF do acidente, como a PRF publicou."
+      - name: br
+        description: "Número da BR (0 = rodovia não identificada)."
+      - name: km
+        description: "Quilômetro do acidente na BR, dentro da UF."
+      - name: mortos
+        description: "Mortos no acidente (coluna mortos do arquivo da PRF)."
+      - name: feridos_graves
+        description: "Feridos graves no acidente (coluna feridos_graves do arquivo da PRF)."
+      - name: grave
+        description: "{{ doc('metrica_graves') }}"
       - name: coordenada_padrao
         description: "O ponto é compartilhado por 10+ acidentes de kms diferentes (ADR 0002)."
       - name: coordenada_confiavel
@@ -39,31 +67,58 @@ models:
 
   - name: dim_trecho
     description: "Uma linha por trecho de 10 km (BR + UF + faixa de km) com ao menos um acidente."
+    config:
+      persist_docs: {relation: true, columns: true}
     columns:
       - name: chave_trecho
+        description: "BR-UF-km_inicio, com zeros à esquerda (ex.: 101-SC-0200)."
         data_tests: [unique, not_null]
       - name: br
         description: "Número da BR. Nunca 0: rodovia não identificada não forma trecho."
       - name: uf
+        description: "UF do trecho: a PRF recomeça o km em cada UF, então a UF faz parte do trecho."
         data_tests:
           - accepted_values:
               arguments:
                 values: [AC, AL, AM, AP, BA, CE, DF, ES, GO, MA, MG, MS, MT, PA, PB, PE, PI, PR, RJ, RN, RO, RR, RS, SC, SE, SP, TO]
+      - name: km_inicio
+        description: "Início da faixa: floor(km / 10) * 10."
+      - name: km_fim
+        description: "Fim da faixa: km_inicio + 10."
+      - name: rotulo
+        description: "Nome do trecho para exibir (ex.: BR-101/SC km 200–210)."
       - name: km_isolado
         description: "Até 5 acidentes em 20 anos e mais de 100 km depois do último trecho com mais de 5 acidentes da mesma BR e UF: km digitado errado."
 
   - name: dim_tempo
-    description: "Uma linha por dia, do primeiro ao último acidente da origem (inclusive dias sem acidente)."
+    description: >
+      Uma linha por dia, do primeiro ao último acidente da origem (inclusive dias sem acidente).
+      É também o time spine da camada semântica (models/metricas/).
+    config:
+      persist_docs: {relation: true, columns: true}
+    time_spine:
+      standard_granularity_column: data
     columns:
       - name: data
+        description: "O dia."
+        granularity: day
         data_tests: [unique, not_null]
+      - name: ano_completo
+        description: "false no ano corrente, que a PRF publica até o mês anterior."
 
   - name: dim_causa
     description: "Uma linha por causa como a PRF escreveu (id_causa), com a causa harmonizada e o grupo."
+    config:
+      persist_docs: {relation: true, columns: true}
     columns:
       - name: id_causa
         data_tests: [unique, not_null]
+      - name: descricao
+        description: "A causa como a PRF escreveu."
+      - name: causa
+        description: "A causa harmonizada: variantes de grafia ficam com o mesmo valor."
       - name: grupo
+        description: "Quem ou o que causou: Condutor, Pedestre, Veículo, Via, Ambiente ou Outras."
         data_tests:
           - accepted_values:
               arguments:
@@ -73,12 +128,18 @@ models:
                 severity: warn
 
   - name: mart_risco_trecho_ano
-    description: "Uma linha por trecho por ano: acidentes graves e a posição do trecho no ranking do ano."
+    description: >
+      Resposta da primeira metade da pergunta de gestão: quais trechos de 10 km concentram mais
+      acidentes graves. Uma linha por trecho por ano, para cada trecho com acidente no ano, com a
+      posição do trecho no ranking do ano. Lida pelo painel (aba "Trechos mais graves") e pelo
+      ETL reverso. br = 0 e acidentes sem trecho ficam fora.
     config:
+      persist_docs: {relation: true, columns: true}
       contract:
         enforced: true
     columns:
       - name: chave_trecho
+        description: "BR-UF-km_inicio (chave da dim_trecho)."
         data_type: text
         data_tests:
           - not_null
@@ -87,30 +148,96 @@ models:
                 to: ref('dim_trecho')
                 field: chave_trecho
       - name: br
+        description: "Número da BR (nunca 0). Usada no painel."
         data_type: smallint
       - name: uf
+        description: "UF do trecho. Usada no painel."
         data_type: text
       - name: km_inicio
+        description: "Início da faixa de 10 km. Usada no painel."
         data_type: integer
       - name: km_fim
+        description: "Fim da faixa de 10 km."
         data_type: integer
       - name: rotulo
+        description: "Nome do trecho para exibir (ex.: BR-101/SC km 200–210)."
         data_type: text
       - name: ano
+        description: "Ano do ranking. Usada no painel (filtro de ano)."
         data_type: smallint
       - name: ano_completo
+        description: "false no ano corrente (parcial): o ranking dele não se compara em volume com o dos outros."
         data_type: boolean
       - name: acidentes
+        description: "Acidentes do trecho no ano (todos)."
         data_type: integer
       - name: graves
+        description: "{{ doc('metrica_graves') }}"
         data_type: integer
       - name: mortos
+        description: "Mortos somados nos acidentes do trecho no ano."
         data_type: integer
       - name: feridos_graves
+        description: "Feridos graves somados nos acidentes do trecho no ano."
         data_type: integer
       - name: posicao
+        description: "Posição no ano pelo número de graves (rank: empate fica com a mesma posição). NULL quando graves = 0."
         data_type: integer
-        description: "Posição no ano pelo número de graves (rank). NULL quando graves = 0."
       - name: percentil_graves
-        data_type: numeric(5,4)
         description: "percent_rank pelo número de graves no ano: 0 = o pior trecho, 1 = o melhor."
+        data_type: numeric(5,4)
+      - name: no_top_50
+        description: "{{ doc('coluna_no_top_50') }}"
+        data_type: boolean
+        data_tests: [not_null]
+
+  - name: mart_persistencia_trecho
+    description: >
+      Resposta da segunda metade da pergunta de gestão: os trechos se mantêm entre os mais
+      graves de um ano para o outro? Uma linha por trecho (todos os da dim_trecho), com a
+      métrica anos_no_top_50. Até a E3, o painel calculava este número sozinho; agora vem do
+      dbt. Lida pelo painel e pelo ETL reverso (trechos críticos).
+    config:
+      persist_docs: {relation: true, columns: true}
+      contract:
+        enforced: true
+    columns:
+      - name: chave_trecho
+        description: "BR-UF-km_inicio (chave da dim_trecho)."
+        data_type: text
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trecho')
+                field: chave_trecho
+      - name: br
+        description: "Número da BR (nunca 0)."
+        data_type: smallint
+      - name: uf
+        description: "UF do trecho."
+        data_type: text
+      - name: km_inicio
+        description: "Início da faixa de 10 km."
+        data_type: integer
+      - name: km_fim
+        description: "Fim da faixa de 10 km."
+        data_type: integer
+      - name: rotulo
+        description: "Nome do trecho para exibir (ex.: BR-101/SC km 200–210)."
+        data_type: text
+      - name: anos_no_top_50
+        description: "{{ doc('metrica_anos_no_top_50') }}"
+        data_type: integer
+        data_tests: [not_null]
+      - name: graves_no_total
+        description: "{{ doc('coluna_graves_no_total') }}"
+        data_type: integer
+        data_tests: [not_null]
+      - name: primeiro_ano_no_top_50
+        description: "Primeiro ano em que o trecho ficou no top 50. NULL se nunca ficou."
+        data_type: smallint
+      - name: ultimo_ano_no_top_50
+        description: "Último ano em que o trecho ficou no top 50. NULL se nunca ficou."
+        data_type: smallint

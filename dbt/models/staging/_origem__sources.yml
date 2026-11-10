@@ -1,18 +1,78 @@
 # Tabelas de origem (E1/E2): a versão vigente de cada ano, no schema public.
+# Descrições e linhagem até o arquivo da PRF (issue #53): o dbt começa aqui, e o caminho de
+# antes (arquivo público -> download -> carga) fica no `meta` e em docs/e4/linhagem.md.
 version: 2
 
 sources:
   - name: origem
+    description: >
+      Acidentes nas rodovias federais, dados abertos da Polícia Rodoviária Federal (PRF),
+      2007 em diante. O serviço `download` (blackspot/download.py) baixa os ZIPs listados no
+      sources.yaml (arquivos datatran e acidentes por pessoa, um por ano), e o serviço `load`
+      (blackspot/load.py) carrega cada ano como um lote novo, sem apagar o anterior (ADR 0001).
+      As views *_vigente mostram só o lote vigente de cada ano. Esquema em db/migrations/.
     schema: public
+    loader: "blackspot.load (serviço load do docker compose)"
+    meta:
+      produtor: "Polícia Rodoviária Federal (PRF)"
+      pagina: "https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf"
+      dicionario: "https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dicionario-acidentes"
+      manifesto: "sources.yaml (um ZIP por ano e conjunto, com sha256 de referência)"
+      atualizacao: "mensal (declarada pela PRF); o ano corrente é regravado todo mês"
+      linhagem: "docs/e4/linhagem.md"
     tables:
       - name: lote_vigente
+        description: "Lote vigente de cada ano: a maior carga concluída (public.lote_carga), com o sistema da PRF."
+        columns:
+          - name: id_lote
+            description: "Lote de carga."
+          - name: ano
+            description: "Ano do arquivo da PRF."
+          - name: sistema
+            description: "br_brasil (2007–2016) ou bat (2017+)."
       # Só para o teste de volume (trecho_fato_volume_bate_com_carga): quantas linhas a carga
       # gravou de cada arquivo.
       - name: lote_arquivo
+        description: "Um arquivo da PRF por lote, com o sha256 e quantas linhas a carga leu e rejeitou."
       - name: ocorrencia_vigente
+        description: >
+          Um acidente por linha, na versão vigente do ano. Vem do arquivo datatran<ano>.zip da
+          PRF (uma linha do CSV = um acidente), como a PRF publicou, sem correção (a limpeza é
+          do staging).
+        meta:
+          arquivo: "datatran<ano>.zip (BR-Brasil 2007–2016; BAT 2017+)"
+        columns:
+          - name: id
+            description: "Coluna `id` do CSV: identificador do acidente na PRF."
+          - name: ocorrido_em
+            description: "Colunas `data_inversa` + `horario` do CSV, juntas pela carga."
+          - name: uf
+            description: "Coluna `uf` do CSV."
+          - name: br
+            description: "Coluna `br` do CSV (0 = rodovia não identificada)."
+          - name: km
+            description: "Coluna `km` do CSV (vírgula decimal convertida pela carga)."
+          - name: municipio
+            description: "Coluna `municipio` do CSV (nome escrito pela PRF)."
+          - name: mortos
+            description: "Coluna `mortos` do CSV."
+          - name: feridos_graves
+            description: "Coluna `feridos_graves` do CSV."
+          - name: latitude
+            description: "Coluna `latitude` do CSV (só BAT, 2017+)."
+          - name: longitude
+            description: "Coluna `longitude` do CSV (só BAT, 2017+)."
+          - name: geom
+            description: "Ponto montado pela carga a partir de latitude e longitude (SIRGAS 2000, ADR 0002)."
       - name: veiculo_vigente
+        description: "Um veículo por linha (versão vigente), do arquivo de acidentes por pessoa da PRF."
       - name: pessoa_vigente
+        description: "Uma pessoa envolvida por linha (versão vigente), do arquivo de acidentes por pessoa da PRF. Tem dado pessoal (idade, sexo): ver docs/e4/lgpd.md."
       - name: ocorrencia_causa_vigente
+        description: "Causas apontadas por acidente (BAT), do arquivo com todas as causas."
       - name: ocorrencia_tipo_vigente
+        description: "Tipos de acidente por ordem (BAT), do arquivo com todas as causas."
       - name: causa_acidente
+        description: "Domínio das causas como a PRF escreveu (coluna `causa_acidente` do CSV)."
       - name: tipo_acidente
+        description: "Domínio dos tipos como a PRF escreveu (coluna `tipo_acidente` do CSV)."
