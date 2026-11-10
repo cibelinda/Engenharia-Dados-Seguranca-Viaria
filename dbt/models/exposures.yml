@@ -1,0 +1,53 @@
+# Quem consome as tabelas do dbt (issue #53): o fim da linhagem no `dbt docs`. Contrato em
+# docs/e4/README.md: o painel e o ETL reverso leem só tabelas de analitico_marts e não calculam
+# métrica por conta própria. Caminho completo, da fonte ao consumo, em docs/e4/linhagem.md.
+version: 2
+
+exposures:
+  - name: painel
+    label: "Painel BlackSpot"
+    type: dashboard
+    maturity: medium
+    url: http://localhost:8501
+    description: >
+      Painel em Streamlit (painel/app.py, serviço `painel` do compose) que responde à pergunta
+      de gestão. Aba "Trechos mais graves": os 20 trechos com mais graves no ano
+      (mart_risco_trecho_ano) e em quantos anos cada trecho ficou entre os 50 mais graves
+      (mart_persistencia_trecho, métrica anos_no_top_50). Aba "Municípios mais perigosos": a
+      taxa de graves por 100 mil habitantes e os graves em número absoluto
+      (mart_risco_municipio_ano). Pelo contrato da E4, lê com o papel painel_leitor, só
+      leitura (docs/e4/acesso.md).
+    depends_on:
+      - ref('mart_risco_trecho_ano')
+      - ref('mart_persistencia_trecho')
+      - ref('mart_risco_municipio_ano')
+    owner:
+      name: Ana Luiza Komatsu
+    meta:
+      codigo: painel/app.py
+      servico_compose: painel
+      issue: "#52"
+      colunas_lidas:
+        mart_risco_trecho_ano: [br, uf, km_inicio, ano, graves]
+        mart_persistencia_trecho: [br, uf, km_inicio, anos_no_top_50, graves_no_total]
+        mart_risco_municipio_ano: [nome, uf, ano, graves, mortos, populacao, graves_por_100_mil]
+
+  - name: etl_reverso_trechos_criticos
+    label: "ETL reverso: trechos críticos"
+    type: application
+    maturity: medium
+    description: >
+      Saída dos trechos críticos para quem atua na rodovia, agendada no Dagster como o asset
+      etl_reverso_trechos_criticos (orquestracao/). Uma linha por trecho crítico, a partir de
+      mart_persistencia_trecho (anos_no_top_50) e mart_risco_trecho_ano. Quem consome, o
+      formato e o destino estão no ADR 0006 e em docs/e4/etl-reverso.md.
+    depends_on:
+      - ref('mart_persistencia_trecho')
+      - ref('mart_risco_trecho_ano')
+    owner:
+      name: Maria Clara
+    meta:
+      asset_dagster: etl_reverso_trechos_criticos
+      codigo: orquestracao/
+      issue: "#54"
+      adr: docs/adr/0006
