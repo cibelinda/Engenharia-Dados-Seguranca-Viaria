@@ -505,7 +505,35 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### Métricas, catálogo e linhagem — Cibelly
 
-[preencher no PR da #53]
+#### 2026-11-10 — Camada de métricas, catálogo e linhagem (#53)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `dbt/macros/metricas.sql`, `dbt/models/metricas/`, `dbt/models/marts/trecho/`
+  (`mart_persistencia_trecho` e a coluna `no_top_50` da `mart_risco_trecho_ano`),
+  `dbt/models/exposures.yml`, as descrições nos `.yml` dos modelos e das fontes, os testes
+  `dbt/tests/metrica_*` e `trecho_persistencia_coerente`, `docs/e4/metricas.md` e
+  `docs/e4/linhagem.md`
+- **O que foi pedido:** a parte da #53, depois de uma leitura do projeto inteiro: cada métrica
+  definida num lugar só, a `mart_persistencia_trecho` no lugar da conta que o painel fazia, o teste
+  de que a métrica bate, o catálogo publicado no `dbt docs` e a linhagem da PRF e do IBGE até o
+  painel e o ETL reverso.
+- **O que foi aproveitado:** o código, os testes e a documentação, revisados antes do commit. As
+  decisões de desenho saíram da conversa: a regra em macros, chamadas pelos modelos, e a
+  especificação do MetricFlow só para agregar (sem `dbt-metricflow`, que a base pede para combinar
+  no grupo); o ano parcial e os empates contando no top 50, e `graves_no_total` com o significado
+  que tinha no painel, para a métrica mudar de lugar e não de valor. Duas mudanças pequenas fora da
+  lista de arquivos da parte, para a regra ficar num lugar só: o `mart_risco_municipio_ano` chama
+  as macros de "grave" e da taxa (mesmo valor), e o `dbt/tests/LEIA-ME.txt` cita o prefixo
+  `metrica_*`.
+- **Como foi verificado:** o `dbt build` completo no banco carregado com os 20 anos, 91 de 91
+  passando. Cada teste novo foi quebrado de propósito (top 49, "grave" só com morto, taxa por 10
+  mil, `graves_no_total` de todos os anos) e falhou; os números estão no `metricas.md`. O `dbt
+  parse` barrou uma métrica que apontava para uma medida inexistente, prova de que a camada
+  semântica é validada no build. O `dbt docs generate` e o `serve` rodaram com o comando do
+  `linhagem.md`, e todas as colunas das tabelas lidas pelo painel aparecem descritas no catálogo e
+  no `COMMENT` do banco. Na primeira versão, a descrição da fonte `ibge.populacao` citava só a
+  variável 93 do SIDRA; corrigido para 9324 nas estimativas, conferindo no código da ingestão.
+- **Quem revisou:** [revisora do PR da #53]
 
 &nbsp;
 
