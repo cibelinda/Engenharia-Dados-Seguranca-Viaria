@@ -480,3 +480,35 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
   120 s (são 30, 90 e 210 s), e o resumo do dbt vazio na interface, porque a linha vem com o
   horário na frente.
 - **Quem revisou:** [revisora do PR da #44]
+
+---
+
+## E4
+
+Cada pessoa preenche só a própria entrada abaixo, no PR da sua parte, no mesmo formato das
+entradas acima. Se a parte não usou IA, escreva isso no lugar.
+
+### LGPD e controle de acesso — Ana Luiza Komatsu
+
+#### 2026-11-10 — Planejamento da E4 e base compartilhada (#51)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** divisão da E4 (issues #51 a #54) e base compartilhada (`docs/e4/README.md`)
+- **O que foi pedido:** ajuda para planejar o que cada uma faria na E4, de forma que as partes
+  fossem independentes, a partir do enunciado e do que já estava pronto na E3.
+- **O que foi aproveitado:** a divisão das issues e o contrato entre as partes.
+- **Como foi verificado:** o enunciado da E4 conferido item a item com o checklist; os nomes do
+  contrato conferidos com as colunas da `mart_risco_trecho_ano`.
+- **Quem revisou:** [revisora do PR da #51]
+
+&nbsp;
+
+### Métricas, catálogo e linhagem — Cibelly
+
+[preencher no PR da #53]
+
+&nbsp;
+
+### ETL reverso, ADR 0006 e revisão dos ADRs — Maria Clara
+
+[preencher no PR da #54]
