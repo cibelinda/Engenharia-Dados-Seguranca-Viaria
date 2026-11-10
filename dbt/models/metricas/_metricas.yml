@@ -1,0 +1,184 @@
+# Camada semântica do BlackSpot (issue #53): as métricas do projeto, cada uma definida num lugar
+# só, com descrição e fórmula. Contrato em docs/e4/README.md; explicação em docs/e4/metricas.md.
+#
+# Três peças, cada uma com um papel:
+#   * a REGRA de cada métrica é SQL, escrita uma vez em dbt/macros/metricas.sql, e os modelos
+#     chamam a macro (a coluna `grave` do fato, `no_top_50` e `graves_por_100_mil` dos marts);
+#   * a DESCRIÇÃO e a fórmula ficam nos blocos de models/metricas/metricas.md, usados aqui e nas
+#     colunas dos marts com doc(), para o catálogo (dbt docs) dizer a mesma coisa em todo lugar;
+#   * os semantic_models e metrics abaixo (especificação do MetricFlow, lida pelo próprio
+#     dbt-core no `dbt parse`) dizem COMO AGREGAR essas colunas por qualquer recorte (ano, UF,
+#     trecho, município). Eles não repetem a regra: só somam as colunas que a macro produziu.
+# Os testes dbt/tests/metrica_* conferem que o número do mart é o número da definição.
+#
+# Sem dbt-metricflow na imagem (decisão da base: biblioteca nova se combina no grupo). Com ele,
+# as métricas viram consulta direta, ex.: mf query --metrics anos_no_top_50 --group-by trecho.
+version: 2
+
+semantic_models:
+  - name: ocorrencia
+    description: "Um acidente por linha (fct_ocorrencia). Base da métrica graves."
+    model: ref('fct_ocorrencia')
+    defaults:
+      agg_time_dimension: data
+    entities:
+      - name: ocorrencia
+        type: primary
+        expr: "id_lote::text || '-' || id::text"
+      - name: trecho
+        type: foreign
+        expr: chave_trecho
+    dimensions:
+      - name: data
+        type: time
+        type_params:
+          time_granularity: day
+      - name: sistema
+        type: categorical
+      - name: uf
+        type: categorical
+      - name: br
+        type: categorical
+    measures:
+      - name: acidentes
+        description: "Acidentes (todos)."
+        agg: count
+        expr: id
+      - name: graves
+        description: "Acidentes com a coluna grave = true (regra na macro metrica_grave)."
+        agg: sum
+        expr: "case when grave then 1 else 0 end"
+
+  - name: trecho
+    description: "Um trecho de 10 km (dim_trecho): BR + UF + faixa de km."
+    model: ref('dim_trecho')
+    entities:
+      - name: trecho
+        type: primary
+        expr: chave_trecho
+    dimensions:
+      - name: rotulo
+        type: categorical
+      - name: br
+        type: categorical
+      - name: uf
+        type: categorical
+      - name: km_inicio
+        type: categorical
+      - name: km_isolado
+        type: categorical
+
+  - name: risco_trecho_ano
+    description: "Um trecho por ano (mart_risco_trecho_ano), com a posição no ranking do ano. Base da métrica anos_no_top_50."
+    model: ref('mart_risco_trecho_ano')
+    defaults:
+      agg_time_dimension: ano_referencia
+    entities:
+      - name: trecho_ano
+        type: primary
+        expr: "chave_trecho || '-' || ano::text"
+      - name: trecho
+        type: foreign
+        expr: chave_trecho
+    dimensions:
+      - name: ano_referencia
+        description: "1º de janeiro do ano do ranking (a granularidade é o ano)."
+        type: time
+        expr: "make_date(ano::int, 1, 1)"
+        type_params:
+          time_granularity: year
+      - name: ano_completo
+        type: categorical
+      - name: no_top_50
+        type: categorical
+    measures:
+      - name: anos_no_top_50
+        description: "Anos com no_top_50 = true (regra na macro metrica_no_top_50)."
+        agg: sum
+        expr: "case when no_top_50 then 1 else 0 end"
+
+  - name: risco_municipio_ano
+    description: "Um município por ano (mart_risco_municipio_ano), com a população do IBGE. Base da métrica graves_por_100_mil."
+    model: ref('mart_risco_municipio_ano')
+    defaults:
+      agg_time_dimension: ano_referencia
+    entities:
+      - name: municipio_ano
+        type: primary
+        expr: "cod_municipio || '-' || ano::text"
+      - name: municipio
+        type: foreign
+        expr: cod_municipio
+    dimensions:
+      - name: ano_referencia
+        description: "1º de janeiro do ano (a granularidade é o ano)."
+        type: time
+        expr: "make_date(ano::int, 1, 1)"
+        type_params:
+          time_granularity: year
+      - name: uf
+        type: categorical
+      - name: nome
+        type: categorical
+    measures:
+      - name: graves_no_municipio
+        description: "A coluna graves do mart de município (mesma regra, macro metrica_grave)."
+        agg: sum
+        expr: graves
+      - name: populacao
+        description: "População do IBGE no ano. Só faz sentido somada dentro do mesmo ano."
+        agg: sum
+        expr: populacao
+
+metrics:
+  - name: graves
+    label: "Acidentes graves"
+    description: "{{ doc('metrica_graves') }}"
+    type: simple
+    type_params:
+      measure: graves
+    meta:
+      formula: "count(acidente) where mortos > 0 or feridos_graves > 0"
+      regra: "macro metrica_grave (dbt/macros/metricas.sql)"
+      colunas: ["fct_ocorrencia.grave", "mart_risco_trecho_ano.graves", "mart_risco_municipio_ano.graves"]
+
+  - name: graves_por_100_mil
+    label: "Acidentes graves por 100 mil habitantes"
+    description: "{{ doc('metrica_graves_por_100_mil') }}"
+    type: derived
+    type_params:
+      expr: "graves_no_municipio * 100000 / nullif(populacao_municipio, 0)"
+      metrics:
+        - name: graves_no_municipio
+        - name: populacao_municipio
+    meta:
+      formula: "round(graves * 100000 / populacao, 2)"
+      regra: "macro metrica_graves_por_100_mil (dbt/macros/metricas.sql)"
+      colunas: ["mart_risco_municipio_ano.graves_por_100_mil"]
+      agrupar_por: "sempre com o ano (a população não se soma entre anos)"
+
+  - name: anos_no_top_50
+    label: "Anos no top 50"
+    description: "{{ doc('metrica_anos_no_top_50') }}"
+    type: simple
+    type_params:
+      measure: anos_no_top_50
+    meta:
+      formula: "count(ano) where posicao <= 50, por trecho"
+      regra: "macro metrica_no_top_50 (dbt/macros/metricas.sql)"
+      colunas: ["mart_risco_trecho_ano.no_top_50", "mart_persistencia_trecho.anos_no_top_50"]
+
+  # Auxiliares da graves_por_100_mil (a métrica derivada só combina outras métricas).
+  - name: graves_no_municipio
+    label: "Acidentes graves (por município)"
+    description: "Auxiliar de graves_por_100_mil: a métrica graves somada no mart de município."
+    type: simple
+    type_params:
+      measure: graves_no_municipio
+
+  - name: populacao_municipio
+    label: "População"
+    description: "Auxiliar de graves_por_100_mil: população do IBGE no ano."
+    type: simple
+    type_params:
+      measure: populacao
