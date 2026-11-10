@@ -393,7 +393,37 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### Modelo dimensional, testes e consulta otimizada — Cibelly
 
-[a preencher no PR do dbt]
+#### 2026-11-09 — Modelo dimensional, testes e consulta otimizada (#43)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5), usado em conjunto comigo
+- **Onde:** `dbt/models/staging/stg_*.sql`, `_origem__sources.yml` e `_origem__models.yml`,
+  `dbt/models/marts/trecho/`, `dbt/tests/trecho_*.sql`, `docs/e3/dbt.md` e `docs/e3/explain/`
+- **O que foi pedido:** a minha parte da E3 inteira: a análise do projeto e da issue, o perfil
+  do que está sujo na origem, a limpeza das views de staging sem mudar o nome das colunas, o fato
+  e as três dimensões com a granularidade escrita, o `mart_risco_trecho_ano` com as colunas que o
+  painel da Ana espera, os testes (esquema, volume, unicidade, integridade e distribuição), o
+  `EXPLAIN (ANALYZE, BUFFERS)` antes e depois e o `docs/e3/dbt.md`.
+- **O que foi aproveitado:** os modelos, os testes, os planos do `EXPLAIN` e a documentação,
+  revisados por mim antes de entrar no PR. As decisões de modelagem que pesaram: o "não sei"
+  vira NULL no staging, as variantes de causa são juntadas na `dim_causa` (e não no staging,
+  para não perder a descrição original), a coordenada padrão do ADR 0002 é marcada no fato em
+  vez de apagada, e o ranking usa `rank` com percentil porque o BR-Brasil e o BAT têm volumes
+  diferentes. Também decidi, no meio do trabalho, apagar o slot de replicação do CDC
+  (`blackspot_cdc`), que estava retendo 1,3 GB de WAL e enchendo o disco a cada `dbt build`; o
+  aviso ficou no `dbt.md`.
+- **Como foi verificado:** tudo rodou no banco carregado com os 20 anos. O `dbt build` passou com
+  os 13 modelos e os 35 testes desta parte; a consulta do painel caiu de ~11 ms (seq scan, 1.496
+  páginas) para ~0,07 ms (index scan, 7 páginas), em três execuções de cada; o `EXCEPT` nos dois
+  sentidos deu zero diferença nas colunas do staging que a parte do IBGE usa; as consultas do
+  painel rodaram direto no mart. Os limiares dos testes de distribuição saíram de medir o banco,
+  e não de chute. A primeira versão tinha três erros, corrigidos antes de usar: a regra do
+  `km_isolado` comparava com o trecho vizinho e deixava passar cadeias de km errado (o km 2.240
+  da BR-040/MG), e o número de trechos isolados do texto (171) era o da regra antiga (são 338); o
+  teste de coerência do ranking usava uma subconsulta correlacionada que seria lenta demais; e o
+  teste de estado físico agrupava as 5 milhões de pessoas e estourava o disco temporário. O
+  modelo `int_ocorrencia_municipio` da Ana não rodou na minha máquina por falta de disco (a
+  junção espacial precisa de arquivo temporário), e não por causa desta parte.
+- **Quem revisou:** [revisora do PR da #43]
 
 &nbsp;
 

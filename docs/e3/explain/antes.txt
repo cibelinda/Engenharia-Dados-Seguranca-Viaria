@@ -1,0 +1,22 @@
+-- EXPLAIN (ANALYZE, BUFFERS) da consulta.sql ANTES do índice: mart_risco_trecho_ano sem índice.
+-- PostgreSQL 18.6, banco carregado com os 20 anos, 2026-11-09. Terceira de três execuções
+-- seguidas (cache quente). Tempos das três: 9,958 / 11,121 / 11,201 ms.
+
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=2577.46..2577.51 rows=20 width=42) (actual time=11.177..11.180 rows=20.00 loops=1)
+   Buffers: shared hit=1496
+   ->  Sort  (cost=2577.46..2578.35 rows=357 width=42) (actual time=11.176..11.178 rows=20.00 loops=1)
+         Sort Key: graves DESC
+         Sort Method: top-N heapsort  Memory: 25kB
+         Buffers: shared hit=1496
+         ->  Seq Scan on mart_risco_trecho_ano  (cost=0.00..2567.96 rows=357 width=42) (actual time=9.283..10.423 rows=5387.00 loops=1)
+               Filter: ((br <> 0) AND (ano = 2025))
+               Rows Removed by Filter: 100555
+               Buffers: shared hit=1493
+ Planning:
+   Buffers: shared hit=69
+ Planning Time: 0.245 ms
+ Execution Time: 11.201 ms
+(14 rows)
+

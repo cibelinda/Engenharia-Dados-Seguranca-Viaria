@@ -1,0 +1,93 @@
+# Views de staging da origem (issue #43). Os testes daqui conferem a LIMPEZA: cada um falha se
+# voltar a aparecer a sujeira que o staging tira (variante de grafia, "não sei" como valor).
+# Não há `not_null` em coluna que o esquema da origem já garante.
+version: 2
+
+models:
+  - name: stg_lote
+    description: "Uma linha por ano: o lote vigente (maior carga concluída) e o sistema da PRF."
+    columns:
+      - name: ano
+        data_tests: [unique]
+      - name: sistema
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [br_brasil, bat]
+
+  - name: stg_ocorrencia
+    description: "Uma linha por acidente (versão vigente), com o vocabulário do BR-Brasil e do BAT harmonizado."
+    columns:
+      - name: fase_dia
+        description: "'Plena Noite' (BR-Brasil) vira 'Plena noite'."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Pleno dia, Plena noite, Anoitecer, Amanhecer]
+      - name: condicao_meteorologica
+        description: "'Ceu Claro' vira 'Céu Claro'; 'Ignorado' e 'Ignorada' viram NULL."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Céu Claro, Nublado, Chuva, Sol, Garoa/Chuvisco, Nevoeiro/Neblina, Vento, Granizo, Neve]
+      - name: sentido_via
+        description: "'Não Informado' vira NULL."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Crescente, Decrescente]
+      - name: classificacao_acidente
+        description: "'Ignorado' (só no BR-Brasil, e só em acidente sem ferido) vira NULL."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Sem Vítimas, Com Vítimas Feridas, Com Vítimas Fatais]
+
+  - name: stg_pessoa
+    description: "Uma linha por pessoa envolvida (versão vigente), com estado físico e sexo num vocabulário só."
+    columns:
+      - name: estado_fisico
+        description: "No vocabulário do BAT. 'Morto', 'Ferido Grave' e 'Ferido Leve' (BR-Brasil) convertidos; desconhecido = NULL."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Ileso, Lesões Leves, Lesões Graves, Óbito]
+      - name: sexo
+        description: "'M'/'F' expandidos; 'Não Informado', 'Inválido', 'Ignorado' e 'I' viram NULL."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Masculino, Feminino]
+
+  - name: stg_veiculo
+    description: "Uma linha por veículo (versão vigente), com o tipo escrito de um jeito só."
+    columns:
+      - name: ano_fabricacao
+        description: "NULL quando desconhecido; 1900 e 1901 (preenchimento) também viram NULL."
+      - name: tipo_veiculo
+        description: "Variantes de grafia juntadas ('Motocicletas' → 'Motocicleta'...); 'Não identificado' = NULL."
+
+  - name: stg_ocorrencia_causa
+    description: "Uma linha por ocorrência do BAT por causa apontada."
+    columns:
+      - name: id_causa
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_causa')
+                field: id_causa
+
+  - name: stg_ocorrencia_tipo
+    description: "Uma linha por ocorrência do BAT por ordem do tipo de acidente."
+
+  - name: stg_causa
+    description: "Uma linha por causa como a PRF escreveu (com variantes)."
+    columns:
+      - name: id_causa
+        data_tests: [unique]
+
+  - name: stg_tipo
+    description: "Uma linha por tipo como a PRF escreveu (com variantes de maiúscula)."
+    columns:
+      - name: id_tipo
+        data_tests: [unique]
