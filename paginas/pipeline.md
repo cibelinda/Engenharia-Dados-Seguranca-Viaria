@@ -6,9 +6,10 @@ permalink: /pipeline/
 
 # Pipeline e modelo
 
-Tudo roda em contêineres, orquestrado por um único `docker compose up`. Cada serviço faz uma coisa,
-e a ordem entre eles é declarada no próprio Compose: um serviço só começa quando os que ele
-depende terminaram sem erro.
+Tudo roda em contêineres, e um único `docker compose up` sobe a esteira. Cada serviço faz uma
+coisa, e a ordem da primeira subida é declarada no próprio Compose: um serviço só começa quando os
+que ele depende terminaram sem erro. Depois disso, o Dagster cuida das execuções seguintes
+([Orquestração e painel](../orquestracao/)).
 
 ## Os serviços
 
@@ -17,7 +18,9 @@ flowchart LR
     subgraph origem["Fonte transacional"]
         direction TB
         DB[("db<br/>PostgreSQL + PostGIS")]
-        MIG["migrate<br/>Flyway, 12 migrações"]
+        MIG["migrate<br/>Flyway, 13 migrações"]
+        IBGE["ingestao-ibge<br/>APIs do IBGE"]
+        IBGE --> DB
         DL["download<br/>50 arquivos, SHA-256"]
         LOAD["load<br/>COPY, um lote por ano"]
         MIG --> LOAD
@@ -32,8 +35,19 @@ flowchart LR
         LOTE --> LAKE
         CDC --> LAKE
     end
+    subgraph consumo["Modelo e consumo"]
+        direction TB
+        DBT["dbt<br/>staging → marts"]
+        PAINEL["painel<br/>Streamlit"]
+        DBT --> PAINEL
+    end
+    ORQ(["orquestracao<br/>Dagster, todo dia"])
     DB --> LOTE
     DB -- WAL --> CDC
+    DB --> DBT
+    ORQ -.-> origem
+    ORQ -.-> LOTE
+    ORQ -.-> DBT
 ```
 
 | Etapa | O que faz |
@@ -41,8 +55,12 @@ flowchart LR
 | **Aquisição** | Baixa os arquivos da PRF em paralelo e confere o SHA-256 de cada um contra o manifesto. |
 | **Esquema** | O Flyway aplica as migrações versionadas, em ordem; subir de novo só aplica as novas. |
 | **Carga** | Um ano por vez, numa transação, com `COPY`. Trata os formatos dos dois sistemas; linha que não cabe vai para `linha_rejeitada` com o motivo (1.275 de 13,2 milhões). |
+| **Base do IBGE** | Municípios, população por ano e malha municipal, das APIs públicas do IBGE. |
 | **Camada analítica** | Lote incremental e captura de mudanças gravam tabelas Delta. [Detalhes](../camada-analitica/) |
-| **Testes** | 119 testes de esquema, volume, distribuição, dado faltante, reprocessamento, lote e CDC. |
+| **Modelo analítico** | O dbt limpa, monta o fato e as dimensões e as tabelas de consumo, e testa tudo. [Detalhes](../modelo-analitico/) |
+| **Orquestração** | O Dagster roda a esteira todo dia, com retry, backfill por ano e SLA de freshness. [Detalhes](../orquestracao/) |
+| **Painel** | Streamlit sobre as duas tabelas de consumo: trechos e municípios mais graves. |
+| **Testes** | 119 testes do pipeline (esquema, volume, reprocessamento, lote e CDC) e os testes de dados do dbt. |
 
 ## O modelo de dados
 
@@ -124,3 +142,4 @@ calculando a distância à mão. Para os anos anteriores, o trecho (BR, UF e km)
 | **Evento:** quando o acidente aconteceu | `ocorrencia.ocorrido_em` |
 | **Ingestão:** quando o lote foi carregado | `lote_carga.iniciado_em`, `finalizado_em` |
 | **Processamento:** quando chegou à camada analítica | `processado_em` (lote) e `_gravado_em` (CDC) |
+| **Consumo:** quando as tabelas de consumo foram reconstruídas | o último `dbt build` sem erro, medido pela freshness |

@@ -1,6 +1,6 @@
 ---
 title: Decisões
-nav_order: 5
+nav_order: 7
 permalink: /decisoes/
 ---
 
@@ -39,6 +39,13 @@ no [repositório](https://github.com/cibelinda/Engenharia-Dados-Seguranca-Viaria
     de segundos, mas três serviços a mais; ele fica para as mudanças que não criam lote novo.</span>
     <span class="cartao-numero">Escolhido: lote por ano + CDC, Delta com zstd</span>
   </div>
+  <div class="cartao">
+    <span class="cartao-titulo">dbt e Dagster, e não cron com SQL</span>
+    <span class="cartao-texto">O cron faria o mesmo trabalho com 660 KiB em vez de 481 MiB. Perdeu pelo
+    registro, e não pelo desempenho: com ele não se vê qual etapa falhou, em qual tentativa, nem que
+    anos foram reprocessados. O dbt custa 5,2 s por execução; o Airflow, o dobro da memória.</span>
+    <span class="cartao-numero">Escolhido: dbt para transformar, Dagster para orquestrar</span>
+  </div>
 </div>
 
 ## A escolha da ingestão em números
@@ -63,3 +70,16 @@ no [repositório](https://github.com/cibelinda/Engenharia-Dados-Seguranca-Viaria
 O Iceberg é melhor na evolução de esquema. O Delta venceu porque dispensa um serviço de catálogo, e
 as mudanças de esquema que chegam à camada analítica, até aqui, só acrescentaram colunas, o que o
 Delta faz.
+
+## Transformação e orquestração em números
+
+| | `cron` + SQL | **dbt + Dagster** | Airflow |
+|---|---|---|---|
+| Memória parado | 660 KiB | **481 MiB** | 966 MiB |
+| Até a interface responder | — | **7,2 s** | 15,5 s |
+| Custo fixo do dbt por execução | 0 | 5,2 s (10% do build) | — |
+| Retry, backfill e freshness | código nosso, sem registro | **prontos, com histórico** | prontos, freshness por fora |
+| Ordem das transformações | mantida à mão | **sai das referências (`ref`)** | — |
+
+**Quando revisar:** se a esteira precisar de mais de uma máquina, se o `dbt build` passar de
+alguns minutos, ou se a fonte passar a publicar mais de uma vez por dia.

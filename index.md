@@ -8,7 +8,8 @@ permalink: /
   <p class="hero-titulo">BlackSpot</p>
   <p class="hero-texto">Um pipeline de dados sobre os acidentes nas rodovias federais brasileiras: dos
   arquivos abertos da Polícia Rodoviária Federal a um banco espacial com histórico de versões e a
-  uma camada analítica em formato aberto, alimentada em lote e por captura de mudanças.</p>
+  uma camada analítica em formato aberto, alimentada em lote e por captura de mudanças, e daí a um
+  modelo dimensional testado, orquestrado e consultado num painel.</p>
   <p class="hero-pergunta"><strong>Pergunta:</strong> quais trechos de 10 km das rodovias federais
   concentraram mais acidentes com mortos ou feridos graves entre 2007 e 2025, e esses trechos se
   mantêm de um ano para o outro?</p>
@@ -24,6 +25,8 @@ primeiro.
   <div class="numero"><span class="valor">13,2 mi</span><span class="rotulo">linhas no PostgreSQL com PostGIS (2,7 GB)</span></div>
   <div class="numero"><span class="valor">138 MB</span><span class="rotulo">a mesma informação em Delta com Parquet e zstd</span></div>
   <div class="numero"><span class="valor">~1 s</span><span class="rotulo">de uma mudança no banco até a camada analítica</span></div>
+  <div class="numero"><span class="valor">7 trechos</span><span class="rotulo">entre os 50 mais graves em todos os anos de 2007 a 2025</span></div>
+  <div class="numero"><span class="valor">79 de 79</span><span class="rotulo">modelos e testes de dados passando no dbt</span></div>
   <div class="numero"><span class="valor">1 comando</span><span class="rotulo">sobe tudo do zero: <code>docker compose up</code></span></div>
 </div>
 
@@ -34,7 +37,8 @@ primeiro.
   <li><strong>Carga</strong>dois formatos tratados, um lote por ano</li>
   <li><strong>Banco espacial</strong>PostgreSQL + PostGIS, histórico versionado</li>
   <li><strong>Camada analítica</strong>Delta em Parquet, por lote e por CDC</li>
-  <li><strong>Consulta</strong>DuckDB e SQL sobre formato aberto</li>
+  <li><strong>Modelo analítico</strong>dbt: fato, dimensões e testes</li>
+  <li><strong>Painel</strong>a resposta, orquestrada pelo Dagster</li>
 </ol>
 
 Os dados da PRF não chegam prontos: vêm de **dois sistemas de registro** com formatos diferentes e
@@ -56,6 +60,14 @@ guarda o histórico em vez de sobrescrever.
     <span class="cartao-titulo">Camada analítica</span>
     <span class="cartao-texto">Ingestão em lote e captura de mudanças para tabelas Delta.</span>
   </a>
+  <a class="cartao" href="{{ '/modelo-analitico/' | relative_url }}">
+    <span class="cartao-titulo">Modelo analítico</span>
+    <span class="cartao-texto">dbt em camadas, o modelo dimensional, o IBGE e a resposta da pergunta.</span>
+  </a>
+  <a class="cartao" href="{{ '/orquestracao/' | relative_url }}">
+    <span class="cartao-titulo">Orquestração e painel</span>
+    <span class="cartao-texto">Dagster com retry, backfill e SLA de freshness, e o painel da resposta.</span>
+  </a>
   <a class="cartao" href="{{ '/decisoes/' | relative_url }}">
     <span class="cartao-titulo">Decisões</span>
     <span class="cartao-texto">As escolhas de arquitetura, cada uma com a alternativa medida.</span>
@@ -74,6 +86,10 @@ guarda o histórico em vez de sobrescrever.
   <li>Delta Lake</li>
   <li>Parquet + zstd</li>
   <li>DuckDB</li>
+  <li>dbt</li>
+  <li>Dagster</li>
+  <li>Streamlit</li>
+  <li>APIs do IBGE</li>
   <li>Docker Compose</li>
 </ul>
 
@@ -84,9 +100,11 @@ Pré-requisito: Docker com Compose v2.
 ```bash
 git clone https://github.com/cibelinda/Engenharia-Dados-Seguranca-Viaria.git
 cd Engenharia-Dados-Seguranca-Viaria
-docker compose up --build        # baixa, carrega e alimenta a camada analítica
-docker compose run --rm tests    # 119 testes automatizados
+docker compose up --build -d     # baixa, carrega e alimenta a camada analítica
+docker compose wait load         # espera a carga da PRF terminar
+docker compose run --rm dbt build    # modelo analítico e testes de dados
+docker compose run --rm tests    # 119 testes automatizados do pipeline
 ```
 
-Do zero, a subida leva cerca de 13 minutos: 5 de download e 8 de carga. Rodar de novo não duplica
-nada.
+Do zero, a subida leva cerca de 13 minutos. Rodar de novo não duplica nada. Depois, o painel fica
+em **http://localhost:8501** e o Dagster, com a esteira agendada, em **http://localhost:3000**.
