@@ -40,6 +40,27 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  # Relevo do IBGE (issue #59): baixa a geomorfologia 1:250.000 (~500 MB, guardado no volume
+  # rawdata e só baixado de novo se o SHA-256 mudar) e grava no schema `relevo`. Roda no
+  # `docker compose up`, depois das migrações. Pode rodar de novo sem duplicar.
+  ingestao-relevo:
+    build: ..
+    image: blackspot-app:local
+    pull_policy: build
+    command: python -m blackspot.relevo.ingestao
+    environment:
+      BLACKSPOT_RAW_DIR: data/raw
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-blackspot}
+      PGUSER: ${POSTGRES_USER:-blackspot}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+    volumes:
+      - rawdata:/app/data/raw
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   rawdata:
   lakehouse:
