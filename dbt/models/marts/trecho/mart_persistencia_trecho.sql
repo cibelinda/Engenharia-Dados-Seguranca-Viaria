@@ -9,6 +9,10 @@
 --                     (macros/metricas.sql). Entram todos os anos, inclusive o ano corrente,
 --                     parcial, como no painel da E3: o ranking é dentro do ano, então o ano
 --                     parcial também tem os seus 50 piores.
+--   anos_completos_no_top_50 : o mesmo, contando só os anos completos (ano_completo). No começo
+--                     do ano, com poucas semanas de dado, um trecho pode entrar no top 50 do ano
+--                     parcial; esta coluna não conta isso. É a que o ETL reverso usa para dizer
+--                     que um trecho é crítico.
 --   graves_no_total : os acidentes graves somados NOS ANOS EM QUE O TRECHO FICOU NO TOP 50 (o
 --                     mesmo número que o painel mostrava). 0 quando anos_no_top_50 = 0.
 --
@@ -20,6 +24,7 @@ with no_top as (
     select
         chave_trecho,
         count(*) filter (where no_top_50)        as anos_no_top_50,
+        count(*) filter (where no_top_50 and ano_completo) as anos_completos_no_top_50,
         sum(graves) filter (where no_top_50)     as graves_no_total,
         min(ano) filter (where no_top_50)        as primeiro_ano_no_top_50,
         max(ano) filter (where no_top_50)        as ultimo_ano_no_top_50
@@ -35,6 +40,7 @@ select
     t.km_fim::integer                             as km_fim,
     t.rotulo::text                                as rotulo,
     coalesce(n.anos_no_top_50, 0)::integer        as anos_no_top_50,
+    coalesce(n.anos_completos_no_top_50, 0)::integer as anos_completos_no_top_50,
     coalesce(n.graves_no_total, 0)::integer       as graves_no_total,
     n.primeiro_ano_no_top_50::smallint            as primeiro_ano_no_top_50,
     n.ultimo_ano_no_top_50::smallint              as ultimo_ano_no_top_50

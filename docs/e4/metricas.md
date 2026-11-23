@@ -67,6 +67,7 @@ tem `anos_no_top_50 = 0`.
 |---|---|
 | `chave_trecho`, `br`, `uf`, `km_inicio`, `km_fim`, `rotulo` | O trecho, como na `dim_trecho` |
 | `anos_no_top_50` | A métrica: em quantos anos o trecho ficou entre os 50 mais graves |
+| `anos_completos_no_top_50` | O mesmo, só com os anos completos. No começo do ano, poucas semanas de dado bastam para entrar no top 50 do ano parcial; esta coluna não conta isso. É a que o ETL reverso (#54) usa |
 | `graves_no_total` | Graves somados **nos anos em que o trecho ficou no top 50** (é o número que o painel mostrava). 0 quando o trecho nunca ficou no top |
 | `primeiro_ano_no_top_50`, `ultimo_ano_no_top_50` | O primeiro e o último ano no top (NULL se nunca ficou) |
 

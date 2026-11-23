@@ -231,6 +231,10 @@ models:
         description: "{{ doc('metrica_anos_no_top_50') }}"
         data_type: integer
         data_tests: [not_null]
+      - name: anos_completos_no_top_50
+        description: "Como anos_no_top_50, contando só os anos completos (ano_completo): o ano corrente, parcial, não entra. É a coluna que o ETL reverso usa."
+        data_type: integer
+        data_tests: [not_null]
       - name: graves_no_total
         description: "{{ doc('coluna_graves_no_total') }}"
         data_type: integer
