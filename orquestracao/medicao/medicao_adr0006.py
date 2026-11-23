@@ -4,7 +4,7 @@ Uso, dentro do container da orquestração, com o banco carregado e o dbt constr
     docker compose run --rm -v ./orquestracao/medicao:/app/orquestracao/medicao \
         orquestracao python -m orquestracao.medicao.medicao_adr0006
 
-Três opções, com o nosso volume (140 trechos críticos, 21 UFs):
+Três opções, com o nosso volume (135 trechos críticos, 21 UFs):
 
 A. CSV agendado, empurrado (a opção nula): o Dagster gera um CSV por UF numa pasta que a PRF
    lê. Mede o tempo de gerar e publicar tudo, o tamanho e o tempo de o consumidor abrir o
@@ -49,8 +49,9 @@ RODADAS = int(os.environ.get("RODADAS", "30"))
 UF = os.environ.get("UF_MEDIDA", "MG")
 PORTA_API = 8765
 
-CONSULTA_UF = etl_reverso.CONSULTA.replace("where p.anos_no_top_50 >= 1",
-                                           "where p.anos_no_top_50 >= 1 and p.uf = %s")
+CONSULTA_UF = etl_reverso.CONSULTA.replace("where p.anos_completos_no_top_50 >= 1",
+                                           "where p.anos_completos_no_top_50 >= 1 and p.uf = %s")
+assert CONSULTA_UF != etl_reverso.CONSULTA
 
 
 def ms(segundos: float) -> float:

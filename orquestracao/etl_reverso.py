@@ -15,8 +15,9 @@ O que sai, no destino (ETL_REVERSO_DESTINO, uma pasta compartilhada):
                                manifesto.json            data, linhas e SHA-256 de cada arquivo
     atual -> geracoes/2026-11-23T030512                  a geração vigente
 
-Trecho crítico é o que ficou entre os 50 mais graves do ano em pelo menos um ano
-(anos_no_top_50 >= 1). Nenhuma métrica é calculada aqui: as colunas vêm prontas de
+Trecho crítico é o que ficou entre os 50 mais graves do ano em pelo menos um ano completo
+(anos_completos_no_top_50 >= 1): o ano corrente, parcial, não basta, porque no começo do ano
+poucas semanas de dado já põem um trecho no top 50. Nenhuma métrica é calculada aqui: as colunas vêm prontas de
 analitico_marts (contrato da E4), e este módulo só escolhe as colunas e separa por UF.
 
 Entrega segura para quem lê:
@@ -55,7 +56,8 @@ COLUNAS = {
     "br": "Número da rodovia federal",
     "km_inicio": "Início da faixa de 10 km",
     "km_fim": "Fim da faixa de 10 km",
-    "anos_no_top_50": "Em quantos anos o trecho ficou entre os 50 mais graves do país",
+    "anos_completos_no_top_50": "Em quantos anos completos o trecho ficou entre os 50 mais graves do país",
+    "anos_no_top_50": "O mesmo, contando também o ano corrente (parcial)",
     "primeiro_ano_no_top_50": "Primeiro ano em que ficou entre os 50 mais graves",
     "ultimo_ano_no_top_50": "Último ano em que ficou entre os 50 mais graves",
     "graves_nos_anos_no_top_50": "Acidentes graves somados nos anos em que ficou no top 50",
@@ -75,6 +77,7 @@ select
     p.br,
     p.km_inicio,
     p.km_fim,
+    p.anos_completos_no_top_50,
     p.anos_no_top_50,
     p.primeiro_ano_no_top_50,
     p.ultimo_ano_no_top_50,
@@ -87,8 +90,8 @@ from {SCHEMA}.mart_persistencia_trecho p
 cross join referencia r
 left join {SCHEMA}.mart_risco_trecho_ano a
        on a.chave_trecho = p.chave_trecho and a.ano = r.ano
-where p.anos_no_top_50 >= 1
-order by p.uf, p.anos_no_top_50 desc, p.graves_no_total desc, p.br, p.km_inicio
+where p.anos_completos_no_top_50 >= 1
+order by p.uf, p.anos_completos_no_top_50 desc, p.graves_no_total desc, p.br, p.km_inicio
 """
 
 
@@ -153,7 +156,7 @@ def publicar(arquivos: dict[str, bytes], destino: Path, gerado_em: datetime) -> 
         "geracao": geracao,
         "gerado_em": gerado_em.isoformat(timespec="seconds"),
         "fonte": f"{SCHEMA}.mart_persistencia_trecho e {SCHEMA}.mart_risco_trecho_ano",
-        "criterio": "trecho que ficou entre os 50 mais graves do ano em pelo menos um ano",
+        "criterio": "trecho que ficou entre os 50 mais graves do ano em pelo menos um ano completo",
         "colunas": COLUNAS,
         "arquivos": {n: {"linhas": dados.count(b"\r\n") - 1, "bytes": len(dados), "sha256": hashes[n]}
                      for n, dados in arquivos.items()},
