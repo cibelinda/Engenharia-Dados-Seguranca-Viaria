@@ -1,11 +1,12 @@
 # ADR 0001: Modelar a origem normalizada e insert-only, versionada por lote de carga
 
-- **Status:** aceito, revisado em 2026-10-13. Continua valendo depois das correções da E1, com o
+- **Status:** aceito, revisado em 2026-10-13 e em 2026-11-23 (E4, seção "Revisão de 2026-11-23":
+  nenhum gatilho de custo disparou, e a decisão se mantém). Continua valendo depois das correções da E1, com o
   banco espacial do [ADR 0002](0002-banco-espacial-postgis.md) e o dataset completo do
   [ADR 0003](0003-dataset-completo-br-brasil-e-bat.md). O contexto é o da decisão (recorte da E1);
   a medição foi refeita sobre o dataset completo, que disparou dois gatilhos de revisão (seção
   "Revisão de 2026-10-13").
-- **Data:** 2026-09-28 (rascunho em 2026-09-27; revisão em 2026-10-13)
+- **Data:** 2026-09-28 (rascunho em 2026-09-27; revisões em 2026-10-13 e 2026-11-23)
 - **Issue:** #6 (esquema da #3, carga da #4, evidência da #7)
 
 ## Contexto
@@ -250,3 +251,23 @@ revisão da origem".
 Os gatilhos da decisão original (banco acima de 2 GB, Q2 acima de 2 s) dispararam com o dataset
 completo. Foram reavaliados e recalibrados na seção "Revisão de 2026-10-13", que tem os
 gatilhos vigentes.
+
+## Revisão de 2026-11-23 (E4): gatilhos relidos
+
+| Gatilho (recalibrado em 13/10) | Limite | Medido em 23/11 | Disparou? |
+|---|---|---|---|
+| Tamanho do banco | 6 GB | **4,3 GB** no total, mas a origem continua com **2,8 GB** (era 2,7 GB). O resto é derivado: 0,5 GB de marts e 0,2 GB de intermediate do dbt, e 0,7 GB do relevo do IBGE (#59) | Não |
+| Q2 na mediana | 10 s | **5,0 s** (5 rodadas depois de uma de aquecimento; a mesma consulta do `bench/medicao_adr.py`), contra 2,8 s em 13/10. A máquina estava com os bancos de outros dois projetos no ar, então parte da diferença é a máquina | Não |
+| Consumidor que precise de resposta em menos de 5 s | — | O painel interativo surgiu (E3), como o gatilho previa, mas lê as tabelas de `analitico_marts`, e não a origem: a Q2 da origem não está no caminho de nenhuma tela | Formalmente sim, sem efeito |
+| Republicações mudam menos de 1% das linhas | — | **Ainda pendente.** A comparação direta da #7, prevista para 26/10, não foi feita. A carga continuou gravando a republicação inteira (22 lotes desde a carga do zero de 21/10: um por ano, mais um segundo lote de 2016 e um de 2026 em 18/11) | Não avaliado |
+
+**Reavaliação.** A decisão se mantém. O banco cresceu 1,6 GB desde 13/10, mas a origem
+insert-only cresceu só 0,1 GB; o resto são tabelas derivadas que o dbt recria e uma fonte nova (o
+relevo). O gatilho de 6 GB mede o banco inteiro, e com o dbt e o relevo ele vai disparar antes de a
+origem precisar de revisão. **Sugestão para a próxima revisão:** medir o gatilho de tamanho só na
+origem (schema `public`), com 4 GB.
+
+**O que fica em aberto, com honestidade:** o terceiro gatilho, que é o único que poderia mudar a
+decisão (gravar só as linhas alteradas), nunca foi medido. O material para medir existe: os dois
+lotes de 2026 (21/10 e 18/11) estão no banco.
+

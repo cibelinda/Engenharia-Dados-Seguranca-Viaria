@@ -7,7 +7,7 @@ nav_exclude: false
 
 # ADR 0005: Transformar com dbt e orquestrar com Dagster, em vez de `cron` com scripts SQL
 
-- **Status:** proposto (para revisão da Squad no PR da #44)
+- **Status:** aceito (PR #48, em 2026-11-09). Gatilhos relidos em 2026-11-23 (nenhum disparou).
 - **Data:** 2026-11-02
 - **Decisores:** Ana Luiza Komatsu, Cibelly Lourenço, Maria Clara Sena
 - **Issue:** #44 (modelos na #42 e na #43)
@@ -183,3 +183,19 @@ O grafo e as demonstrações estão em [`docs/e3/orquestracao.md`](../e3/orquest
   particionar a transformação por ano junto com o backfill.
 - Se a fonte passar a publicar com mais frequência que uma vez por dia: o agendamento diário e o
   SLA de 26 h deixam de servir.
+
+## Revisão de 2026-11-23 (E4): gatilhos relidos
+
+| Gatilho | Medido | Disparou? |
+|---|---|---|
+| A esteira precisar rodar em mais de uma máquina, ou com mais de uma execução ao mesmo tempo | Continua numa máquina, uma execução por vez. A E4 acrescentou uma etapa (o ETL reverso, ADR 0006), que roda depois do dbt em ~20 ms | Não |
+| O `dbt build` passar de alguns minutos | Cresceu: **~2 min** em 23/11 (uma execução, 93 nós, com a camada de métricas da #53), contra 52 s em 02/11 (39 nós). O dobro dos nós custou mais que o dobro do tempo, mas ainda está em "alguns minutos" | Não, mas perto |
+| A fonte publicar com mais frequência que uma vez por dia | A PRF continua mensal | Não |
+
+**Reavaliação.** A decisão se mantém. O ponto a acompanhar é o tempo do `dbt build`, que dobrou
+em três semanas porque cada parte da E4 acrescentou modelos e testes. Com o backfill rodando o
+build inteiro por ano reprocessado, um build de 5 min faz um backfill de 20 anos levar quase duas
+horas. **Próxima revisão:** medir de novo com o `orquestracao/medicao/medicao_adr0005.py` (3
+rodadas), e se passar de 5 min, tornar incrementais os modelos grandes (o fato e a ligação
+acidente → município).
+

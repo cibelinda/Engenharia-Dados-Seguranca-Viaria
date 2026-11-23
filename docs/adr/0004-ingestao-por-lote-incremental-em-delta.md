@@ -7,7 +7,8 @@ nav_exclude: false
 
 # ADR 0004: Alimentar a camada analítica por lote incremental, por ano, em Delta com zstd
 
-- **Status:** proposto (para revisão da Squad no PR da #33)
+- **Status:** aceito (PR #39, em 2026-10-14). Gatilhos relidos em 2026-11-23: **um disparou** (nenhum
+  consumidor da E3 e da E4 lê o Delta), e a decisão foi mantida (seção "Revisão de 2026-11-23").
 - **Data:** 2026-10-13
 - **Decisores:** Ana Luiza Komatsu, Cibelly Lourenço, Maria Clara Sena
 - **Issue:** #33 (lote na #31, CDC na #32)
@@ -221,3 +222,31 @@ viagem no tempo do Delta.
   a partição por ano (hoje 3,3 s e 85 s).
 - **A Q1 lida do Parquet passar de 1 s** (hoje ~0,1 s): rever codec e nível do zstd.
 - **Um consumidor da camada (E3 ou E4) não ler Delta:** rever o formato.
+
+## Revisão de 2026-11-23 (E4): gatilhos relidos
+
+| Gatilho | Medido | Disparou? |
+|---|---|---|
+| A fonte mudar com frequência menor que um dia, ou a Squad corrigir linhas direto no banco | A PRF continua republicando 2026 uma vez por mês (lotes de 21/10 e 18/11), e ninguém corrigiu linha à mão | Não |
+| Uma migração renomear, remover ou alargar coluna numa view vigente | As migrações depois da E2 (`V0013`, IBGE; `V0014`, relevo da #59) só criam schemas novos. As views vigentes não mudaram | Não |
+| A republicação de um ano em B passar de 60 s, ou a recarga completa passar de 10 min | Não medido de novo. O volume da origem quase não mudou (2,7 → 2,8 GB) | Não avaliado |
+| A Q1 lida do Parquet passar de 1 s | Não medido de novo | Não avaliado |
+| **Um consumidor da camada (E3 ou E4) não ler Delta** | **Nenhum consumidor da E3 e da E4 lê o Delta.** O dbt lê as views vigentes do PostgreSQL; o painel e o ETL reverso (ADR 0006) leem `analitico_marts`, também no PostgreSQL. O Delta só é lido pelos testes da E2 (`tests/test_ingestao_lote.py`, `tests/test_cdc.py`) e pela medição (`bench/medicao_e2.py`) | **Sim** |
+
+**Reavaliação.** O gatilho disparou de um jeito que ele não previa: não foi um consumidor que
+precisou de outro formato, foi a E3 que escolheu transformar dentro do PostgreSQL (ADR 0005),
+onde a origem já estava, e não sobre a camada Delta. O dbt-postgres não lê Delta, e o dbt-duckdb,
+que leria, não foi considerado. Desde então, a etapa `lake_lote` roda todo dia na esteira e
+mantém uma camada que ninguém consome.
+
+**A decisão foi mantida, e não revista,** porque o que ela escolheu continua certo para o que ela
+decidia (como manter uma cópia analítica atualizada: lote incremental por ano, em Delta, com
+zstd). O que mudou é se essa cópia precisa existir. As duas saídas, para a retrospectiva:
+
+- **manter** a camada como está, como uma cópia aberta e barata (132 MB, 3,3 s por republicação)
+  para um consumidor fora do PostgreSQL que ainda não existe;
+- **tirar `lake_lote` da esteira diária**, deixando o código e os testes da E2 rodando sob demanda.
+
+Nenhuma das duas foi feita na E4. **O Delta é o exemplo honesto do semestre de uma camada que foi
+decidida antes de existir quem a consumisse.**
+
