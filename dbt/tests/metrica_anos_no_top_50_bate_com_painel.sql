@@ -3,6 +3,11 @@
 -- mesmos anos_no_top_50 e graves_no_total que o painel calculava sozinho.
 -- A consulta abaixo é a do painel, copiada como estava (com o 50 no lugar do parâmetro), sem o
 -- LIMIT 20: confere todos os trechos que já ficaram no top, e não só os 20 primeiros.
+--
+-- Diferença conhecida, que os dados de hoje não exercitam: o painel ranqueia também os trechos
+-- com graves = 0, e o mart não (posicao NULL). Os dois só divergem num ano com menos de 50
+-- trechos com acidente grave; hoje o ano com menos tem 3.858. Se um dia este teste falhar com
+-- linhas de graves_painel = 0, é isso, e quem está certo é o mart.
 with painel as (
     with ranking as (
         select br, uf, km_inicio, ano, graves,
