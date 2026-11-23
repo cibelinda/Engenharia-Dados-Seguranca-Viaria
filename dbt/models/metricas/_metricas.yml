@@ -147,7 +147,9 @@ metrics:
     description: "{{ doc('metrica_graves_por_100_mil') }}"
     type: derived
     type_params:
-      expr: "graves_no_municipio * 100000 / nullif(populacao_municipio, 0)"
+      # 100000.0, e não 100000: inteiro dividido por inteiro trunca no PostgreSQL. E o round de
+      # duas casas da macro metrica_graves_por_100_mil, para bater com o mart.
+      expr: "round(graves_no_municipio * 100000.0 / nullif(populacao_municipio, 0), 2)"
       metrics:
         - name: graves_no_municipio
         - name: populacao_municipio
