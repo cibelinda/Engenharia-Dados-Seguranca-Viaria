@@ -525,7 +525,7 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
   quando o dado muda), a medição das três opções, o texto do ADR 0006 e do `etl-reverso.md`, e a
   revisão dos gatilhos.
 - **Como foi verificado:** o ETL rodou no banco local com os modelos da #53 construídos a partir
-  da branch da Cibelly (91 testes do dbt passando): 140 trechos, 21 UFs, e a segunda execução sem
+  da branch da Cibelly (91 testes do dbt passando): 135 trechos, 21 UFs, e a segunda execução sem
   mudança manteve a geração. O asset foi materializado pelo próprio Dagster
   (`dagster asset materialize`). O caso do destino fora do ar foi medido tirando a permissão de
   escrita da pasta. Cada número dos gatilhos foi medido no banco em 23/11 (tamanho por schema, Q2

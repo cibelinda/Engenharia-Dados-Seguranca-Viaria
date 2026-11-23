@@ -16,7 +16,7 @@ mais graves do país **ano após ano** é um ponto negro de verdade, e não o az
 onde uma operação tem mais chance de evitar morte.
 
 **Exemplo, MG:** a BR-381 km 480–490 ficou entre os 50 trechos mais graves do país em **todos os
-20 anos** (2007 a 2026), com 1.068 acidentes graves nesses anos. Em 2025, foi o 8º trecho mais
+19 anos completos** (2007 a 2025), e também no ano corrente, com 1.068 acidentes graves nesses anos. Em 2025, foi o 8º trecho mais
 grave do país, com 67 acidentes graves e 9 mortos.
 
 **Decisão que a plataforma permite e antes não se tomava:** escolher os trechos da operação pelo
@@ -37,15 +37,17 @@ geracoes/2026-11-23T171854/
                                             linhas e SHA-256 de cada arquivo
 ```
 
-**Trecho crítico:** ficou entre os 50 mais graves do ano em pelo menos um ano
-(`anos_no_top_50 >= 1`). São 140 hoje, de 1 a 18 por UF. O arquivo vem ordenado do mais
-persistente para o menos.
+**Trecho crítico:** ficou entre os 50 mais graves do ano em pelo menos um ano completo
+(`anos_completos_no_top_50 >= 1`). São 135 hoje, de 1 a 18 por UF. O ano corrente não basta: no
+começo do ano, poucas semanas de dado já põem um trecho no top 50 (com ele, seriam 140). O
+arquivo vem ordenado do mais persistente para o menos.
 
 | Coluna | O que é | De onde vem |
 |---|---|---|
 | `trecho` | BR, UF e faixa de 10 km (ex.: BR-381/MG km 480–490) | `mart_persistencia_trecho.rotulo` |
 | `br`, `km_inicio`, `km_fim` | Onde o trecho fica, como a PRF localiza na rodovia | `mart_persistencia_trecho` |
-| `anos_no_top_50` | Em quantos anos ficou entre os 50 mais graves do país | `mart_persistencia_trecho` (métrica da #53) |
+| `anos_completos_no_top_50` | Em quantos anos completos ficou entre os 50 mais graves do país | `mart_persistencia_trecho` (métrica da #53) |
+| `anos_no_top_50` | O mesmo, contando também o ano corrente (parcial) | `mart_persistencia_trecho` (métrica da #53) |
 | `primeiro_ano_no_top_50`, `ultimo_ano_no_top_50` | Desde quando e até quando | `mart_persistencia_trecho` |
 | `graves_nos_anos_no_top_50` | Acidentes graves somados nesses anos | `mart_persistencia_trecho.graves_no_total` |
 | `ano_referencia` | Último ano completo da PRF | `mart_risco_trecho_ano` (`ano_completo`) |
@@ -74,7 +76,7 @@ importação.
 - A geração nova é escrita inteira numa pasta `.parcial`, renomeada no fim, e só depois o link
   `atual` passa a apontar para ela (troca atômica). **Quem abre `atual/` nunca vê metade de uma
   geração.**
-- Se a pasta de destino não existe ou não aceita escrita, o ETL **falha na hora** (21 ms medidos)
+- Se a pasta de destino não existe ou não aceita escrita, o ETL **falha na hora** (18 ms medidos)
   com "destino fora do ar". O Dagster tenta de novo em 30, 90 e 210 s. Se as quatro tentativas
   falharem, a execução fica vermelha na interface.
 - Em qualquer falha, **a PRF continua com a geração anterior**, e o `gerado_em` do manifesto diz
@@ -105,7 +107,7 @@ docker compose run --rm -v ./orquestracao/medicao:/app/orquestracao/medicao \
 
 ## Depende de
 
-- **`mart_persistencia_trecho` (#53, Cibelly):** é dela que vem `anos_no_top_50`. Enquanto o PR
+- **`mart_persistencia_trecho` (#53, Cibelly):** é dela que vêm `anos_no_top_50` e `anos_completos_no_top_50`. Enquanto o PR
   da #53 não estiver na `main`, o asset falha com "relation does not exist", e o Dagster mostra
   a etapa em vermelho; a medição foi feita com os modelos da #53 construídos localmente.
 - **Exposure `etl_reverso_trechos_criticos` (#53):** o ETL aparece no fim da linhagem do

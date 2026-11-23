@@ -27,8 +27,8 @@ que frequência e o que acontece quando o destino está fora do ar.
 
 O que pesa na decisão:
 
-- **O dado é pequeno e muda pouco.** São 140 trechos críticos (os que ficaram no top 50 em pelo
-  menos um ano), de 1 a 18 por UF, num total de 17 KB. A PRF republica uma vez por mês, então a
+- **O dado é pequeno e muda pouco.** São 135 trechos críticos (os que ficaram no top 50 em pelo
+  menos um ano completo), de 1 a 18 por UF, num total de 18 KB. A PRF republica uma vez por mês, então a
   lista muda no máximo uma vez por mês.
 - **Cada UF só precisa da própria lista.** Privilégio mínimo (#52): a superintendência de MG não
   precisa ver a lista de SP para fazer o seu trabalho.
@@ -85,7 +85,7 @@ do banco a cada requisição, então herda a indisponibilidade de B.
 
 Medido em 2026-11-23, dentro do container da orquestração, na mesma rede Docker que o banco, com o
 banco carregado com os 20 anos e o dbt construído (incluindo a `mart_persistencia_trecho` da #53).
-Consumidor medido: MG, 18 trechos críticos. Script:
+Consumidor medido: MG, 17 trechos críticos. Script:
 [`orquestracao/medicao/medicao_adr0006.py`](../../orquestracao/medicao/medicao_adr0006.py).
 Resultado: [`medicao_adr0006.json`](../../orquestracao/medicao/medicao_adr0006.json).
 
@@ -93,30 +93,30 @@ Resultado: [`medicao_adr0006.json`](../../orquestracao/medicao/medicao_adr0006.j
 
 | | Mediana | p95 |
 |---|---|---|
-| **A.** gerar e publicar os 21 CSVs e o manifesto | **21,1 ms** | 23,7 ms |
-| A. a mesma execução quando o dado não mudou (não escreve nada) | 20,3 ms | 22,9 ms |
-| A. a consulta sozinha, sem escrever | 19,0 ms | 19,8 ms |
-| A. o consumidor abrir e ler o CSV da UF | **0,16 ms** | 0,17 ms |
-| **B.** a consulta da UF, abrindo conexão nova | **18,3 ms** | 18,9 ms |
-| B. a consulta da UF, com a conexão já aberta | 2,8 ms | 3,6 ms |
-| **C.** uma requisição à API da UF | **18,0 ms** | 18,5 ms |
+| **A.** gerar e publicar os 21 CSVs e o manifesto | **20,0 ms** | 21,6 ms |
+| A. a mesma execução quando o dado não mudou (não escreve nada) | 17,5 ms | 18,3 ms |
+| A. a consulta sozinha, sem escrever | 16,7 ms | 17,9 ms |
+| A. o consumidor abrir e ler o CSV da UF | **0,12 ms** | 0,13 ms |
+| **B.** a consulta da UF, abrindo conexão nova | **15,5 ms** | 16,1 ms |
+| B. a consulta da UF, com a conexão já aberta | 2,1 ms | 2,8 ms |
+| **C.** uma requisição à API da UF | **17,5 ms** | 18,6 ms |
 
 | | A. CSV | B. Tabela | C. API |
 |---|---|---|---|
-| Tamanho do que chega à UF | 1.368 bytes (CSV) | 18 linhas | 5.850 bytes (JSON) |
-| Tamanho de uma geração inteira | 17.605 bytes, 22 arquivos | — | — |
+| Tamanho do que chega à UF | 1.369 bytes (CSV) | 17 linhas | 6.059 bytes (JSON) |
+| Tamanho de uma geração inteira | 18.233 bytes, 22 arquivos | — | — |
 | Serviço a mais no ar | nenhum | nenhum (o banco já está) | **35 MiB** de memória (piso: servidor da biblioteca padrão do Python) |
 
 **O desempenho não decide.** As três opções entregam a lista de uma UF em menos de 20 ms. O custo
-de gerar o CSV é o custo da consulta mais 2 ms de escrita, uma vez por dia. Com 140 linhas, nada
+de gerar o CSV é o custo da consulta mais 3 ms de escrita, uma vez por dia. Com 135 linhas, nada
 aqui é caro.
 
 ### O destino fora do ar
 
 | | O que foi feito | O que aconteceu |
 |---|---|---|
-| **A.** pasta de destino sem permissão de escrita | o ETL rodou contra ela | **falhou em 21 ms** com "destino fora do ar"; o Dagster tenta de novo em 30, 90 e 210 s (ADR 0005); **a geração anterior continuou legível** pelo consumidor, inteira |
-| **B.** banco fora do alcance | o consumidor tentou conectar (timeout de 3 s) | **esperou 3,3 s e ficou sem nada** |
+| **A.** pasta de destino sem permissão de escrita | o ETL rodou contra ela | **falhou em 18 ms** com "destino fora do ar"; o Dagster tenta de novo em 30, 90 e 210 s (ADR 0005); **a geração anterior continuou legível** pelo consumidor, inteira |
+| **B.** banco fora do alcance | o consumidor tentou conectar (timeout de 3 s) | **esperou 3,2 s e ficou sem nada** |
 | **C.** banco fora do alcance | — | o mesmo que B, depois de a API também esperar |
 
 É aqui que as opções se separam. Em A, uma falha nossa atrasa a lista, mas não tira a lista de
@@ -188,5 +188,5 @@ dado, A não bastaria.** Para uma equipe que planeja operações uma vez por mê
 - **Mais de dois consumidores com recortes diferentes**: o número de arquivos e de pastas cresce,
   e uma API com autenticação por recorte (ou B com o recorte de linha da #52) fica mais simples de
   manter.
-- **A geração passar de 1 s ou o arquivo de uma UF passar de 1 MB** (hoje 21 ms e 1,4 KB): rever
+- **A geração passar de 1 s ou o arquivo de uma UF passar de 1 MB** (hoje 20 ms e 1,4 KB): rever
   o formato (Parquet, ou entrega incremental só do que mudou).

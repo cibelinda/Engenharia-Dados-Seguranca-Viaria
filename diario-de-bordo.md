@@ -226,10 +226,10 @@ dos ADRs (#54, Maria). Em 18/11, depois da apresentação, entraram as issues do
 ### O que foi medido
 
 - **ETL reverso** (#54, [ADR 0006](docs/adr/0006-trechos-criticos-entregues-por-csv-agendado.md)):
-  140 trechos críticos (no top 50 em pelo menos um ano), de 1 a 18 por UF, 17 KB no total. Gerar e
-  publicar os 21 CSVs leva **21 ms**; o consumidor consultar o banco ou uma API leva **18 ms**.
-  O que separa as opções é o destino fora do ar: o CSV falha em 21 ms e a PRF continua com a
-  geração anterior; consultando o banco, ela espera 3,3 s e fica sem nada.
+  135 trechos críticos (no top 50 em pelo menos um ano completo), de 1 a 18 por UF, 18 KB no
+  total. Gerar e publicar os 21 CSVs leva **20 ms**; o consumidor consultar o banco ou uma API
+  leva **15 a 18 ms**. O que separa as opções é o destino fora do ar: o CSV falha em 18 ms e a PRF
+  continua com a geração anterior; consultando o banco, ela espera 3,2 s e fica sem nada.
 - **Persistência através da troca de sistema** (gatilho do ADR 0003): 36 dos 50 trechos mais
   graves de 2016 continuam no top 50 de 2017, contra 35 a 41 nos outros pares de anos.
 - **Q2 do ADR 0001:** 5,0 s de mediana, contra 2,8 s em 13/10 (com outros bancos no ar na
@@ -242,7 +242,7 @@ dos ADRs (#54, Maria). Em 18/11, depois da apresentação, entraram as issues do
 - **Nenhum consumidor da E3 e da E4 lê o Delta da E2.** O dbt transforma dentro do PostgreSQL, e o
   painel e o ETL reverso leem os marts. O gatilho do ADR 0004 ("um consumidor não ler Delta")
   disparou, mas não como previsto: não faltou formato a um consumidor, faltou consumidor.
-- **As três formas de entregar custam o mesmo.** Com 140 linhas, a diferença entre CSV, tabela e
+- **As três formas de entregar custam o mesmo.** Com 135 linhas, a diferença entre CSV, tabela e
   API é de milissegundos; a escolha saiu da disponibilidade e do acoplamento, e não do desempenho.
 - **A comparação das republicações (#7)**, prevista para 26/10, nunca foi feita: o terceiro
   gatilho do ADR 0001, o único que poderia mudar a decisão, continua sem medição.
