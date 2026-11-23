@@ -17,7 +17,7 @@ COPY orquestracao/ orquestracao/
 # volume montado em /var/lib/dagster (ver orquestracao/dagster.yaml).
 ENV DAGSTER_HOME=/app/orquestracao
 RUN useradd --create-home --uid 1000 blackspot \
-    && mkdir -p data/raw lake /var/lib/dagster \
+    && mkdir -p data/raw lake saida/trechos_criticos /var/lib/dagster \
     && chown -R blackspot:blackspot /app /var/lib/dagster
 USER blackspot
 
