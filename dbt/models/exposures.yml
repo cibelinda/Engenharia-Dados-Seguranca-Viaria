@@ -13,7 +13,9 @@ exposures:
       Painel em Streamlit (painel/app.py, serviço `painel` do compose) que responde à pergunta
       de gestão. Aba "Trechos mais graves": os 20 trechos com mais graves no ano
       (mart_risco_trecho_ano) e em quantos anos cada trecho ficou entre os 50 mais graves
-      (mart_persistencia_trecho, métrica anos_no_top_50). Aba "Municípios mais perigosos": a
+      (mart_persistencia_trecho, métrica anos_no_top_50; até a troca no painel, na #52, ele ainda
+      calcula este número sozinho sobre a mart_risco_trecho_ano, e o teste
+      metrica_anos_no_top_50_bate_com_painel confere que os dois batem). Aba "Municípios mais perigosos": a
       taxa de graves por 100 mil habitantes e os graves em número absoluto
       (mart_risco_municipio_ano). Pelo contrato da E4, lê com o papel painel_leitor, só
       leitura (docs/e4/acesso.md).
