@@ -1,0 +1,76 @@
+{
+  "medido_em": "2026-11-23T17:42:40+00:00",
+  "uf_medida": "MG",
+  "rodadas": 30,
+  "trechos_criticos": 135,
+  "A_csv_agendado": {
+    "gerar_e_publicar_21_ufs": {
+      "mediana_ms": 20.01,
+      "p95_ms": 21.6,
+      "min_ms": 17.23,
+      "rodadas": 20
+    },
+    "so_a_consulta": {
+      "mediana_ms": 16.7,
+      "p95_ms": 17.9,
+      "min_ms": 10.99,
+      "rodadas": 30
+    },
+    "execucao_sem_mudanca": {
+      "mediana_ms": 17.52,
+      "p95_ms": 18.26,
+      "min_ms": 12.24,
+      "rodadas": 30
+    },
+    "consumidor_abre_csv_da_uf": {
+      "mediana_ms": 0.12,
+      "p95_ms": 0.13,
+      "min_ms": 0.12,
+      "rodadas": 300
+    },
+    "linhas_csv_da_uf": 17,
+    "bytes_total_geracao": 18233,
+    "bytes_csv_da_uf": 1369,
+    "arquivos_por_geracao": 22,
+    "destino_fora_do_ar": {
+      "etl_falhou": true,
+      "erro": "destino fora do ar: /tmp/tmp5qi7y9de não existe ou não aceita escrita",
+      "ms_ate_falhar": 17.71,
+      "geracao_anterior_continua_legivel": true
+    }
+  },
+  "B_tabela_no_banco": {
+    "consulta_da_uf_conexao_nova": {
+      "mediana_ms": 15.46,
+      "p95_ms": 16.13,
+      "min_ms": 13.89,
+      "rodadas": 30
+    },
+    "consulta_da_uf_conexao_aberta": {
+      "mediana_ms": 2.1,
+      "p95_ms": 2.8,
+      "min_ms": 1.97,
+      "rodadas": 30
+    },
+    "linhas_da_uf": 17,
+    "banco_fora_do_ar": {
+      "consumidor_recebe_erro": true,
+      "ms_ate_desistir": 3169.84,
+      "o_que_o_consumidor_tem": "nada: sem banco, não há lista"
+    }
+  },
+  "C_api": {
+    "requisicao_da_uf": {
+      "mediana_ms": 17.47,
+      "p95_ms": 18.56,
+      "min_ms": 11.61,
+      "rodadas": 30
+    },
+    "bytes_resposta": 6059,
+    "linhas_da_uf": 17,
+    "ms_ate_responder_ao_subir": 223.76,
+    "memoria_servico_kib": 35968,
+    "banco_fora_do_ar": "igual a B: a API depende do banco a cada requisição"
+  },
+  "memoria_do_processo_de_medicao_kib": 36924
+}

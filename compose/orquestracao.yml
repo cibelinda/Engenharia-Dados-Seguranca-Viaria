@@ -20,6 +20,7 @@ services:
       DBT_TARGET_PATH: /tmp/dbt/target
       DBT_LOG_PATH: /tmp/dbt/logs
       ORQUESTRACAO_SLA_HORAS: ${ORQUESTRACAO_SLA_HORAS:-26}
+      ETL_REVERSO_DESTINO: /app/saida/trechos_criticos
       PGHOST: db
       PGPORT: 5432
       PGDATABASE: ${POSTGRES_DB:-blackspot}
@@ -34,6 +35,9 @@ services:
       - ../dbt:/app/dbt:ro
       # Histórico das execuções do Dagster (ver orquestracao/dagster.yaml).
       - orquestracao:/var/lib/dagster
+      # Destino do ETL reverso (E4, #54): a pasta compartilhada com a PRF de cada UF, com um
+      # CSV por UF. Para ver de fora: docker compose cp orquestracao:/app/saida ./saida
+      - etl_reverso:/app/saida/trechos_criticos
     # Só espera o esquema existir. A primeira carga continua sendo a do `docker compose up`
     # (serviço load); o agendamento é para as execuções seguintes.
     depends_on:
@@ -44,3 +48,4 @@ volumes:
   rawdata:
   lakehouse:
   orquestracao:
+  etl_reverso:

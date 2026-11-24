@@ -511,4 +511,25 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 ### ETL reverso, ADR 0006 e revisão dos ADRs — Maria Clara
 
-[preencher no PR da #54]
+#### 2026-11-23 — ETL reverso, ADR 0006, revisão dos ADRs e diário (#54)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `orquestracao/etl_reverso.py` e o asset `etl_reverso_trechos_criticos`
+  (`orquestracao/definitions.py`, `compose/orquestracao.yml`, `orquestracao/Dockerfile`), a
+  medição `orquestracao/medicao/medicao_adr0006.py`, o ADR 0006, `docs/e4/etl-reverso.md`, as
+  seções "Revisão de 2026-11-23" dos ADRs 0001 a 0005, o `docs/adr/index.md` e o diário das
+  semanas 14 a 16.
+- **O que foi pedido:** fazer a #54 inteira. Duas escolhas ficaram comigo: o consumidor (a PRF de
+  cada UF, e não o DNIT) e deixar o formato ser decidido pela medição, em vez de escolher antes.
+- **O que foi aproveitado:** o ETL reverso (CSV por UF, troca atômica do link `atual`, só escreve
+  quando o dado muda), a medição das três opções, o texto do ADR 0006 e do `etl-reverso.md`, e a
+  revisão dos gatilhos.
+- **Como foi verificado:** o ETL rodou no banco local com os modelos da #53 construídos a partir
+  da branch da Cibelly (91 testes do dbt passando): 135 trechos, 21 UFs, e a segunda execução sem
+  mudança manteve a geração. O asset foi materializado pelo próprio Dagster
+  (`dagster asset materialize`). O caso do destino fora do ar foi medido tirando a permissão de
+  escrita da pasta. Cada número dos gatilhos foi medido no banco em 23/11 (tamanho por schema, Q2
+  com `EXPLAIN ANALYZE`, persistência de 2016 para 2017, lotes de carga, relatório do download),
+  e dois erros da primeira versão foram corrigidos antes do PR: o BR-Brasil tem 20 arquivos, e não
+  40, e o segundo lote de 2016 é de 18/11, sem prova de que veio do backfill.
+- **Quem revisou:** [revisora do PR da #54]

@@ -1,6 +1,6 @@
 # ADR 0003: Carregar o dataset completo da PRF (BR-Brasil e BAT, 2007 em diante)
 
-- **Status:** aceito
+- **Status:** aceito; gatilhos relidos em 2026-11-23 (nenhum disparou)
 - **Data:** 2026-10-12
 - **Substitui:** o recorte "BAT 2017–2025" de [`pergunta-e-recorte.md`](../pergunta-e-recorte.md)
   (issues #1 e #2), usado na E1
@@ -134,3 +134,15 @@ pessoa.
 - A E3 concluir que a quebra 2016/2017 impede comparar os sistemas mesmo por ranking relativo:
   aí a persistência passa a ser medida dentro de cada sistema.
 - A PRF republicar o BR-Brasil num formato novo (a última gravação é de 24/11/2022).
+
+## Revisão de 2026-11-23 (E4): gatilhos relidos
+
+| Gatilho | Medido | Disparou? |
+|---|---|---|
+| A quebra 2016/2017 impedir comparar os sistemas mesmo por ranking relativo | Quantos dos 50 trechos mais graves de um ano continuam entre os 50 mais graves no ano seguinte (`mart_risco_trecho_ano`): **36 de 2016 para 2017**, na troca do BR-Brasil pelo BAT, contra **35 a 41** nos outros 17 pares de anos (2007→2008 a 2024→2025). A troca de sistema não muda a persistência mais do que um ano comum | Não |
+| A PRF republicar o BR-Brasil num formato novo | O relatório do download de 18/11 confere os 50 arquivos: os 20 do BR-Brasil e os do BAT de anos fechados batem com o SHA-256 de referência. Só os 3 arquivos de 2026 mudaram (republicação mensal) | Não |
+
+**Reavaliação.** A decisão se mantém. A medida acima é a que a E3 deixou em aberto: o ranking
+relativo atravessa a troca de sistema, e a persistência de 20 anos (`anos_no_top_50`, #53) pode
+somar anos dos dois sistemas.
+

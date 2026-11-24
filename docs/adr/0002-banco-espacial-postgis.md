@@ -1,6 +1,6 @@
 # ADR 0002: Usar um banco espacial (PostgreSQL com PostGIS)
 
-- **Status:** aceito
+- **Status:** aceito; gatilhos relidos em 2026-11-23 (nenhum disparou)
 - **Data:** 2026-10-12
 - **Origem:** correção da professora na avaliação da E1
 - **Relacionado:** [ADR 0001](0001-modelo-normalizado-insert-only-versionado-por-lote.md) (continua
@@ -207,3 +207,15 @@ O PostGIS acrescenta ~102 MB, 4% do banco.
   entrega: aí um destino analítico (DuckDB spatial, por exemplo) lê desta origem.
 - A PRF passar a publicar a geometria do trecho, ou a E3 carregar a malha do DNIT: aí entram
   tabelas de linhas e a referência linear.
+
+## Revisão de 2026-11-23 (E4): gatilhos relidos
+
+| Gatilho | Medido | Disparou? |
+|---|---|---|
+| A E3 precisar de análise espacial sobre o histórico inteiro mais rápida do que o PostgreSQL entrega | A operação espacial mais cara da E3, a ligação acidente → município (2,2 milhões de pontos nos 5.571 polígonos do IBGE), leva 28 s dentro de um `dbt build` diário (ADR 0005). Na E4, o relevo de 6.931 trechos sobre 120.218 polígonos do IBGE (#59) também roda no dbt, com o índice espacial. Nenhuma das duas está no caminho de uma tela | Não |
+| A PRF publicar a geometria do trecho, ou a E3 carregar a malha do DNIT | Nem um nem outro. Entraram polígonos (malha municipal na E3, relevo do IBGE na E4), mas nenhuma linha de rodovia: o trecho continua sendo BR + UF + faixa de km, com o centro dos acidentes como ponto | Não |
+
+**Reavaliação.** A decisão se mantém, e ficou mais forte: as duas fontes que mais acrescentaram à
+análise depois da E1 (o município do IBGE e o relevo) são polígonos, e entraram como tabelas com
+índice GiST, sem mudar nada na origem.
+

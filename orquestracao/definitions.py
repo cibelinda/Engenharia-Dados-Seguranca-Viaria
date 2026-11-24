@@ -3,8 +3,11 @@
     arquivos_prf ──► origem_prf ──┬──► lake_lote
                                   └──► camada_analitica ◄── base_ibge
                                        (dbt build)
+                                              │
+                                              └──► etl_reverso_trechos_criticos   (E4, #54)
 
-- `esteira`: o grafo inteiro, todo dia às 03:00 (horário de Brasília).
+- `esteira`: o grafo inteiro, todo dia às 03:00 (horário de Brasília). O ETL reverso é a última
+  etapa: entrega os trechos críticos à PRF de cada UF (ADR 0006, docs/e4/etl-reverso.md).
 - `verificar_freshness`: só a verificação de freshness e SLA, de hora em hora.
 - `reprocessar_ano`: backfill, particionado por ano. Recarrega o ano mesmo sem mudança nos
   arquivos e reconstrói o que depende dele.
@@ -125,6 +128,16 @@ def camada_analitica(context: dg.AssetExecutionContext) -> dg.MaterializeResult:
     return dg.MaterializeResult(metadata=dbt_build(context))
 
 
+@dg.asset(group_name="esteira", kinds={"python", "csv"}, deps=[camada_analitica],
+          retry_policy=NOVAS_TENTATIVAS,
+          description="ETL reverso (E4, #54): um CSV por UF com os trechos críticos, entregue na "
+                      "pasta da PRF de cada UF. Só escreve geração nova se o dado mudou. ADR 0006.")
+def etl_reverso_trechos_criticos(context: dg.AssetExecutionContext) -> dg.MaterializeResult:
+    linhas = rodar(context, ["python", "-m", "orquestracao.etl_reverso"])
+    return dg.MaterializeResult(metadata={
+        "etl reverso": dg.MetadataValue.text(resumo(linhas, "ETL reverso terminado"))})
+
+
 # --- freshness e SLA --------------------------------------------------------------------
 
 
@@ -213,14 +226,16 @@ def reprocessar_ano():
 
 esteira = dg.define_asset_job(
     "esteira", selection=dg.AssetSelection.groups("esteira"),
-    description="O grafo inteiro: PRF -> origem -> (Delta, dbt), IBGE -> dbt, e o freshness.")
+    description="O grafo inteiro: PRF -> origem -> (Delta, dbt), IBGE -> dbt -> ETL reverso, "
+                "e o freshness.")
 
 verificar_freshness = dg.define_asset_job(
     "verificar_freshness", selection=dg.AssetSelection.checks(freshness_sla),
     description="Só a verificação de freshness e SLA, sem reconstruir nada.")
 
 defs = dg.Definitions(
-    assets=[arquivos_prf, origem_prf, lake_lote, base_ibge, camada_analitica],
+    assets=[arquivos_prf, origem_prf, lake_lote, base_ibge, camada_analitica,
+            etl_reverso_trechos_criticos],
     asset_checks=[freshness_sla],
     jobs=[esteira, verificar_freshness, reprocessar_ano],
     schedules=[
