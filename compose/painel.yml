@@ -9,10 +9,14 @@ services:
       PGHOST: db
       PGPORT: 5432
       PGDATABASE: ${POSTGRES_DB:-blackspot}
-      PGUSER: ${POSTGRES_USER:-blackspot}
-      PGPASSWORD: ${POSTGRES_PASSWORD:-blackspot}
+      # Papel só de leitura das tabelas de consumo (db/migrations/V0020__acesso.sql).
+      PGUSER: painel_leitor
+      PGPASSWORD: ${PAINEL_DB_PASSWORD:-painel_leitor}
     ports:
       - "127.0.0.1:${PAINEL_PORT:-8501}:8501"
     depends_on:
       db:
         condition: service_healthy
+      # O papel painel_leitor é criado pela migração.
+      migrate:
+        condition: service_completed_successfully
