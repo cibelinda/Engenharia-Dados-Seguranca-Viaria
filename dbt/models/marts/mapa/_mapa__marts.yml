@@ -1,0 +1,61 @@
+# Tabelas do mapa do painel (issue #57). Lidas só pelo painel, com o papel painel_leitor.
+version: 2
+
+models:
+  - name: mapa_municipio
+    description: "Uma linha por município: o contorno simplificado em WGS 84 e os graves do último ano completo."
+    columns:
+      - name: cod_municipio
+        description: "Código do IBGE."
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ibge_municipio')
+                field: cod_municipio
+      - name: nome
+      - name: uf
+        data_tests: [not_null]
+      - name: geom
+        description: "Contorno simplificado (tolerância de 0,01 grau), SRID 4326."
+        data_tests: [not_null]
+      - name: geojson
+        description: "O mesmo contorno em GeoJSON, com 4 casas decimais (cerca de 10 m)."
+        data_tests: [not_null]
+      - name: ano_referencia
+        description: "Último ano completo da PRF: o ano de graves e graves_por_100_mil."
+      - name: graves
+        description: "Acidentes graves no município no ano de referência."
+      - name: graves_por_100_mil
+        description: "Acidentes graves por 100 mil habitantes no ano de referência. NULL sem população."
+
+  - name: mapa_trecho
+    description: "Uma linha por trecho com coordenada confiável: onde o trecho fica no mapa."
+    columns:
+      - name: chave_trecho
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trecho')
+                field: chave_trecho
+      - name: rotulo
+        description: "Ex.: BR-101/SC km 200–210."
+      - name: longitude
+        data_tests: [not_null]
+      - name: latitude
+        data_tests: [not_null]
+
+  - name: mapa_acidente_grave
+    description: "Uma linha por acidente grave com coordenada confiável (2017 em diante): ano, UF e ponto."
+    columns:
+      - name: ano
+        data_tests: [not_null]
+      - name: uf
+        data_tests: [not_null]
+      - name: longitude
+        data_tests: [not_null]
+      - name: latitude
+        data_tests: [not_null]
