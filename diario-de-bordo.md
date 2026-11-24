@@ -215,3 +215,37 @@ Modelagem (Semana 11) e transformações (Semana 12) nas aulas. No repositório,
 - **Pendente:** fixar a versão do `dbt-core` no `requirements.txt`, e o modelo dimensional da #43,
   com a `mart_risco_trecho_ano` que o painel e a verificação de freshness esperam.
 
+
+## Semana 15 — E4: enriquecimento depois da apresentação (18 a 23/11/2026)
+
+A professora achou as visualizações fracas: o painel mostra **onde** estão os pontos negros, mas
+não **por quê**. Pediu um mapa, o relevo (planícies, serras, planaltos) e o tamanho das cidades.
+
+### O que foi medido
+
+- **Relevo do IBGE** (#59): 120.218 polígonos da geomorfologia 1:250.000 (versão 2026), carregados
+  em ~90 s. 6.820 dos 6.931 trechos com coordenada caem dentro de um polígono de relevo; os outros
+  111 caem na água ou na borda do mapa, e ficam com o polígono de terra mais próximo.
+- **Onde estão os pontos negros** (3 anos ou mais entre os 50 trechos mais graves, 95 trechos):
+  27,4% em planícies, contra 6,0% dos demais trechos (4,6 vezes o esperado), e 23,2% em
+  tabuleiros, contra 8,6% (2,7 vezes). Nas depressões são 7,4%, contra 32,4%.
+
+### O que surpreendeu
+
+- **Os pontos negros não estão nas serras:** 5,3% deles, contra 4,6% dos demais trechos. Eles se
+  concentram em planícies e tabuleiros, que no Brasil são sobretudo o litoral, onde ficam as regiões
+  metropolitanas cortadas pela BR-101 e pela BR-116. A hipótese, ainda não verificada, é que o
+  relevo esteja medindo urbanização e tráfego, e não o terreno.
+- O shapefile do IBGE tem anéis que cruzam a si mesmos e números que não cabem no campo do `.dbf`.
+- Um trecho caiu em "Ilhas Oceânicas", e está certo: a BR-363 é a rodovia de Fernando de Noronha.
+
+### O que foi decidido
+
+- **Três issues independentes** (#57 a #59): mapa no painel (Ana), perfil do trecho com os campos
+  da PRF que ainda não eram usados (Cibelly) e relevo do IBGE (Maria). As partes se encontram pelos
+  nomes das tabelas, e o painel mostra cada uma só quando ela existe.
+- **Sem altitude e declividade:** a PRF já registra aclive e declive em cada acidente
+  (`tracado_via`). O que faltava era o nome do relevo, e isso só o IBGE tem.
+- **Shapefile lido em Python puro**, sem GDAL, para não mexer no `requirements.txt` compartilhado.
+- **Ponto negro** = 3 anos ou mais no top 50, por enquanto como variável do dbt
+  (`ponto_negro_min_anos`), até a `mart_persistencia_trecho` (#53) entrar na `main`.

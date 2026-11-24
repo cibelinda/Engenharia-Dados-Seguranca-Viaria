@@ -512,3 +512,26 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 ### ETL reverso, ADR 0006 e revisão dos ADRs — Maria Clara
 
 [preencher no PR da #54]
+
+#### 2026-11-18 a 2026-11-23 — Relevo dos trechos (#59, PRs #60 e #61)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** divisão do enriquecimento pedido na apresentação (issues #57 a #59), ingestão do
+  relevo do IBGE (`db/migrations/V0014__relevo.sql`, `blackspot/relevo/`, serviço
+  `ingestao-relevo`) e modelos dbt (`stg_relevo_modelado`, `dim_trecho_relevo`,
+  `mart_relevo_comparacao` e testes `relevo_*`).
+- **O que foi pedido:** ideias para enriquecer o painel depois do retorno da professora (mapa,
+  relevo, tamanho das cidades), a divisão em três issues independentes e a implementação da
+  parte do relevo.
+- **O que foi aproveitado:** a divisão e o contrato das issues; a escolha da fonte (geomorfologia
+  1:250.000 do IBGE, que já traz o compartimento de relevo); o leitor de shapefile sem GDAL; os
+  modelos e testes do dbt. A altitude e a declividade (TOPODATA ou Copernicus) foram sugeridas e
+  depois cortadas por decisão nossa: a PRF já registra aclive e declive por acidente.
+- **Como foi verificado:** ingestão rodada no banco local com os 120.218 polígonos; área total
+  conferida com o campo de área do IBGE (8,46 contra 8,53 milhões de km²); anel que cruza a si
+  mesmo conferido pela área do polígono (1,3797 km², igual à do IBGE). No dbt, 15 testes passando e
+  1 aviso (5 trechos a mais de 5 km do relevo, na BR-163/PA, BR-101/BA e BR-343/PI, em rios
+  largos). O trecho classificado em "Ilhas Oceânicas" foi conferido: é a BR-363, em Fernando de
+  Noronha. Duas falhas da primeira versão foram corrigidas antes do PR: números estourados no
+  `.dbf` (`*****`) e polígonos que o `ST_BuildArea` não remontava.
+- **Quem revisou:** [revisora dos PRs #60 e #61]

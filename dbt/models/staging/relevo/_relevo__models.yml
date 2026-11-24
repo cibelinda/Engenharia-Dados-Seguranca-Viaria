@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stg_relevo_modelado
+    description: "Um polígono de relevo do IBGE por linha (1:250.000)."
+    columns:
+      - name: id_modelado
+        data_tests: [unique, not_null]
+      - name: tipo_relevo
+        description: "Compartimento de relevo do IBGE."
+        data_tests: [not_null]

@@ -1,0 +1,12 @@
+# Relevo do IBGE, gravado pela ingestão (blackspot/relevo/ingestao.py) no schema relevo (#59).
+version: 2
+
+sources:
+  - name: relevo
+    schema: relevo
+    description: "Geomorfologia do IBGE, escala 1:250.000, versão 2026 (BDiA)."
+    tables:
+      - name: modelado
+        description: "Um polígono por modelado de relevo, com compartimento, unidade, região e domínio."
+      - name: carga
+        description: "Cada execução da ingestão, com o arquivo e o SHA-256 lidos."

@@ -1,0 +1,45 @@
+# Relevo dos trechos (#59). Testes singulares em dbt/tests/relevo_*.sql.
+version: 2
+
+models:
+  - name: dim_trecho_relevo
+    description: "Uma linha por trecho com geom_centro: o relevo do IBGE onde o trecho está."
+    columns:
+      - name: chave_trecho
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trecho')
+                field: chave_trecho
+      - name: tipo_relevo
+        description: "Compartimento de relevo do IBGE (Planícies, Planaltos, Serras...)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Planícies, Planaltos, Serras, Depressões, Tabuleiros, Chapadas, Patamares, Ilhas Oceânicas]
+              config:
+                # Um compartimento novo numa versão futura do IBGE: avisa, mas não para a esteira.
+                severity: warn
+      - name: unidade_relevo
+        description: "Unidade geomorfológica do IBGE (ex.: Serra do Mar)."
+      - name: regiao_relevo
+        description: "Região geomorfológica do IBGE."
+      - name: dominio_relevo
+        description: "Domínio morfoestrutural do IBGE."
+      - name: natureza_modelado
+        description: "Natureza do modelado: dissecação, acumulação, aplanamento ou dissolução."
+      - name: distancia_m
+        description: "Distância, em metros, do centro do trecho ao polígono de relevo. 0 quando o centro cai dentro dele."
+
+  - name: mart_relevo_comparacao
+    description: "Uma linha por tipo de relevo: % dos pontos negros × % dos demais trechos nesse relevo."
+    columns:
+      - name: tipo_relevo
+        data_tests: [unique, not_null]
+      - name: pontos_negros
+        description: "Trechos com pelo menos ponto_negro_min_anos (padrão 3) anos entre os 50 mais graves."
+      - name: razao
+        description: "pct_pontos_negros / pct_demais_trechos. Acima de 1: mais pontos negros do que o esperado."
