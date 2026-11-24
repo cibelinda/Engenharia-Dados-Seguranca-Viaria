@@ -60,7 +60,8 @@ select
     o.feridos_graves,
     o.feridos_leves,
     o.ilesos,
-    (o.mortos > 0 or o.feridos_graves > 0) as grave,
+    -- Regra única da métrica (macros/metricas.sql).
+    {{ metrica_grave('o.mortos', 'o.feridos_graves') }} as grave,
     -- Coordenada
     o.geom,
     (p.latitude is not null) as coordenada_padrao,

@@ -1,24 +1,68 @@
+# Município (issue #42). Descrições do catálogo (issue #53): também vão para o banco como
+# COMMENT (persist_docs).
 version: 2
 
 models:
   - name: dim_municipio
-    description: "Uma linha por município por versão (histórico de nome e UF)."
+    description: "Uma linha por município por versão (histórico de nome e UF, do snapshot snap_municipio)."
+    config:
+      persist_docs: {relation: true, columns: true}
     columns:
       - name: chave_municipio
+        description: "Chave da versão (dbt_scd_id do snapshot)."
         data_tests: [unique, not_null]
       - name: cod_municipio
+        description: "Código IBGE do município (7 dígitos)."
         data_tests: [not_null]
+      - name: nome
+        description: "Nome do município nesta versão."
+      - name: uf
+        description: "UF do município nesta versão."
+      - name: valido_de
+        description: "Início da validade da versão."
+      - name: valido_ate
+        description: "Fim da validade da versão (NULL na versão atual)."
+      - name: atual
+        description: "A versão vale hoje."
+
   - name: mart_risco_municipio_ano
-    description: "Uma linha por município por ano: acidentes graves e a taxa por 100 mil habitantes."
+    description: >
+      Qual município é mais perigoso. Uma linha por município por ano, com os acidentes graves
+      e a taxa por 100 mil habitantes. Lida pelo painel (aba "Municípios mais perigosos"). O
+      acidente é ligado ao município pela coordenada, pelo nome ou pelo nome antigo
+      (int_ocorrencia_municipio); a população vem da API SIDRA do IBGE.
+    config:
+      persist_docs: {relation: true, columns: true}
     columns:
       - name: cod_municipio
+        description: "Código IBGE do município."
         data_tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_municipio')
                 field: cod_municipio
-      - name: populacao
-        data_tests: [not_null]
       - name: nome
+        description: "Nome atual do município (dim_municipio). Usada no painel."
         data_tests: [not_null]
+      - name: uf
+        description: "UF atual do município. Usada no painel."
+      - name: ano
+        description: "Ano dos acidentes. Usada no painel (filtro de ano)."
+      - name: acidentes
+        description: "Acidentes ligados ao município no ano (todos)."
+      - name: graves
+        description: "{{ doc('metrica_graves') }}"
+      - name: mortos
+        description: "Mortos somados nos acidentes do município no ano. Usada no painel."
+      - name: populacao
+        description: "População do município (IBGE) no ano, ou no ano mais próximo (ver ano_populacao)."
+        data_tests: [not_null]
+      - name: ano_populacao
+        description: "Ano da estimativa de população usada (difere de ano em 2007 e 2023)."
+      - name: graves_por_100_mil
+        description: "{{ doc('metrica_graves_por_100_mil') }}"
+      - name: posicao_graves
+        description: "Posição do município no ano pelo número absoluto de graves (rank)."
+      - name: posicao_taxa
+        description: "Posição no ano pela taxa por 100 mil. Só para municípios com 10 ou mais graves no ano; NULL abaixo disso."

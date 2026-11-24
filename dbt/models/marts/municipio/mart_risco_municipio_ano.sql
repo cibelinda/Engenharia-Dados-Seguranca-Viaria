@@ -3,6 +3,7 @@
 -- população do mesmo ano ou, se o IBGE não tiver (2007 e 2023), a do ano mais próximo.
 -- A posição pela taxa só vale para municípios com pelo menos 10 acidentes graves no ano:
 -- abaixo disso, um único acidente numa cidade pequena distorce o ranking.
+-- As regras de "grave" e da taxa vêm da camada de métricas (macros/metricas.sql, issue #53).
 {{ config(indexes=[{'columns': ['ano', 'cod_municipio'], 'unique': True}]) }}
 
 with por_municipio as (
@@ -10,7 +11,7 @@ with por_municipio as (
         l.cod_municipio,
         l.ano,
         count(*) as acidentes,
-        count(*) filter (where o.mortos > 0 or o.feridos_graves > 0) as graves,
+        count(*) filter (where {{ metrica_grave('o.mortos', 'o.feridos_graves') }}) as graves,
         sum(o.mortos) as mortos
     from {{ ref('int_ocorrencia_municipio') }} l
     join {{ ref('stg_ocorrencia') }} o using (id_lote, id)
@@ -40,7 +41,7 @@ select
     c.mortos,
     c.populacao,
     c.ano_populacao,
-    round(c.graves * 100000.0 / nullif(c.populacao, 0), 2) as graves_por_100_mil,
+    {{ metrica_graves_por_100_mil('c.graves', 'c.populacao') }} as graves_por_100_mil,
     rank() over (partition by c.ano order by c.graves desc) as posicao_graves,
     case when c.graves >= 10 then
         rank() over (partition by c.ano, (c.graves >= 10)

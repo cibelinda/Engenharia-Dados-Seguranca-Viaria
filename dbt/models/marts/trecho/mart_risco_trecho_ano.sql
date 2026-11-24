@@ -10,6 +10,7 @@
 --             anos com volumes diferentes: o BR-Brasil registrava o dobro de acidentes do BAT.
 --   ano_completo : false no ano corrente (parcial). O ranking do ano parcial não se compara
 --             com o dos outros.
+--   no_top_50 : posicao <= 50 (issue #53, regra em macros/metricas.sql).
 --
 -- br = 0 e acidentes sem trecho ficam fora (não há trecho para ranquear); o teste
 -- trecho_volume_graves_bate_com_origem confere que eles são os únicos que faltam.
@@ -37,28 +38,37 @@ with por_trecho_ano as (
     from {{ ref('fct_ocorrencia') }} f
     where f.chave_trecho is not null
     group by f.chave_trecho, f.ano
+),
+
+ranking as (
+    select
+        p.chave_trecho::text                     as chave_trecho,
+        t.br::smallint                           as br,
+        t.uf::text                               as uf,
+        t.km_inicio::integer                     as km_inicio,
+        t.km_fim::integer                        as km_fim,
+        t.rotulo::text                           as rotulo,
+        p.ano::smallint                          as ano,
+        a.ano_completo::boolean                  as ano_completo,
+        p.acidentes::integer                     as acidentes,
+        p.graves::integer                        as graves,
+        p.mortos::integer                        as mortos,
+        p.feridos_graves::integer                as feridos_graves,
+        case when p.graves > 0 then
+            rank() over (partition by p.ano, (p.graves > 0) order by p.graves desc)
+        end::integer                             as posicao,
+        case when p.graves > 0 then
+            round((percent_rank() over (partition by p.ano, (p.graves > 0) order by p.graves desc))::numeric, 4)
+        end::numeric(5, 4)                       as percentil_graves
+    from por_trecho_ano p
+    join {{ ref('dim_trecho') }} t using (chave_trecho)
+    join (select ano, bool_and(ano_completo) as ano_completo
+          from {{ ref('dim_tempo') }} group by ano) a using (ano)
 )
 
 select
-    p.chave_trecho::text                     as chave_trecho,
-    t.br::smallint                           as br,
-    t.uf::text                               as uf,
-    t.km_inicio::integer                     as km_inicio,
-    t.km_fim::integer                        as km_fim,
-    t.rotulo::text                           as rotulo,
-    p.ano::smallint                          as ano,
-    a.ano_completo::boolean                  as ano_completo,
-    p.acidentes::integer                     as acidentes,
-    p.graves::integer                        as graves,
-    p.mortos::integer                        as mortos,
-    p.feridos_graves::integer                as feridos_graves,
-    case when p.graves > 0 then
-        rank() over (partition by p.ano, (p.graves > 0) order by p.graves desc)
-    end::integer                             as posicao,
-    case when p.graves > 0 then
-        round((percent_rank() over (partition by p.ano, (p.graves > 0) order by p.graves desc))::numeric, 4)
-    end::numeric(5, 4)                       as percentil_graves
-from por_trecho_ano p
-join {{ ref('dim_trecho') }} t using (chave_trecho)
-join (select ano, bool_and(ano_completo) as ano_completo
-      from {{ ref('dim_tempo') }} group by ano) a using (ano)
+    *,
+    -- Regra única do "top 50" (macros/metricas.sql). A mart_persistencia_trecho e a métrica
+    -- anos_no_top_50 da camada semântica só contam esta coluna.
+    {{ metrica_no_top_50('posicao') }}::boolean as no_top_50
+from ranking

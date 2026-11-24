@@ -1,1 +1,3 @@
-Testes singulares do dbt (cada parte cria os seus com prefixo: trecho_*, municipio_*).
+Testes singulares do dbt (cada parte cria os seus com prefixo: trecho_*, municipio_*, metrica_*).
+Os metrica_* (issue #53) conferem que o número de cada métrica no mart é o da definição
+(dbt/macros/metricas.sql e models/metricas/_metricas.yml).
