@@ -517,6 +517,20 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
   reidentificação refeitas pela consulta que está no `lgpd.md`.
 - **Quem revisou:** [revisora do PR da #52]
 
+#### 2026-11-24 — Mapa dos pontos negros (#57)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `dbt/models/marts/mapa/`, testes `dbt/tests/mapa_*`, `painel/app.py` e
+  `docs/e4/mapa.md`
+- **O que foi pedido:** apoio nas tabelas do mapa e na aba nova do painel, a partir do contrato
+  da #57.
+- **O que foi aproveitado:** os três modelos, os testes, a aba do mapa com a ficha do trecho e a
+  documentação, revisados antes do commit.
+- **Como foi verificado:** `dbt build` dos modelos do mapa (20 itens passando) num banco carregado;
+  o painel rodado com a ferramenta de teste do Streamlit, como `painel_leitor`, com os filtros e
+  as camadas ligadas e desligadas.
+- **Quem revisou:** [revisora do PR da #57]
+
 &nbsp;
 
 ### Métricas, catálogo e linhagem — Cibelly
