@@ -1,10 +1,13 @@
 """Painel da E3 (issue #45): responde à pergunta de gestão do BlackSpot.
 
-Lê só as duas tabelas finais do dbt, no schema analitico_marts:
+Lê só tabelas de consumo do dbt, no schema analitico_marts, e não calcula métrica nenhuma
+por conta própria (contrato da E4, docs/e4/README.md):
 - mart_risco_trecho_ano (issue #43): acidentes graves por trecho de 10 km e ano;
+- mart_persistencia_trecho (issue #53): em quantos anos cada trecho ficou entre os 50 mais graves;
 - mart_risco_municipio_ano (issue #42): acidentes graves por município e ano.
 
-Se uma delas ainda não existir (o `dbt build` não rodou), a seção mostra um aviso.
+Conecta com o papel painel_leitor, que só lê analitico_marts (issue #52, docs/e4/acesso.md).
+Se uma tabela ainda não existir (o `dbt build` não rodou), a seção mostra um aviso.
 """
 
 from __future__ import annotations
@@ -16,7 +19,6 @@ import psycopg
 import streamlit as st
 
 SCHEMA = "analitico_marts"
-TOP_N = 50  # o "top" usado para medir se um trecho se mantém entre os mais graves
 
 st.set_page_config(page_title="BlackSpot", layout="wide")
 
@@ -69,21 +71,24 @@ with aba_trechos:
                          + (top["km_inicio"].astype(int) + 10).astype(str))
         st.bar_chart(top.set_index("trecho")["graves"], horizontal=True)
 
-        st.subheader(f"Os trechos que se mantêm: em quantos anos ficaram entre os {TOP_N} mais graves")
-        persistencia = consultar(
-            f"""WITH ranking AS (
-                    SELECT br, uf, km_inicio, ano, graves,
-                           rank() OVER (PARTITION BY ano ORDER BY graves DESC) AS posicao
-                    FROM {SCHEMA}.mart_risco_trecho_ano WHERE br <> 0)
-                SELECT br, uf, km_inicio, count(*) AS anos_no_top, sum(graves) AS graves_no_total
-                FROM ranking WHERE posicao <= %s
-                GROUP BY 1, 2, 3 ORDER BY anos_no_top DESC, graves_no_total DESC LIMIT 20""", (TOP_N,))
-        persistencia["trecho"] = ("BR-" + persistencia["br"].astype(int).astype(str).str.zfill(3) + "/" + persistencia["uf"]
-                                  + " km " + persistencia["km_inicio"].astype(int).astype(str))
-        st.dataframe(persistencia[["trecho", "anos_no_top", "graves_no_total"]],
-                     hide_index=True, width="stretch")
-        st.caption("Um trecho que aparece no topo em muitos anos é um ponto negro de verdade, "
-                   "e não azar de um ano isolado.")
+        st.subheader("Os trechos que se mantêm: em quantos anos ficaram entre os 50 mais graves")
+        if not colunas_da_tabela("mart_persistencia_trecho"):
+            st.info("A tabela de persistência (`mart_persistencia_trecho`, issue #53) ainda não "
+                    "foi criada. Rode `docker compose run --rm dbt build` depois que ela entrar "
+                    "na `main`.")
+        else:
+            persistencia = consultar(
+                f"""SELECT br, uf, km_inicio, anos_no_top_50, graves_no_total
+                    FROM {SCHEMA}.mart_persistencia_trecho
+                    WHERE br <> 0 AND anos_no_top_50 > 0
+                    ORDER BY anos_no_top_50 DESC, graves_no_total DESC LIMIT 20""")
+            persistencia["trecho"] = ("BR-" + persistencia["br"].astype(int).astype(str).str.zfill(3)
+                                      + "/" + persistencia["uf"] + " km "
+                                      + persistencia["km_inicio"].astype(int).astype(str))
+            st.dataframe(persistencia[["trecho", "anos_no_top_50", "graves_no_total"]],
+                         hide_index=True, width="stretch")
+            st.caption("Um trecho que aparece no topo em muitos anos é um ponto negro de verdade, "
+                       "e não azar de um ano isolado.")
 
 # --- Municípios -------------------------------------------------------------------
 with aba_municipios:

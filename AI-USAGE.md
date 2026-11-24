@@ -501,6 +501,22 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
   contrato conferidos com as colunas da `mart_risco_trecho_ano`.
 - **Quem revisou:** [revisora do PR da #51]
 
+#### 2026-11-24 — LGPD e controle de acesso (#52)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `db/migrations/V0020__acesso.sql`, `painel/app.py`, `compose/painel.yml`,
+  `docs/e4/lgpd.md` e `docs/e4/acesso.md`
+- **O que foi pedido:** apoio na migração dos papéis (painel só leitura, recorte de linha por UF
+  e de coluna na `pessoa`), na troca do painel para o `painel_leitor` e para a
+  `mart_persistencia_trecho`, e na medição do risco de reidentificação.
+- **O que foi aproveitado:** a migração, o ajuste do painel e os dois documentos, revisados antes
+  do commit.
+- **Como foi verificado:** num banco carregado com os 20 anos: o mesmo `SELECT` com cada papel
+  (27 UFs, só DF, só SC), os erros de permissão nas colunas e tabelas bloqueadas, o painel
+  respondendo com o `painel_leitor` depois de dois `dbt build` seguidos, e as porcentagens de
+  reidentificação refeitas pela consulta que está no `lgpd.md`.
+- **Quem revisou:** [revisora do PR da #52]
+
 &nbsp;
 
 ### Métricas, catálogo e linhagem — Cibelly
