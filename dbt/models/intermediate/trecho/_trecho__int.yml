@@ -1,0 +1,17 @@
+# Atributos do acidente grave (issue #58). Testes singulares em dbt/tests/trecho_perfil_*.sql.
+version: 2
+
+models:
+  - name: int_grave_atributo
+    description: >
+      Uma linha por acidente grave com trecho, com os atributos da mart_perfil_trecho e da
+      mart_perfil_comparacao como verdadeiro, falso ou NULL (não informado).
+    columns:
+      - name: chave_trecho
+        data_tests: [not_null]
+      - name: declive
+        description: "NULL em todo o BR-Brasil (2007–2016), que não registrava declive."
+      - name: causa
+        description: "Causa principal, harmonizada na dim_causa."
+      - name: tipo
+        description: "Tipo de acidente (ordem 1), como a PRF escreveu."
