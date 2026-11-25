@@ -1,4 +1,4 @@
-# Modelo dimensional do acidente e resposta da pergunta de gestão (issues #43 e #53).
+# Modelo dimensional do acidente e resposta da pergunta de gestão (issues #43, #53 e #58).
 # Granularidade de cada modelo na descrição. Testes singulares em dbt/tests/trecho_*.sql e
 # dbt/tests/metrica_*.sql. As descrições são o catálogo (dbt docs) e também vão para o banco
 # como COMMENT (persist_docs), para quem consulta pelo psql ou pelo painel ver o mesmo texto.
@@ -54,6 +54,8 @@ models:
         description: "Número da BR (0 = rodovia não identificada)."
       - name: km
         description: "Quilômetro do acidente na BR, dentro da UF."
+      - name: tracado_via
+        description: "Traçado da via, uma lista (ex.: {Reta,Declive}). O BR-Brasil só tem um valor, entre Reta, Curva e Cruzamento."
       - name: mortos
         description: "Mortos no acidente (coluna mortos do arquivo da PRF)."
       - name: feridos_graves
@@ -245,3 +247,102 @@ models:
       - name: ultimo_ano_no_top_50
         description: "Último ano em que o trecho ficou no top 50. NULL se nunca ficou."
         data_type: smallint
+      - name: ponto_negro
+        description: "{{ doc('coluna_ponto_negro') }}"
+        data_type: boolean
+        data_tests: [not_null]
+
+  - name: mart_perfil_trecho
+    description: >
+      Como são os acidentes graves de cada trecho: traçado, pista, uso do solo, luz, chuva, causa
+      e tipo. Uma linha por trecho (todos os da dim_trecho; o que nunca teve acidente grave tem
+      graves = 0 e o resto NULL). Todos os anos, inclusive o corrente, parcial. Lida pelo painel
+      (ficha do trecho). Explicação e limites em docs/e4/perfil.md.
+    config:
+      persist_docs: {relation: true, columns: true}
+      contract:
+        enforced: true
+    columns:
+      - name: chave_trecho
+        description: "BR-UF-km_inicio (chave da dim_trecho)."
+        data_type: text
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_trecho')
+                field: chave_trecho
+      - name: graves
+        description: "{{ doc('metrica_graves') }}"
+        data_type: integer
+        data_tests: [not_null]
+      - name: graves_bat
+        description: "Dos graves, os do BAT (2017 em diante): a base de pct_declive, causa_principal e tipo_principal."
+        data_type: integer
+        data_tests: [not_null]
+      - name: pct_curva
+        description: "Em curva. {{ doc('coluna_perfil_pct') }}"
+        data_type: numeric(4,1)
+      - name: pct_declive
+        description: "Em declive. {{ doc('coluna_perfil_declive') }}"
+        data_type: numeric(4,1)
+      - name: pct_pista_simples
+        description: "Em pista simples (nem dupla, nem múltipla). {{ doc('coluna_perfil_pct') }}"
+        data_type: numeric(4,1)
+      - name: pct_urbano
+        description: "Em área urbana (uso do solo). {{ doc('coluna_perfil_pct') }}"
+        data_type: numeric(4,1)
+      - name: pct_noite
+        description: "Em plena noite (amanhecer e anoitecer não contam). {{ doc('coluna_perfil_pct') }}"
+        data_type: numeric(4,1)
+      - name: pct_chuva
+        description: "Com chuva ou garoa. {{ doc('coluna_perfil_pct') }}"
+        data_type: numeric(4,1)
+      - name: causa_principal
+        description: "A causa harmonizada (dim_causa) mais frequente nos graves do BAT. NULL com menos de 10 graves no BAT. Cuidado: a PRF deixou de usar 'Falta de atenção à condução' em 2020, e ela ainda domina esta coluna; ver causa_principal_desde_2021."
+        data_type: text
+      - name: causa_principal_desde_2021
+        description: "Como causa_principal, só com os graves de 2021 em diante, quando a PRF já usava o vocabulário atual de causas. NULL com menos de 10 graves no período."
+        data_type: text
+      - name: tipo_principal
+        description: "O tipo de acidente mais frequente nos graves do BAT, como a PRF escreveu. NULL com menos de 10 graves no BAT."
+        data_type: text
+
+  - name: mart_perfil_comparacao
+    description: >
+      O que os pontos negros têm de diferente: o percentual dos acidentes graves com cada atributo
+      nos pontos negros e nos demais trechos. Uma linha por atributo. A conta é por acidente
+      (todos os graves do grupo somados), e não a média dos trechos. É comparação, e não causa.
+      Lida pelo painel (aba do mapa). Explicação e limites em docs/e4/perfil.md.
+    config:
+      persist_docs: {relation: true, columns: true}
+      contract:
+        enforced: true
+    columns:
+      - name: atributo
+        description: "O atributo do acidente grave, com o nome para exibir."
+        data_type: text
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Curva, Declive, Pista simples, Área urbana, Noite, Chuva]
+      - name: pct_pontos_negros
+        description: "% dos acidentes graves dos pontos negros com o atributo, entre os que têm a informação."
+        data_type: numeric(4,1)
+        data_tests: [not_null]
+      - name: pct_demais_trechos
+        description: "O mesmo para os acidentes graves dos demais trechos."
+        data_type: numeric(4,1)
+        data_tests: [not_null]
+      - name: razao
+        description: "pct_pontos_negros / pct_demais_trechos. Acima de 1: o atributo é mais comum nos pontos negros."
+        data_type: numeric(6,2)
+      - name: graves_pontos_negros
+        description: "Acidentes graves dos pontos negros com a informação do atributo (o denominador)."
+        data_type: integer
+      - name: graves_demais_trechos
+        description: "Acidentes graves dos demais trechos com a informação do atributo (o denominador)."
+        data_type: integer

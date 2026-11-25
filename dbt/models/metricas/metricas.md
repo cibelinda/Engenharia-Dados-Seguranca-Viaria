@@ -45,3 +45,25 @@ Acidentes graves somados **nos anos em que o trecho ficou no top 50** (não em t
 É o desempate da lista do painel: entre dois trechos com o mesmo `anos_no_top_50`, vem antes o
 que teve mais graves nesses anos. 0 quando `anos_no_top_50 = 0`.
 {% enddocs %}
+
+{% docs coluna_ponto_negro %}
+**Ponto negro**: o trecho ficou entre os 50 mais graves do ano em pelo menos 3 anos.
+
+Fórmula: `anos_no_top_50 >= 3`.
+
+Um ano no top pode ser acaso; três, dificilmente. Regra na macro `metrica_ponto_negro`
+(`dbt/macros/metricas.sql`), gravada na coluna `ponto_negro` da `mart_persistencia_trecho`. Quem
+compara pontos negros com os demais trechos lê essa coluna, e não repete a conta.
+{% enddocs %}
+
+{% docs coluna_perfil_pct %}
+Percentual dos acidentes graves **com a informação preenchida**: o acidente em que a PRF não
+informou o atributo fica fora da conta. NULL quando nenhum acidente grave do trecho tem a
+informação. Com poucos graves o percentual oscila muito: leia junto com `graves`.
+{% enddocs %}
+
+{% docs coluna_perfil_declive %}
+Percentual dos acidentes graves **do BAT (2017 em diante)** em trecho de declive. O BR-Brasil
+(2007–2016) só registrava Reta, Curva e Cruzamento, então os anos dele ficam fora da conta. Só
+conta `Declive`; `Aclive` é outro valor. NULL quando o trecho não tem acidente grave no BAT.
+{% enddocs %}

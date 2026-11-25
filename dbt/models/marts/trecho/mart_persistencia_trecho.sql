@@ -13,6 +13,8 @@
 --                     do ano, com poucas semanas de dado, um trecho pode entrar no top 50 do ano
 --                     parcial; esta coluna não conta isso. É a que o ETL reverso usa para dizer
 --                     que um trecho é crítico.
+--   ponto_negro     : anos_no_top_50 >= 3 (issue #58, regra em macros/metricas.sql). As
+--                     comparações de perfil e de relevo separam os trechos por esta coluna.
 --   graves_no_total : os acidentes graves somados NOS ANOS EM QUE O TRECHO FICOU NO TOP 50 (o
 --                     mesmo número que o painel mostrava). 0 quando anos_no_top_50 = 0.
 --
@@ -43,6 +45,7 @@ select
     coalesce(n.anos_completos_no_top_50, 0)::integer as anos_completos_no_top_50,
     coalesce(n.graves_no_total, 0)::integer       as graves_no_total,
     n.primeiro_ano_no_top_50::smallint            as primeiro_ano_no_top_50,
-    n.ultimo_ano_no_top_50::smallint              as ultimo_ano_no_top_50
+    n.ultimo_ano_no_top_50::smallint              as ultimo_ano_no_top_50,
+    {{ metrica_ponto_negro('n.anos_no_top_50') }}::boolean as ponto_negro
 from {{ ref('dim_trecho') }} t
 left join no_top n using (chave_trecho)

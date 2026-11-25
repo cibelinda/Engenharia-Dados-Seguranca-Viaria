@@ -51,6 +51,7 @@ select
     o.fase_dia,
     o.condicao_meteorologica,
     o.tipo_pista,
+    o.tracado_via,
     o.sentido_via,
     o.classificacao_acidente,
     -- Medidas

@@ -45,6 +45,9 @@ flowchart LR
         MT["mart_risco_trecho_ano"]
         MP["mart_persistencia_trecho"]
         MM["mart_risco_municipio_ano"]
+        IGA["int_grave_atributo"]
+        MPF["mart_perfil_trecho"]
+        MPC["mart_perfil_comparacao"]
         MET{{"métricas<br/>graves, graves_por_100_mil,<br/>anos_no_top_50"}}
         EP[/"exposure painel"/]
         EE[/"exposure<br/>etl_reverso_trechos_criticos"/]
@@ -59,6 +62,9 @@ flowchart LR
     MT --> EP
     MP --> EP
     MM --> EP
+    FCT --> IGA --> MPF --> EP
+    IGA --> MPC --> EP
+    MP --> MPC
     MT --> EE
     MP --> EE
     FCT -.-> MET

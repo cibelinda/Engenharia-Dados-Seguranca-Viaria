@@ -23,6 +23,8 @@ exposures:
       - ref('mart_risco_trecho_ano')
       - ref('mart_persistencia_trecho')
       - ref('mart_risco_municipio_ano')
+      - ref('mart_perfil_trecho')
+      - ref('mart_perfil_comparacao')
     owner:
       name: Ana Luiza Komatsu
     meta:
@@ -33,6 +35,8 @@ exposures:
         mart_risco_trecho_ano: [br, uf, km_inicio, ano, graves]
         mart_persistencia_trecho: [br, uf, km_inicio, anos_no_top_50, graves_no_total]
         mart_risco_municipio_ano: [nome, uf, ano, graves, mortos, populacao, graves_por_100_mil]
+        mart_perfil_trecho: ["todas (ficha do trecho)"]
+        mart_perfil_comparacao: [atributo, pct_pontos_negros, pct_demais_trechos]
 
   - name: etl_reverso_trechos_criticos
     label: "ETL reverso: trechos críticos"

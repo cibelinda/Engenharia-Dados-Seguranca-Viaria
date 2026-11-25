@@ -70,6 +70,7 @@ tem `anos_no_top_50 = 0`.
 | `anos_completos_no_top_50` | O mesmo, só com os anos completos. No começo do ano, poucas semanas de dado bastam para entrar no top 50 do ano parcial; esta coluna não conta isso. É a que o ETL reverso (#54) usa |
 | `graves_no_total` | Graves somados **nos anos em que o trecho ficou no top 50** (é o número que o painel mostrava). 0 quando o trecho nunca ficou no top |
 | `primeiro_ano_no_top_50`, `ultimo_ano_no_top_50` | O primeiro e o último ano no top (NULL se nunca ficou) |
+| `ponto_negro` | `anos_no_top_50 >= 3` (#58). O critério usado para comparar os pontos negros com os demais trechos. Regra na macro `metrica_ponto_negro`; ver [`perfil.md`](perfil.md) |
 
 Decisões:
 

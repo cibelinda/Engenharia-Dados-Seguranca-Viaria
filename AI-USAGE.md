@@ -565,6 +565,42 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
   variável 93 do SIDRA; corrigido para 9324 nas estimativas, conferindo no código da ingestão.
 - **Quem revisou:** [revisora do PR da #53]
 
+#### 2026-11-25 — Perfil dos trechos e comparação dos pontos negros (#58)
+
+- **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
+- **Onde:** `dbt/models/intermediate/trecho/`, `mart_perfil_trecho` e `mart_perfil_comparacao`, a
+  coluna `ponto_negro` da `mart_persistencia_trecho`, `tracado_via` na `fct_ocorrencia`,
+  `dbt/macros/metricas.sql`, `dbt/models/metricas/`, `dbt/models/exposures.yml`, os testes
+  `dbt/tests/trecho_perfil_*` e `metrica_ponto_negro_bate`, e a documentação (`docs/e4/perfil.md`,
+  `metricas.md`, `linhagem.md` e esta entrada)
+- **O que foi pedido:** primeiro pedi uma explicação do repositório e que o Claude visse se ainda
+  tinha issue minha aberta. Era a #58. Pedi para fazer com qualidade, analisando e decidindo antes
+  de sair escrevendo. No fim, pedi que me explicasse de forma simples o que fez e por quê, e que
+  ajudasse a escrever esta entrada.
+- **O que foi aproveitado:** o código, os testes e a documentação. Aqui quem escreveu foi o Claude,
+  e as decisões abaixo foram propostas por ele depois de medir o banco; eu segui com elas depois da
+  explicação, e o grupo ainda pode mudar no PR:
+  - o declive só conta no BAT, porque o BR-Brasil não registrava (contando tudo, daria 2,3% nos
+    pontos negros, e o certo é 5,5%);
+  - acidente sem a informação fica fora da conta, em vez de virar "não";
+  - ficaram duas colunas de causa: a do contrato e uma só de 2021 em diante, porque a PRF parou de
+    usar "Falta de atenção à condução" em 2020 e ela ainda aparecia em primeiro em 66 dos 96 pontos
+    negros;
+  - causa e tipo só aparecem com 10 ou mais graves, por ser pouco dado e pelo cuidado da LGPD;
+  - duas coisas saíram da lista de arquivos da issue: o `tracado_via` no fato e uma view
+    intermediária, para a regra de cada atributo não ficar escrita duas vezes.
+
+  O que mais me chamou atenção foi o resultado: a issue imaginava os pontos negros em pista simples,
+  e deu o contrário (23,8% contra 70,4%). Eles são, na maioria, travessia urbana.
+- **Como foi verificado:** os testes foram rodados pelo Claude, numa cópia do banco com os 20 anos,
+  porque o meu disco está quase cheio e o `dbt build` podia travar no meio. Passaram 134 de 134. Os
+  números foram recontados por outro caminho, trecho a trecho, e 11 quebras de propósito foram
+  percebidas pelos testes (a tabela está no `perfil.md`). Numa delas o teste de vocabulário nem
+  tinha rodado, por ficar fora da seleção, e foi preciso rodar de novo. O painel foi aberto com a
+  ferramenta de teste do Streamlit, como `painel_leitor`, sem erro; no log aparece um aviso porque a
+  ficha mistura número e texto, que não foi corrigido por ser arquivo da parte da Ana.
+- **Quem revisou:** [revisora do PR da #58]
+
 &nbsp;
 
 ### ETL reverso, ADR 0006 e revisão dos ADRs — Maria Clara
