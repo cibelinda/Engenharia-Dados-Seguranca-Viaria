@@ -517,7 +517,7 @@ entradas acima. Se a parte não usou IA, escreva isso no lugar.
 
 - **Ferramenta:** Claude Code (modelo Claude Opus 5.5)
 - **Onde:** divisão do enriquecimento pedido na apresentação (issues #57 a #59), ingestão do
-  relevo do IBGE (`db/migrations/V0014__relevo.sql`, `blackspot/relevo/`, serviço
+  relevo do IBGE (`db/migrations/V0030__relevo.sql`, `blackspot/relevo/`, serviço
   `ingestao-relevo`) e modelos dbt (`stg_relevo_modelado`, `dim_trecho_relevo`,
   `mart_relevo_comparacao` e testes `relevo_*`).
 - **O que foi pedido:** ideias para enriquecer o painel depois do retorno da professora (mapa,
