@@ -32,3 +32,29 @@
 {% macro metrica_no_top_50(posicao='posicao') -%}
     coalesce({{ posicao }} <= {{ metrica_top_n() }}, false)
 {%- endmacro %}
+
+
+{#- Ponto negro: em quantos anos, no mínimo, o trecho precisa ter ficado no top 50 (issue #58). -#}
+{% macro metrica_ponto_negro_min_anos() -%}
+    3
+{%- endmacro %}
+
+
+{#- O trecho é um ponto negro: ficou entre os 50 mais graves em pelo menos 3 anos. Devolve boolean. -#}
+{% macro metrica_ponto_negro(anos_no_top_50='anos_no_top_50') -%}
+    coalesce({{ anos_no_top_50 }} >= {{ metrica_ponto_negro_min_anos() }}, false)
+{%- endmacro %}
+
+
+{#- Percentual de acidentes em que o atributo (boolean) é verdadeiro, com uma casa. O acidente sem
+    a informação (NULL) fica fora do denominador. NULL quando nenhum acidente tem a informação. -#}
+{% macro metrica_pct(atributo) -%}
+    round(100.0 * avg(({{ atributo }})::int), 1)::numeric(4, 1)
+{%- endmacro %}
+
+
+{#- Mínimo de acidentes graves para dizer a causa ou o tipo mais frequente de um trecho. Abaixo
+    disso, "o mais frequente" é um ou dois acidentes. É o mesmo corte do ranking de municípios. -#}
+{% macro metrica_perfil_min_graves() -%}
+    10
+{%- endmacro %}

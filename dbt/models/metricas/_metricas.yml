@@ -97,6 +97,18 @@ semantic_models:
         agg: sum
         expr: "case when no_top_50 then 1 else 0 end"
 
+  - name: persistencia_trecho
+    description: "Um trecho (mart_persistencia_trecho). Separa qualquer métrica por trecho entre pontos negros e demais trechos."
+    model: ref('mart_persistencia_trecho')
+    entities:
+      - name: trecho
+        type: primary
+        expr: chave_trecho
+    dimensions:
+      - name: ponto_negro
+        description: "anos_no_top_50 >= 3 (regra na macro metrica_ponto_negro)."
+        type: categorical
+
   - name: risco_municipio_ano
     description: "Um município por ano (mart_risco_municipio_ano), com a população do IBGE. Base da métrica graves_por_100_mil."
     model: ref('mart_risco_municipio_ano')

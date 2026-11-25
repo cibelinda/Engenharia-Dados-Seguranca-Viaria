@@ -1,4 +1,4 @@
-# Modelo dimensional do acidente e resposta da pergunta de gestão (issues #43 e #53).
+# Modelo dimensional do acidente e resposta da pergunta de gestão (issues #43, #53 e #58).
 # Granularidade de cada modelo na descrição. Testes singulares em dbt/tests/trecho_*.sql e
 # dbt/tests/metrica_*.sql. As descrições são o catálogo (dbt docs) e também vão para o banco
 # como COMMENT (persist_docs), para quem consulta pelo psql ou pelo painel ver o mesmo texto.
@@ -54,6 +54,8 @@ models:
         description: "Número da BR (0 = rodovia não identificada)."
       - name: km
         description: "Quilômetro do acidente na BR, dentro da UF."
+      - name: tracado_via
+        description: "Traçado da via, uma lista (ex.: {Reta,Declive}). O BR-Brasil só tem um valor, entre Reta, Curva e Cruzamento."
       - name: mortos
         description: "Mortos no acidente (coluna mortos do arquivo da PRF)."
       - name: feridos_graves
@@ -245,3 +247,7 @@ models:
       - name: ultimo_ano_no_top_50
         description: "Último ano em que o trecho ficou no top 50. NULL se nunca ficou."
         data_type: smallint
+      - name: ponto_negro
+        description: "{{ doc('coluna_ponto_negro') }}"
+        data_type: boolean
+        data_tests: [not_null]
